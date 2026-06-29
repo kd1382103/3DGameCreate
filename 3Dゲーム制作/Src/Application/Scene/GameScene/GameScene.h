@@ -2,6 +2,7 @@
 
 #include"../BaseScene/BaseScene.h"
 
+class Player;
 class GameScene : public BaseScene
 {
 public :

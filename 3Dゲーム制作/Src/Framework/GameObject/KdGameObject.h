@@ -66,6 +66,15 @@ public:
 	bool Intersects(const KdCollider::BoxInfo& targetBox, std::list<KdCollider::CollisionResult>* pResults);
 	bool Intersects(const KdCollider::RayInfo& targetShape, std::list<KdCollider::CollisionResult>* pResults);
 
+	/////////////////////////////////////////////////////////////////
+
+	//追加
+
+	//現在座標
+	void SetNowPos(Math::Vector3 pos) { m_nowPos = pos; }
+	Math::Vector3 GetNowPos()const { return m_nowPos; }
+
+
 protected:
 
 	void Release() {}
@@ -87,4 +96,12 @@ protected:
 
 	// デバッグ情報クラス
 	std::unique_ptr<KdDebugWireFrame> m_pDebugWire = nullptr;
+
+	///////////////////////////////////////////////////////////////////////
+	
+	//追加
+	
+	//現在座標
+	Math::Vector3 m_nowPos;
+	///////////////////////////////////////////////////////////////////////
 };

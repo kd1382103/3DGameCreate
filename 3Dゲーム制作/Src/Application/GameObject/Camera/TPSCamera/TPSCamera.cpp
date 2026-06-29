@@ -9,10 +9,27 @@ void TPSCamera::Init()
 	m_mLocalPos = Math::Matrix::CreateTranslation(0, 1.5f, -10.0f);
 
 	SetCursorPos(m_FixMousePos.x, m_FixMousePos.y);
+
+	////////////////////////////////////////////////////////////////////////////////
+
+	//追加
+	//トグルキー設定
+	auto& input = KdInputManager::Instance();
+
+	// キーボードデバイスを追加
+	KdInputCollector* keyboard = new KdInputCollector();
+	input.AddDevice("Keyboard", keyboard);
+
+	// キーボードにボタンを登録
+	keyboard->AddButton("ToggleKey", new KdInputButtonForWindows('M'));		//マウスカーソル自由化
+
+	///////////////////////////////////////////////////////////////////////////////
 }
 
 void TPSCamera::PostUpdate()
 {
+
+
 	// ターゲットの行列(有効な場合利用する)
 	Math::Matrix								_targetMat = Math::Matrix::Identity;
 	const std::shared_ptr<const KdGameObject>	_spTarget = m_wpTarget.lock();
@@ -21,8 +38,22 @@ void TPSCamera::PostUpdate()
 		_targetMat = Math::Matrix::CreateTranslation(_spTarget->GetPos());
 	}
 
+	///////////////////////////////////////////////////////////////
+	
+	//追加・変更
+	
+	auto& input = KdInputManager::Instance();
+
+	// マウスカーソル自由化の切り替え
+	if (input.IsPress("ToggleKey"))
+	{
+		m_mouseFree = !m_mouseFree;
+	}
+
 	// カメラの回転
-	UpdateRotateByMouse();
+	if (!m_mouseFree){ UpdateRotateByMouse(); }
+
+	//////////////////////////////////////////////////////////////
 	m_mRotation = GetRotationMatrix();
 	m_mWorld = m_mLocalPos * m_mRotation * _targetMat;
 
