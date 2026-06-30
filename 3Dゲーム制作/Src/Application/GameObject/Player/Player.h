@@ -13,7 +13,17 @@ public:
 	void DrawLit()						override;
 	void GenerateDepthMapFromLight()	override;
 
-private:
 
-	std::shared_ptr<KdModelData>m_model;
+private:
+	std::shared_ptr<KdModelWork>m_model;
+	KdAnimator m_animator;
+
+	//アニメーション管理
+	int m_nowAnimIndex = -1;
+
+	//ジャンプ
+	bool m_isJumping = false;
+
+	//重力
+	float m_gravity = 0.0f;
 };

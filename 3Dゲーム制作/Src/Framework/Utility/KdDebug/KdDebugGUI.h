@@ -10,8 +10,8 @@ struct ImGuiAppLog
 
 	ImGuiAppLog()
 	{
-		AutoScroll = true;
-		ScrollToBottom = false;
+		AutoScroll = false;			//自動スクロール
+		ScrollToBottom = true;		
 		Clear();
 	}
 
