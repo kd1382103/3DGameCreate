@@ -28,8 +28,6 @@ void TPSCamera::Init()
 
 void TPSCamera::PostUpdate()
 {
-
-
 	// ターゲットの行列(有効な場合利用する)
 	Math::Matrix								_targetMat = Math::Matrix::Identity;
 	const std::shared_ptr<const KdGameObject>	_spTarget = m_wpTarget.lock();
@@ -37,7 +35,6 @@ void TPSCamera::PostUpdate()
 	{
 		_targetMat = Math::Matrix::CreateTranslation(_spTarget->GetPos());
 	}
-
 	///////////////////////////////////////////////////////////////
 	
 	//追加・変更

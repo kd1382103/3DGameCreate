@@ -14,12 +14,18 @@ void Player::Update()
 	if (GetAsyncKeyState('A') & 0x8000) { m_nowPos.x -= moveSpeed; }
 	if (GetAsyncKeyState('D') & 0x8000) { m_nowPos.x += moveSpeed; }
 
-	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
-	m_mWorld = transMat;
+	//KdDebugGUI::Instance().ClearLog();
+	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
+	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
+
+
 }
 
 void Player::PostUpdate()
-{}
+{
+	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
+	m_mWorld = transMat;
+}
 
 void Player::DrawLit()
 {

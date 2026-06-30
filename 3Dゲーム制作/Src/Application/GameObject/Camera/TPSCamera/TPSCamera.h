@@ -10,6 +10,8 @@ public:
 	void Init()				override;
 	void PostUpdate()		override;
 
+	void SetPlayerTarget(std::shared_ptr<KdGameObject>target) { m_wpTarget = target; }
+
 private:
 
 	bool m_mouseFree = false;

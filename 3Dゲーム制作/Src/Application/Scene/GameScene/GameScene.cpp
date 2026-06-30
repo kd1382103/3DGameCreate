@@ -28,5 +28,7 @@ void GameScene::Init()
 	player = std::make_shared<Player>();
 	player->Init();
 	player->SetNowPos(Math::Vector3{ 0,0,0 });
+	//カメラのターゲットを設定
+	camera->SetPlayerTarget(player);
 	AddObject(player);
 }

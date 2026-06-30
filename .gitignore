@@ -94,3 +94,6 @@ x86/
 
 # Publish Web Output
 *.[Pp]ublish.xml
+
+# Game engine cache
+Library/
