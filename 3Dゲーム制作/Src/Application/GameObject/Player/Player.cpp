@@ -13,12 +13,11 @@ void Player::Init()
 
 void Player::Update()
 {
-	float walkSpeed = 0.5f;
+	float moveSpeed = 0.1f;
 	float runSpeed = 1.0f;
 	bool isMoving = false;
 
 	// --- 移動入力 ---
-	float moveSpeed = walkSpeed;
 	bool isRunning = false;
 
 	if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
