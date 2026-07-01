@@ -6,7 +6,7 @@ void Player::Init()
 	m_model->SetModelData("Asset/Models/player/manModel/Player.gltf");
 
 	//3Dアニメーションの描画
-	auto anim = m_model->GetAnimation(9);
+	auto anim = m_model->GetAnimation(0);
 	m_animator.SetAnimation(anim, true); // ループ再生
 
 }
@@ -17,12 +17,15 @@ void Player::Update()
 	float runSpeed = 0.2f;
 	bool isMoving = false;
 
-	m_dir = {};
+	//================================================================================
+	// 移動処理
+	//================================================================================
 
-	// --- 移動入力 ---
+	m_dir = {};
+	
 	bool isRunning = false;
 
-	if (!m_isLanding)
+	if (!m_isLanding && !m_isAttacking)
 	{
 		if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
 		{
@@ -39,7 +42,7 @@ void Player::Update()
 	m_dir.Normalize();
 
 	// ★ 着地アニメ中は移動方向を完全にゼロにする
-	if (m_isLanding)
+	if (m_isLanding && !m_isAttacking)
 	{
 		m_dir = { 0,0,0 };
 		isMoving = false;
@@ -47,7 +50,10 @@ void Player::Update()
 
 	m_nowPos += m_dir * moveSpeed;
 
-	// --- ジャンプ処理 ---
+	//================================================================================
+	// ジャンプ処理
+	//================================================================================
+
 	if (!m_isJumping && (GetAsyncKeyState(VK_SPACE) & 0x8000))
 	{
 		m_isJumping = true;			// ジャンプ開始
@@ -78,7 +84,7 @@ void Player::Update()
 			if (m_nowAnimIndex != 15)
 			{
 				m_nowAnimIndex = 15;
-				m_animator.SetAnimation(m_model->GetAnimation(15), true);
+				m_animator.SetAnimation(m_model->GetAnimation(15), false);
 			}
 		}
 	}
@@ -105,7 +111,7 @@ void Player::Update()
 			m_isLanding = false;
 		}
 
-		if (!m_isLanding)
+		if (!m_isLanding && !m_isAttacking)
 		{
 			int nextAnim = 9; // Idle
 
@@ -122,8 +128,29 @@ void Player::Update()
 			}
 		}
 	}
+	//================================================================================
+	//　攻撃処理
+	//================================================================================
 
-	// --- アニメーション更新 ---
+	//現状、アニメーションのみ当たり判定等は後ほど実装
+	if (!m_isAttacking && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
+	{
+		m_isAttacking = true;
+
+		m_nowAnimIndex = 39; 
+		m_animator.SetAnimation(m_model->GetAnimation(39), false);
+	}
+
+	// 攻撃アニメ終了チェック
+	if (m_isAttacking && m_animator.IsAnimationEnd())
+	{
+		m_isAttacking = false;
+	}
+
+
+	//================================================================================
+	// アニメーション処理
+	//================================================================================
 	m_animator.AdvanceTime(m_model->WorkNodes(), 1.0f);
 
 	if (m_model->NeedCalcNodeMatrices())
@@ -133,9 +160,7 @@ void Player::Update()
 
 	
 	//===============================================================================
-	// 
-	// LogWindowに表示する
-	// 
+	// LogWindowに表示(発表時は非表示)
 	//===============================================================================
 	
 	KdDebugGUI::Instance().ClearLog();
