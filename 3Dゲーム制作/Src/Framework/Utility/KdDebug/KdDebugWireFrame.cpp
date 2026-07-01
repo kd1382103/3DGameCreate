@@ -101,7 +101,6 @@ void KdDebugWireFrame::AddDebugSphere(const Math::Vector3& pos, float radius, co
 		m_debugVertices.push_back(v);
 	}
 }
-
 // デバッグボックスの描画
 void KdDebugWireFrame::AddDebugBox(const Math::Matrix& matrix, const Math::Vector3& size, const Math::Vector3& offset, const bool isOriented, const Math::Color& col)
 {
@@ -246,3 +245,82 @@ void KdDebugWireFrame::Release()
 {
 	m_debugVertices.clear();
 }
+
+//======================================================================
+// 追加
+//======================================================================
+//void KdDebugWireFrame::AddDebugCapsule(const Math::Vector3& start, const Math::Vector3& end, float radius, const Math::Color& col)
+//{
+//	// 球の描画（上下）
+//	AddDebugSphere(start, radius, col);
+//	AddDebugSphere(end, radius, col);
+//
+//	// 円柱部分の輪っかを描く
+//	KdPolygon::Vertex v;
+//	v.UV = Math::Vector2::Zero;
+//	v.color = col.RGBA().v;
+//
+//	int detail = 16;
+//
+//	// カプセルの軸方向
+//	Math::Vector3 axis = end - start;
+//	float height = axis.Length();
+//	Math::Vector3 axisN = axis / height;
+//
+//	// カプセルの中心
+//	Math::Vector3 center = (start + end) * 0.5f;
+//
+//	// XZ面の輪っか
+//	for (int i = 0; i < detail + 1; ++i)
+//	{
+//		float a0 = (float)i * (360.0f / detail) * KdToRadians;
+//		float a1 = (float)(i + 1) * (360.0f / detail) * KdToRadians;
+//
+//		Math::Vector3 p0 = center;
+//		p0.x += cos(a0) * radius;
+//		p0.z += sin(a0) * radius;
+//
+//		Math::Vector3 p1 = center;
+//		p1.x += cos(a1) * radius;
+//		p1.z += sin(a1) * radius;
+//
+//		v.pos = p0; m_debugVertices.push_back(v);
+//		v.pos = p1; m_debugVertices.push_back(v);
+//	}
+//
+//	// XY面の輪っか
+//	for (int i = 0; i < detail + 1; ++i)
+//	{
+//		float a0 = (float)i * (360.0f / detail) * KdToRadians;
+//		float a1 = (float)(i + 1) * (360.0f / detail) * KdToRadians;
+//
+//		Math::Vector3 p0 = center;
+//		p0.x += cos(a0) * radius;
+//		p0.y += sin(a0) * radius;
+//
+//		Math::Vector3 p1 = center;
+//		p1.x += cos(a1) * radius;
+//		p1.y += sin(a1) * radius;
+//
+//		v.pos = p0; m_debugVertices.push_back(v);
+//		v.pos = p1; m_debugVertices.push_back(v);
+//	}
+//
+//	// YZ面の輪っか
+//	for (int i = 0; i < detail + 1; ++i)
+//	{
+//		float a0 = (float)i * (360.0f / detail) * KdToRadians;
+//		float a1 = (float)(i + 1) * (360.0f / detail) * KdToRadians;
+//
+//		Math::Vector3 p0 = center;
+//		p0.y += cos(a0) * radius;
+//		p0.z += sin(a0) * radius;
+//
+//		Math::Vector3 p1 = center;
+//		p1.y += cos(a1) * radius;
+//		p1.z += sin(a1) * radius;
+//
+//		v.pos = p0; m_debugVertices.push_back(v);
+//		v.pos = p1; m_debugVertices.push_back(v);
+//	}
+//}

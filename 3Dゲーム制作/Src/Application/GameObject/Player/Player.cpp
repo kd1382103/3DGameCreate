@@ -1,18 +1,22 @@
 ﻿#include "Player.h"
-
+//#include<Application/GameObject/Camera/CameraBase.h>
+#include<Application/Scene/SceneManager.h>
 void Player::Init()
 {
-	m_model = std::make_shared<KdModelWork>();
-	m_model->SetModelData("Asset/Models/player/manModel/Player.gltf");
+	if (!m_model)
+	{
+		m_model = std::make_shared<KdModelWork>();
+		m_model->SetModelData("Asset/Models/player/manModel/Player.gltf");
 
-	//3Dアニメーションの描画
-	auto anim = m_model->GetAnimation(0);
-	m_animator.SetAnimation(anim, true); // ループ再生
-
+		//3Dアニメーションの描画
+		auto anim = m_model->GetAnimation(0);
+		m_animator.SetAnimation(anim, true); // ループ再生
+	}
 }
 
 void Player::Update()
 {
+
 	float moveSpeed = 0.1f;
 	float runSpeed = 0.2f;
 	bool isMoving = false;
@@ -21,8 +25,8 @@ void Player::Update()
 	// 移動処理
 	//================================================================================
 
-	m_dir = {};
-	
+	m_dir = Math::Vector3::Zero;
+
 	bool isRunning = false;
 
 	if (!m_isLanding && !m_isAttacking)
@@ -33,12 +37,17 @@ void Player::Update()
 			moveSpeed = runSpeed;
 		}
 
-
 		if (GetAsyncKeyState('W') & 0x8000) { m_dir += {0, 0, 1};	 isMoving = true; }
 		if (GetAsyncKeyState('S') & 0x8000) { m_dir += {0, 0, -1}; isMoving = true; }
 		if (GetAsyncKeyState('A') & 0x8000) { m_dir += {-1, 0, 0}; isMoving = true; }
 		if (GetAsyncKeyState('D') & 0x8000) { m_dir += {1, 0, 0};	 isMoving = true; }
 	}
+	/*std::shared_ptr<CameraBase> spCamera = m_wpCamera.lock();
+	if (spCamera)
+	{
+		m_dir = m_dir.TransformNormal(m_dir, spCamera->GetRotationYMatrix());
+	}*/
+
 	m_dir.Normalize();
 
 	// ★ 着地アニメ中は移動方向を完全にゼロにする
@@ -49,6 +58,7 @@ void Player::Update()
 	}
 
 	m_nowPos += m_dir * moveSpeed;
+
 
 	//================================================================================
 	// ジャンプ処理
@@ -68,10 +78,9 @@ void Player::Update()
 	// --- アニメーション切り替え ---
 	if (m_nowPos.y > 0.0f)
 	{
-		// ★ ジャンプ中
-		if (m_gravity < 0.0f)
+		// 上昇中
+		if (m_isJumping && m_gravity < 0.0f)
 		{
-			// 上昇
 			if (m_nowAnimIndex != 16)
 			{
 				m_nowAnimIndex = 16;
@@ -90,23 +99,36 @@ void Player::Update()
 	}
 	else
 	{
-		// ★ 着地
-		m_nowPos.y = 0.0f;
-
 		// 着地した瞬間
 		if (m_isJumping)
 		{
 			m_isJumping = false;
+
+			// 着地の強さを判定
+			bool isHardLanding = (m_gravity >= 0.4f); 
+
 			m_gravity = 0.0f;
 
-			m_nowAnimIndex = 14; // Jump_Land
-			m_animator.SetAnimation(m_model->GetAnimation(14), false);
+			if (isHardLanding)
+			{
+				// ★ 高所落下 → 着地硬直あり
+				m_nowAnimIndex = 14; // Jump_Land
+				m_animator.SetAnimation(m_model->GetAnimation(14), false);
 
-			m_isLanding = true;  // ← 着地アニメ中フラグ
-			return;              // ← Idle に上書きされないように止める
+				m_isLanding = true;  // ← 着地硬直フラグ
+				return;              // ← Idle に上書きされないように止める
+			}
+			else
+			{
+				//アニメーションの都合で、着地硬直なしの時は、着地アニメーションを再生しない（現状）
+				
+				m_isLanding = false; // ← 着地硬直なし
+				
+				// return しない → そのまま Walk/Run に移行できる
+			}
 		}
 
-		if(m_animator.IsAnimationEnd())
+		if (m_animator.IsAnimationEnd())
 		{
 			m_isLanding = false;
 		}
@@ -137,7 +159,7 @@ void Player::Update()
 	{
 		m_isAttacking = true;
 
-		m_nowAnimIndex = 39; 
+		m_nowAnimIndex = 39;
 		m_animator.SetAnimation(m_model->GetAnimation(39), false);
 	}
 
@@ -158,11 +180,18 @@ void Player::Update()
 		m_model->CalcNodeMatrices();
 	}
 
-	
+	//================================================================================
+	// ワールド行列の更新
+	//================================================================================
+
+	Math::Matrix rotMat = Math::Matrix::CreateRotationY(DirectX::XMConvertToRadians(180));
+	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
+	m_mWorld = rotMat * transMat;
+
 	//===============================================================================
 	// LogWindowに表示(発表時は非表示)
 	//===============================================================================
-	
+
 	KdDebugGUI::Instance().ClearLog();
 
 	//アニメーションの番号一覧をLogWindowに表示
@@ -173,7 +202,7 @@ void Player::Update()
 
 		KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
 	}
-	
+
 	auto anim = m_model->GetAnimation(14);
 	KdDebugGUI::Instance().AddLog("Jump_Land length: %f\n", anim->m_maxLength);
 
@@ -181,22 +210,99 @@ void Player::Update()
 	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
 	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.y);
 
-
 }
 
 void Player::PostUpdate()
 {
-	Math::Matrix rotMat = Math::Matrix::CreateRotationY(DirectX::XMConvertToRadians(180));
-	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
-	m_mWorld = rotMat * transMat;
+	//================================================================================
+	//	当たり判定
+	//================================================================================
+
+	//==================================
+	//　カプセルで判定したい場合
+	//==================================
+	//KdCollider::CapsuleInfo capsule;
+	//capsule.m_type = KdCollider::TypeGround;
+	//capsule.m_radius = 0.5f;
+
+	//// 下端
+	//capsule.m_start = m_nowPos;
+	//capsule.m_start.y += 0.0f;   // 足元
+
+	//// 上端
+	//capsule.m_end = m_nowPos;
+	//capsule.m_end.y += 1.0f;     // 胴体くらいまで
+
+	//当たり判定タイプ設定
+	//capsule.m_type = KdCollider::TypeGround;
+
+	//Math::Color col = Math::Color(1, 0, 0, 1); // 赤
+	//m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, col);
+
+	//カプセルに当たったオブジェクト情報格納
+	//std::list<KdCollider::CollisionResult> retCapsuleList;
+
+	//========================================
+	
+	float maxOverlap = 0;
+	Math::Vector3 hitPos = Math::Vector3::Zero;
+	bool hit = false;
+
+	KdCollider::RayInfo rayInfo;
+	rayInfo.m_pos = m_nowPos;
+
+	// 許容範囲を設定
+	static const float enableStepHigh = 0.2f;
+	rayInfo.m_pos.y += enableStepHigh;			
+
+	// 方向を設定
+	rayInfo.m_dir = { 0.0f, -1.0f, 0.0f };
+
+	// 長さを設定
+	rayInfo.m_range = enableStepHigh + m_gravity;
+
+	// 当たり判定をしたいタイプを設定
+	rayInfo.m_type = KdCollider::TypeGround;
+
+	std::list<KdCollider::CollisionResult> retRayList;
+
+	// 当たり判定
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		obj->Intersects(rayInfo, &retRayList);
+	}
+
+	// 当たったリストから一番近いオブジェクトを検出
+
+	for (auto& ret : retRayList)
+	{
+		// レイが当たったオブジェクトの中から
+		// 「m_overlapDistance = 貫通した長さ」が一番長いものを探す
+		// 「m_overlapDistance が一番長い = 一番近くで当たった」と判定できる
+		if (maxOverlap < ret.m_overlapDistance)
+		{
+			maxOverlap = ret.m_overlapDistance;
+			hitPos = ret.m_hitPos;
+			hit = true;
+		}
+	}
+
+	// 当たっていたら
+	if (hit)
+	{
+		m_nowPos = hitPos;	// レイの着弾地点に着地
+		m_gravity = 0.0f;
+	}
 }
 
 void Player::DrawLit()
-{
+{	if (!m_model) { return; }
+
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model,m_mWorld);
 }
 
 void Player::GenerateDepthMapFromLight()
 {
+	if (!m_model) { return; }
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }

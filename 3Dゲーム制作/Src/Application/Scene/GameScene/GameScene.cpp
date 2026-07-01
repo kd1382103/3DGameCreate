@@ -36,7 +36,9 @@ void GameScene::Init()
 	player->Init();
 	player->SetNowPos(Math::Vector3{ 0,0,0 });
 
-	//カメラのターゲットを設定
-	camera->SetPlayerTarget(player);
+
+	//各オブジェクトに必要な情報を格納
+	camera->SetTarget(player);
+	//player->SetCamera(camera);
 	AddObject(player);
 }

@@ -60,3 +60,11 @@ bool KdGameObject::Intersects(const KdCollider::RayInfo& targetShape, std::list<
 
 	return m_pCollider->Intersects(targetShape, m_mWorld, pResults);
 }
+
+////追加　カプセル判定
+//bool KdGameObject::Intersects(const KdCollider::CapsuleInfo& targetCapsule, std::list<KdCollider::CollisionResult>* pResults)
+//{
+//	if (!m_pCollider) { return false; }
+//
+//	return m_pCollider->Intersects(targetCapsule, m_mWorld, pResults);
+//}
