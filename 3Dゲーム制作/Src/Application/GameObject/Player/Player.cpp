@@ -11,6 +11,8 @@ void Player::Init()
 		//3Dアニメーションの描画
 		auto anim = m_model->GetAnimation(0);
 		m_animator.SetAnimation(anim, true); // ループ再生
+
+		m_pDebugWire = std::make_unique<KdDebugWireFrame>();
 	}
 }
 
@@ -193,44 +195,44 @@ void Player::Update()
 // 移動している時だけ向きを変える
 	if (isMoving)
 	{
-		Math::Vector3 nowDir = m_mWorld.Backward();   // 現在の向き
+		Math::Vector3 nowDir = m_mWorld.Forward();   // 現在の向き
 		Math::Vector3 targetDir = m_dir;              // 移動方向
 
-		// 方向が変わった時だけ回転処理
-		if (targetDir.LengthSquared() > 0.0001f)
-		{
-			// 正規化（安全）
-			nowDir.Normalize();
-			targetDir.Normalize();
+		// 正規化（安全）
+		nowDir.Normalize();
+		targetDir.Normalize();
 
-			// dot の範囲を安全にクランプ
-			float dot = std::clamp(nowDir.Dot(targetDir), -1.0f, 1.0f);
+		// 範囲を制限したうえで内積を求める
+		float dot = std::clamp(nowDir.Dot(targetDir), -1.0f, 1.0f);
 
-			// 差分角度（ラジアン）
-			float angle = acos(dot);
+		// 差分角度（ラジアン）
+		float angle = acos(dot);
 
-			// 外積で符号判定
-			Math::Vector3 cross = nowDir.Cross(targetDir);
-			if (cross.y < 0) angle = -angle;
+		// 外積で符号判定
+		Math::Vector3 cross = nowDir.Cross(targetDir);
+		if (cross.y < 0) angle = -angle;
 
 
-			// ★ 回転速度を制限（自然な向き変更の核心）
-			const float rotSpeed = DirectX::XMConvertToRadians(5.0f); // 1フレーム最大5度
-			angle = std::clamp(angle, -rotSpeed, rotSpeed);
+		// ★ 回転速度を制限（自然な向き変更の核心）
+		const float rotSpeed = DirectX::XMConvertToRadians(5.0f); // 1フレーム最大5度
+		angle = std::clamp(angle, -rotSpeed, rotSpeed);
 
-			// ★ 現在角度に加算（これが一番重要）
-			m_angleY += angle;
-		}
+		// ★ 現在角度に加算（これが一番重要）
+		m_angleY += angle;
 	}
 
 	// 回転行列
-	Math::Matrix rotMat = Math::Matrix::CreateRotationY(-m_angleY + DirectX::XMConvertToRadians(180.0f));
+	Math::Matrix rotMat = Math::Matrix::CreateRotationY(m_angleY);
 
 	// 平行移動
 	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
 
 	// ワールド行列
 	m_mWorld = rotMat * transMat;
+
+	Math::Vector3 forward = m_mWorld.Forward();
+	m_pDebugWire->AddDebugLine(m_nowPos, m_nowPos + forward, { 1,0,0,1 }); // 赤線で前方向
+
 
 	//===============================================================================
 	// LogWindowに表示(発表時は非表示)
