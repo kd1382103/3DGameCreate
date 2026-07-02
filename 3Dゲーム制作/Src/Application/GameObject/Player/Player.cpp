@@ -37,10 +37,10 @@ void Player::Update()
 			moveSpeed = runSpeed;
 		}
 
-		if (GetAsyncKeyState('W') & 0x8000) { m_dir += {0, 0, 1};	 isMoving = true; }
-		if (GetAsyncKeyState('S') & 0x8000) { m_dir += {0, 0, -1}; isMoving = true; }
-		if (GetAsyncKeyState('A') & 0x8000) { m_dir += {-1, 0, 0}; isMoving = true; }
-		if (GetAsyncKeyState('D') & 0x8000) { m_dir += {1, 0, 0};	 isMoving = true; }
+		if (GetAsyncKeyState('W') & 0x8000) { m_dir += {0, 0, 1}; }
+		if (GetAsyncKeyState('S') & 0x8000) { m_dir += {0, 0, -1}; }
+		if (GetAsyncKeyState('A') & 0x8000) { m_dir += {-1, 0, 0}; }
+		if (GetAsyncKeyState('D') & 0x8000) { m_dir += {1, 0, 0}; }
 	}
 	/*std::shared_ptr<CameraBase> spCamera = m_wpCamera.lock();
 	if (spCamera)
@@ -50,6 +50,9 @@ void Player::Update()
 
 	m_dir.Normalize();
 
+	// ★ 実際に移動方向があるかどうかで判定する
+	isMoving = (m_dir.LengthSquared() > 0.0001f);
+	
 	// ★ 着地アニメ中は移動方向を完全にゼロにする
 	if (m_isLanding && !m_isAttacking)
 	{
@@ -58,7 +61,6 @@ void Player::Update()
 	}
 
 	m_nowPos += m_dir * moveSpeed;
-
 
 	//================================================================================
 	// ジャンプ処理
@@ -184,8 +186,50 @@ void Player::Update()
 	// ワールド行列の更新
 	//================================================================================
 
-	Math::Matrix rotMat = Math::Matrix::CreateRotationY(DirectX::XMConvertToRadians(180));
+//================================================================================
+// キャラ回転（自然な向き変更）
+//================================================================================
+
+// 移動している時だけ向きを変える
+	if (isMoving)
+	{
+		Math::Vector3 nowDir = m_mWorld.Backward();   // 現在の向き
+		Math::Vector3 targetDir = m_dir;              // 移動方向
+
+		// 方向が変わった時だけ回転処理
+		if (targetDir.LengthSquared() > 0.0001f)
+		{
+			// 正規化（安全）
+			nowDir.Normalize();
+			targetDir.Normalize();
+
+			// dot の範囲を安全にクランプ
+			float dot = std::clamp(nowDir.Dot(targetDir), -1.0f, 1.0f);
+
+			// 差分角度（ラジアン）
+			float angle = acos(dot);
+
+			// 外積で符号判定
+			Math::Vector3 cross = nowDir.Cross(targetDir);
+			if (cross.y < 0) angle = -angle;
+
+
+			// ★ 回転速度を制限（自然な向き変更の核心）
+			const float rotSpeed = DirectX::XMConvertToRadians(5.0f); // 1フレーム最大5度
+			angle = std::clamp(angle, -rotSpeed, rotSpeed);
+
+			// ★ 現在角度に加算（これが一番重要）
+			m_angleY += angle;
+		}
+	}
+
+	// 回転行列
+	Math::Matrix rotMat = Math::Matrix::CreateRotationY(-m_angleY + DirectX::XMConvertToRadians(180.0f));
+
+	// 平行移動
 	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
+
+	// ワールド行列
 	m_mWorld = rotMat * transMat;
 
 	//===============================================================================

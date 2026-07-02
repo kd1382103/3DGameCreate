@@ -29,7 +29,7 @@ private:
 	//移動・走り
 	bool isMoving = false;
 	bool isRunning = false;
-
+	float m_angleY = 0.0f;
 
 	//アニメーション管理
 	int m_nowAnimIndex = -1;
