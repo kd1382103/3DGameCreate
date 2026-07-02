@@ -264,35 +264,16 @@ void Player::PostUpdate()
 	//	当たり判定
 	//================================================================================
 
-	//==================================
-	//　カプセルで判定したい場合
-	//==================================
-	//KdCollider::CapsuleInfo capsule;
-	//capsule.m_type = KdCollider::TypeGround;
-	//capsule.m_radius = 0.5f;
-
-	//// 下端
-	//capsule.m_start = m_nowPos;
-	//capsule.m_start.y += 0.0f;   // 足元
-
-	//// 上端
-	//capsule.m_end = m_nowPos;
-	//capsule.m_end.y += 1.0f;     // 胴体くらいまで
-
-	//当たり判定タイプ設定
-	//capsule.m_type = KdCollider::TypeGround;
-
-	//Math::Color col = Math::Color(1, 0, 0, 1); // 赤
-	//m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, col);
-
-	//カプセルに当たったオブジェクト情報格納
-	//std::list<KdCollider::CollisionResult> retCapsuleList;
-
-	//========================================
-	
-	float maxOverlap = 0;
+	//共通のローカル変数
+	float maxOverlap = 0.0f;
 	Math::Vector3 hitPos = Math::Vector3::Zero;
+	Math::Vector3 hitDir = Math::Vector3::Zero;
 	bool hit = false;
+
+
+	//==================================
+	//　レイ判定（地面）
+	//==================================
 
 	KdCollider::RayInfo rayInfo;
 	rayInfo.m_pos = m_nowPos;
@@ -322,9 +303,6 @@ void Player::PostUpdate()
 
 	for (auto& ret : retRayList)
 	{
-		// レイが当たったオブジェクトの中から
-		// 「m_overlapDistance = 貫通した長さ」が一番長いものを探す
-		// 「m_overlapDistance が一番長い = 一番近くで当たった」と判定できる
 		if (maxOverlap < ret.m_overlapDistance)
 		{
 			maxOverlap = ret.m_overlapDistance;
@@ -339,6 +317,54 @@ void Player::PostUpdate()
 		m_nowPos = hitPos;	// レイの着弾地点に着地
 		m_gravity = 0.0f;
 	}
+
+	//==================================
+	//　カプセル判定（地面）
+	//==================================
+	KdCollider::CapsuleInfo capsule;
+	capsule.m_type = KdCollider::TypeGround;	// 当たり判定をしたいタイプを設定
+	capsule.m_radius = 0.3f;				// 半径
+
+	// 下端
+	capsule.m_start = m_nowPos;
+	capsule.m_start.y += 1.0f;   // 足元
+
+	// 上端
+	capsule.m_end = m_nowPos;
+	capsule.m_end.y += 1.5f;     // 胴体くらいまで
+
+
+	Math::Color col = Math::Color(1, 0, 1, 1); 
+	m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, col);
+
+	std::list<KdCollider::CollisionResult> retCapsuleList;
+
+	// 当たったリストから一番近いオブジェクトを検出
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		obj->Intersects(capsule, &retCapsuleList);
+	}
+
+	for (auto& ret : retCapsuleList)
+	{
+		if (ret.m_overlapDistance > maxOverlap)
+		{
+			maxOverlap = ret.m_overlapDistance;
+			hitPos = ret.m_hitPos;
+			hitDir = ret.m_hitDir;
+			hit = true;
+		}
+	}
+
+	if (hit)
+	{
+		hitDir.y = 0;
+		hitDir.Normalize();
+
+		m_nowPos += hitDir * maxOverlap;
+	}
+	
+	//========================================
 }
 
 void Player::DrawLit()

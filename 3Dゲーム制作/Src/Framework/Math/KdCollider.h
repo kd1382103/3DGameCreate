@@ -135,38 +135,39 @@ public:
 		UINT m_type = 0;
 	};
 
-	//struct CapsuleInfo
-	//{
-	//	CapsuleInfo() {}
+	// カプセルの当たり判定情報：当たる側専用
+	struct CapsuleInfo
+	{
+		CapsuleInfo() {}
 
-	//	//直接指定
-	//	CapsuleInfo(UINT type, const Math::Vector3& start, const Math::Vector3& end, float radius)
-	//		: m_type(type) 
-	//	{
-	//		m_start = start;
-	//		m_end = end;
-	//		m_radius = radius;
-	//	}
+		//直接指定
+		CapsuleInfo(UINT type, const Math::Vector3& start, const Math::Vector3& end, float radius)
+			: m_type(type) 
+		{
+			m_start = start;
+			m_end = end;
+			m_radius = radius;
+		}
 
-	//	// 中心位置と高さから指定（便利コンストラクタ）
-	//	CapsuleInfo(UINT type, const Math::Vector3& center, float height, float radius)
-	//		: m_type(type)
-	//	{
-	//		m_start = center;
-	//		m_start.y -= height * 0.5f;
+		// 中心位置と高さから指定（便利コンストラクタ）
+		CapsuleInfo(UINT type, const Math::Vector3& center, float height, float radius)
+			: m_type(type)
+		{
+			m_start = center;
+			m_start.y -= height * 0.5f;
 
-	//		m_end = center;
-	//		m_end.y += height * 0.5f;
+			m_end = center;
+			m_end.y += height * 0.5f;
 
-	//		m_radius = radius;
-	//	}
+			m_radius = radius;
+		}
 
-	//	Math::Vector3 m_start;   // カプセルの下端
-	//	Math::Vector3 m_end;     // カプセルの上端
-	//	float m_radius = 0.5f;   // 半径
+		Math::Vector3 m_start;   // カプセルの下端
+		Math::Vector3 m_end;     // カプセルの上端
+		float m_radius = 0.5f;   // 半径
 
-	//	UINT m_type = 0;
-	//};
+		UINT m_type = 0;
+	};
 
 
 	// 詳細な衝突結果
@@ -199,7 +200,7 @@ public:
 	bool Intersects(const SphereInfo& targetShape, const Math::Matrix& ownerMatrix, std::list<KdCollider::CollisionResult>* pResults) const;
 	bool Intersects(const BoxInfo& targetBox, const Math::Matrix& ownerMatrix, std::list<KdCollider::CollisionResult>* pResults) const;
 	bool Intersects(const RayInfo& targetShape, const Math::Matrix& ownerMatrix, std::list<KdCollider::CollisionResult>* pResults) const;
-	//bool Intersects(const CapsuleInfo& targetCapsule, const Math::Matrix& ownerMatrix, std::list<KdCollider::CollisionResult>* pResults) const;
+	bool Intersects(const CapsuleInfo& targetCapsule, const Math::Matrix& ownerMatrix, std::list<KdCollider::CollisionResult>* pResults) const;
 
 	// 登録した当たり判定の有効/無効の設定
 	void SetEnable(std::string_view name, bool flag);
@@ -235,12 +236,14 @@ public:
 	virtual bool Intersects(const DirectX::BoundingBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) = 0;
 	virtual bool Intersects(const DirectX::BoundingOrientedBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) = 0;
 	virtual bool Intersects(const KdCollider::RayInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) = 0;
+	virtual bool Intersects(const KdCollider::CapsuleInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) = 0;
 
 
 	void SetEnable(bool flag) { m_enable = flag; }
 
 protected:
 	bool m_enable = true;
+	std::shared_ptr<KdPolygon> m_polygon = std::shared_ptr<KdPolygon>();
 
 private:
 	UINT m_type = 0;		// 衝突タイプ:何用の当たり判定か
@@ -250,7 +253,7 @@ private:
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // コライダー：球形状
 // 球形状vs特定形状（球・BOX・レイ・カプセル）の当たり判定実行クラス
-// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+// ///// ///// ///// ///// ////////// ///// ///// ///// ////////// ///// ///// /////
 class KdSphereCollision : public KdCollisionShape
 {
 public:
@@ -267,7 +270,7 @@ public:
 	bool Intersects(const DirectX::BoundingBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const DirectX::BoundingOrientedBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const KdCollider::RayInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
-
+	bool Intersects(const KdCollider::CapsuleInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 private:
 	DirectX::BoundingSphere m_shape;
 };
@@ -307,7 +310,7 @@ public:
 	bool Intersects(const DirectX::BoundingBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const DirectX::BoundingOrientedBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const KdCollider::RayInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
-
+	bool Intersects(const KdCollider::CapsuleInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 private:
 	DirectX::BoundingBox			m_Abox;
 	DirectX::BoundingOrientedBox	m_Obox;
@@ -333,7 +336,7 @@ public:
 	bool Intersects(const DirectX::BoundingBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const DirectX::BoundingOrientedBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const KdCollider::RayInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
-
+	bool Intersects(const KdCollider::CapsuleInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 private:
 	std::shared_ptr<KdModelWork> m_shape;
 };
@@ -342,7 +345,7 @@ private:
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // コライダー：ポリゴン形状
 // ポリゴン形状vs特定形状（球・BOX・レイ・カプセル）の当たり判定実行クラス
-// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+// ///// ///// ///// ///// ////////// ///// ///// ///// ////////// ///// ///// /////
 class KdPolygonCollision : public KdCollisionShape
 {
 public:
@@ -355,36 +358,41 @@ public:
 	bool Intersects(const DirectX::BoundingBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const DirectX::BoundingOrientedBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const KdCollider::RayInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
+	bool Intersects(const KdCollider::CapsuleInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
 
 private:
 	std::shared_ptr<KdPolygon> m_shape;
 };
-//// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-//// コライダー：カプセル形状
-//// カプセル形状vs特定形状（球・BOX・レイ・ポリゴン）の当たり判定実行クラス
-//// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-//
-//class KdCapsuleCollision : public KdCollisionShape
-//{
-//public:
-//	KdCapsuleCollision(const Math::Vector3& start,
-//		const Math::Vector3& end,
-//		float radius,
-//		UINT type)
-//		: KdCollisionShape(type)
-//	{
-//		m_start = start;
-//		m_end = end;
-//		m_radius = radius;
-//	}
-//
-//	bool Intersects(const DirectX::BoundingSphere& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
-//	bool Intersects(const DirectX::BoundingBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
-//	bool Intersects(const DirectX::BoundingOrientedBox& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
-//	bool Intersects(const KdCollider::RayInfo& target, const Math::Matrix& world, KdCollider::CollisionResult* pRes) override;
-//
-//private:
-//	Math::Vector3 m_start;
-//	Math::Vector3 m_end;
-//	float m_radius;
-//};
+// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+// コライダー：カプセル形状
+// カプセル形状vs特定形状（球・BOX・レイ・カプセル）の当たり判定実行クラス
+// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+
+class KdCapsuleCollision : public KdCollisionShape
+{
+public:
+	KdCapsuleCollision(const Math::Vector3& start,const Math::Vector3& end,float radius,UINT type)
+		: KdCollisionShape(type),
+		m_start(start),
+		m_end(end),
+		m_radius(radius)
+	{}
+
+	virtual ~KdCapsuleCollision() {}
+
+	bool Intersects(const DirectX::BoundingSphere& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes) override;
+	bool Intersects(const DirectX::BoundingBox& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes) override;
+	bool Intersects(const DirectX::BoundingOrientedBox& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes) override;
+	bool Intersects(const KdCollider::RayInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes) override;
+	bool Intersects(const KdCollider::CapsuleInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes) override;
+
+private:
+	Math::Vector3 m_start;
+	Math::Vector3 m_end;
+	float m_radius;
+	float SegmentSegmentDistance(const Math::Vector3& p1, const Math::Vector3& q1,const Math::Vector3& p2, const Math::Vector3& q2,Math::Vector3& c1, Math::Vector3& c2);
+	float SegmentRayDistance(const Math::Vector3& segA, const Math::Vector3& segB, const Math::Vector3& rayPos,
+		const Math::Vector3& rayDir, Math::Vector3& outSegPoint, Math::Vector3& outRayPoint);
+};
+
+

@@ -8,7 +8,8 @@
 		{
 			"name":"Scene",
 			"nodes":[
-				0
+				0,
+				1
 			]
 		}
 	],
@@ -16,6 +17,21 @@
 		{
 			"mesh":0,
 			"name":"\u5e73\u9762.001"
+		},
+		{
+			"mesh":1,
+			"name":"\u5e73\u9762",
+			"rotation":[
+				0.5,
+				-0.5,
+				0.5000000596046448,
+				0.5
+			],
+			"translation":[
+				9,
+				1,
+				0
+			]
 		}
 	],
 	"materials":[
@@ -746,6 +762,17 @@
 				"baseColorTexture":{
 					"index":80
 				}
+			}
+		},
+		{
+			"doubleSided":true,
+			"name":"\u30de\u30c6\u30ea\u30a2\u30eb.081",
+			"pbrMetallicRoughness":{
+				"baseColorTexture":{
+					"index":81
+				},
+				"metallicFactor":0,
+				"roughnessFactor":0.5
 			}
 		}
 	],
@@ -1483,6 +1510,20 @@
 					"material":80
 				}
 			]
+		},
+		{
+			"name":"\u5e73\u9762.002",
+			"primitives":[
+				{
+					"attributes":{
+						"POSITION":244,
+						"NORMAL":245,
+						"TEXCOORD_0":246
+					},
+					"indices":3,
+					"material":81
+				}
+			]
 		}
 	],
 	"textures":[
@@ -1809,6 +1850,10 @@
 		{
 			"sampler":0,
 			"source":0
+		},
+		{
+			"sampler":0,
+			"source":2
 		}
 	],
 	"images":[
@@ -1821,6 +1866,11 @@
 			"mimeType":"image/png",
 			"name":"gravel",
 			"uri":"gravel.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"deldel",
+			"uri":"deldel.png"
 		}
 	],
 	"accessors":[
@@ -4097,6 +4147,34 @@
 			"componentType":5126,
 			"count":4,
 			"type":"VEC2"
+		},
+		{
+			"bufferView":244,
+			"componentType":5126,
+			"count":4,
+			"max":[
+				1,
+				0,
+				1
+			],
+			"min":[
+				-1,
+				0,
+				-1
+			],
+			"type":"VEC3"
+		},
+		{
+			"bufferView":245,
+			"componentType":5126,
+			"count":4,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":246,
+			"componentType":5126,
+			"count":4,
+			"type":"VEC2"
 		}
 	],
 	"bufferViews":[
@@ -5563,6 +5641,24 @@
 			"byteLength":32,
 			"byteOffset":10348,
 			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":48,
+			"byteOffset":10380,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":48,
+			"byteOffset":10428,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":32,
+			"byteOffset":10476,
+			"target":34962
 		}
 	],
 	"samplers":[
@@ -5573,7 +5669,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":10380,
+			"byteLength":10508,
 			"uri":"Stage.bin"
 		}
 	]

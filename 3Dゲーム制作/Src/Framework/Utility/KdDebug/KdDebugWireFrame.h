@@ -11,7 +11,7 @@ public:
 	void AddDebugLineFromMatrix(const Math::Matrix& mat, float scale);
 	void AddDebugSphere(const Math::Vector3& pos, float radius, const Math::Color& col = kWhiteColor);
 	void AddDebugBox(const Math::Matrix& matrix, const Math::Vector3& size, const Math::Vector3& offset = { 0, 0, 0 }, const bool isOriented = false, const Math::Color& col = kWhiteColor);
-	//void AddDebugCapsule(const Math::Vector3& start,const Math::Vector3& end,float radius,const Math::Color& col = kWhiteColor);
+	void AddDebugCapsule(const Math::Vector3& start,const Math::Vector3& end,float radius,const Math::Color& col = kWhiteColor);
 	
 	void Draw();
 
