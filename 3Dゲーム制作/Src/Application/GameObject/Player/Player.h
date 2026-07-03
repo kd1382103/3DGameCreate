@@ -2,6 +2,7 @@
 #include<Application/GameObject/BaseObject/BaseObject.h>
 
 class CameraBase;
+class TPSCamera;
 class Player :public BaseObject
 {
 public:
@@ -14,11 +15,13 @@ public:
 	void DrawLit()						override;
 	void GenerateDepthMapFromLight()	override;
 
-	//void SetCamera(const std::shared_ptr<CameraBase>& camera) { m_wpCamera = camera; }
+	void SetCamera(std::shared_ptr<TPSCamera> camera) { m_wpCamera = camera; }
 
 private:
 	std::shared_ptr<KdModelWork>m_model;
 	KdAnimator m_animator;
+
+	std::weak_ptr<TPSCamera>m_wpCamera;
 
 	//カメラ情報
 	//std::weak_ptr<CameraBase> m_wpCamera;
@@ -43,6 +46,9 @@ private:
 
 	//重力
 	float m_gravity = 0.0f;
+
+	Math::Vector3 m_move;
+	Math::Vector3 m_fall;
 
 
 };

@@ -251,78 +251,143 @@ void KdDebugWireFrame::Release()
 //======================================================================
 
 // デバッグカプセルの描画
-void KdDebugWireFrame::AddDebugCapsule(const Math::Vector3& start, const Math::Vector3& end, float radius, const Math::Color& col)
+void KdDebugWireFrame::AddDebugCapsule(
+	const Math::Vector3& start,   // 下半球中心
+	const Math::Vector3& end,     // 上半球中心
+	float radius,
+	const Math::Color& col)
 {
-	// 球の描画（上下）
-	AddDebugSphere(start, radius, col);
-	AddDebugSphere(end, radius, col);
-
-	// 円柱部分の輪っかを描く
 	KdPolygon::Vertex v;
 	v.UV = Math::Vector2::Zero;
 	v.color = col.RGBA().v;
 
-	int detail = 16;
+	const int detail = 16;
 
-	// カプセルの軸方向
-	Math::Vector3 axis = end - start;
-	float height = axis.Length();
-	Math::Vector3 axisN = axis / height;
+	Math::Vector3 posTop = end;
+	Math::Vector3 posBottom = start;
 
-	// カプセルの中心
-	Math::Vector3 center = (start + end) * 0.5f;
+	std::vector<Math::Vector3> topXYEdge;
+	std::vector<Math::Vector3> bottomXYEdge;
+	std::vector<Math::Vector3> topYZEdge;
+	std::vector<Math::Vector3> bottomYZEdge;
 
-	// XZ面の輪っか
-	for (int i = 0; i < detail + 1; ++i)
+	for (int i = 0; i <= detail; ++i)
 	{
-		float a0 = (float)i * (360.0f / detail) * KdToRadians;
-		float a1 = (float)(i + 1) * (360.0f / detail) * KdToRadians;
+		float angle = (i * (360.0f / detail)) * KdToRadians;
+		float angleNext = ((i + 1) * (360.0f / detail)) * KdToRadians;
 
-		Math::Vector3 p0 = center;
-		p0.x += cos(a0) * radius;
-		p0.z += sin(a0) * radius;
+		float halfAngle = (i * (180.0f / detail)) * KdToRadians;
+		float halfAngleNext = ((i + 1) * (180.0f / detail)) * KdToRadians;
 
-		Math::Vector3 p1 = center;
-		p1.x += cos(a1) * radius;
-		p1.z += sin(a1) * radius;
+		float halfAngleDown = halfAngle + KdToRadians * 180.0f;
+		float halfAngleDownNext = halfAngleNext + KdToRadians * 180.0f;
 
-		v.pos = p0; m_debugVertices.push_back(v);
-		v.pos = p1; m_debugVertices.push_back(v);
+		// ============================
+		// 上半球
+		// ============================
+
+		// XZ（円）
+		v.pos = posTop;
+		v.pos.x += cos(angle) * radius;
+		v.pos.z += sin(angle) * radius;
+		m_debugVertices.push_back(v);
+
+		v.pos = posTop;
+		v.pos.x += cos(angleNext) * radius;
+		v.pos.z += sin(angleNext) * radius;
+		m_debugVertices.push_back(v);
+
+		// XY
+		v.pos = posTop;
+		v.pos.x += cos(halfAngle) * radius;
+		v.pos.y += sin(halfAngle) * radius;
+		m_debugVertices.push_back(v);
+
+		v.pos = posTop;
+		v.pos.x += cos(halfAngleNext) * radius;
+		v.pos.y += sin(halfAngleNext) * radius;
+		m_debugVertices.push_back(v);
+
+		// XY の端点を保存（縦ライン用）
+		topXYEdge.push_back({ posTop.x + cos(angle) * radius, posTop.y + sin(angle) * radius, posTop.z });
+
+		// YZ
+		v.pos = posTop;
+		v.pos.z += cos(halfAngle) * radius;  // Z軸を中心に
+		v.pos.y += sin(halfAngle) * radius;  // Y方向へ半円
+		m_debugVertices.push_back(v);
+
+		v.pos = posTop;
+		v.pos.z += cos(halfAngleNext) * radius;
+		v.pos.y += sin(halfAngleNext) * radius;
+		m_debugVertices.push_back(v);
+
+		// YZ の端点を保存（縦ライン用）
+		topYZEdge.push_back({ posTop.x, posTop.y + sin(halfAngle) * radius, posTop.z + cos(halfAngle) * radius });
+
+		// ============================
+		// 下半球
+		// ============================
+
+		// XZ（円）
+		v.pos = posBottom;
+		v.pos.x += cos(angle) * radius;
+		v.pos.z += sin(angle) * radius;
+		m_debugVertices.push_back(v);
+
+		v.pos = posBottom;
+		v.pos.x += cos(angleNext) * radius;
+		v.pos.z += sin(angleNext) * radius;
+		m_debugVertices.push_back(v);
+
+		// XY
+		v.pos = posBottom;
+		v.pos.x += cos(halfAngleDown) * radius;
+		v.pos.y += sin(halfAngleDown) * radius;
+		m_debugVertices.push_back(v);
+
+		v.pos = posBottom;
+		v.pos.x += cos(halfAngleDownNext) * radius;
+		v.pos.y += sin(halfAngleDownNext) * radius;
+		m_debugVertices.push_back(v);
+
+		bottomXYEdge.push_back({ posBottom.x + cos(angle) * radius, posBottom.y + sin(angle) * radius, posBottom.z });
+
+		// YZ
+		v.pos = posBottom;
+		v.pos.z += cos(halfAngleDown) * radius;
+		v.pos.y += sin(halfAngleDown) * radius;
+		m_debugVertices.push_back(v);
+
+		v.pos = posBottom;
+		v.pos.z += cos(halfAngleDownNext) * radius;
+		v.pos.y += sin(halfAngleDownNext) * radius;
+		m_debugVertices.push_back(v);
+
+		bottomYZEdge.push_back({ posBottom.x, posBottom.y + sin(halfAngleDown) * radius, posBottom.z + cos(halfAngleDown) * radius });
 	}
 
-	// XY面の輪っか
-	for (int i = 0; i < detail + 1; ++i)
+	// ============================
+	// 上下の端点を縦ラインでつなぐ
+	// ============================
+	for (int i = 0; i <= detail; ++i)
 	{
-		float a0 = (float)i * (360.0f / detail) * KdToRadians;
-		float a1 = (float)(i + 1) * (360.0f / detail) * KdToRadians;
+		float angleDeg = i * (360.0f / detail);
 
-		Math::Vector3 p0 = center;
-		p0.x += cos(a0) * radius;
-		p0.y += sin(a0) * radius;
+		// XZ面と重なる角度（0°, 90°, 180°, 270°）
+		if (fabsf(fmodf(angleDeg, 90.0f)) < 0.001f)
+		{
+			Math::Vector3 topXZ(
+				posTop.x + cos(angleDeg * KdToRadians) * radius,
+				posTop.y,
+				posTop.z + sin(angleDeg * KdToRadians) * radius);
 
-		Math::Vector3 p1 = center;
-		p1.x += cos(a1) * radius;
-		p1.y += sin(a1) * radius;
+			Math::Vector3 bottomXZ(
+				posBottom.x + cos(angleDeg * KdToRadians) * radius,
+				posBottom.y,
+				posBottom.z + sin(angleDeg * KdToRadians) * radius);
 
-		v.pos = p0; m_debugVertices.push_back(v);
-		v.pos = p1; m_debugVertices.push_back(v);
-	}
-
-	// YZ面の輪っか
-	for (int i = 0; i < detail + 1; ++i)
-	{
-		float a0 = (float)i * (360.0f / detail) * KdToRadians;
-		float a1 = (float)(i + 1) * (360.0f / detail) * KdToRadians;
-
-		Math::Vector3 p0 = center;
-		p0.y += cos(a0) * radius;
-		p0.z += sin(a0) * radius;
-
-		Math::Vector3 p1 = center;
-		p1.y += cos(a1) * radius;
-		p1.z += sin(a1) * radius;
-
-		v.pos = p0; m_debugVertices.push_back(v);
-		v.pos = p1; m_debugVertices.push_back(v);
+			AddDebugLine(topXZ, bottomXZ, col);
+		}
 	}
 }

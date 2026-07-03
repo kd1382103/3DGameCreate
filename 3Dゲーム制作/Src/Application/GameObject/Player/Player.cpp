@@ -1,5 +1,5 @@
 ﻿#include "Player.h"
-//#include<Application/GameObject/Camera/CameraBase.h>
+#include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/Scene/SceneManager.h>
 void Player::Init()
 {
@@ -19,6 +19,16 @@ void Player::Init()
 
 void Player::Update()
 {
+	//================================================================================
+	// カメラの回転行列を取得
+	//================================================================================
+	Math::Matrix camRotMat;
+
+	//存在しているかどうか
+	if (m_wpCamera.expired() == false)
+	{
+		camRotMat = m_wpCamera.lock()->GetRotationYMatrix();
+	}
 
 	float moveSpeed = 0.1f;
 	float runSpeed = 0.2f;
@@ -45,17 +55,15 @@ void Player::Update()
 		if (GetAsyncKeyState('A') & 0x8000) { m_dir += {-1, 0, 0}; }
 		if (GetAsyncKeyState('D') & 0x8000) { m_dir += {1, 0, 0}; }
 	}
-	/*std::shared_ptr<CameraBase> spCamera = m_wpCamera.lock();
-	if (spCamera)
-	{
-		m_dir = m_dir.TransformNormal(m_dir, spCamera->GetRotationYMatrix());
-	}*/
-
-	m_dir.Normalize();
 
 	// ★ 実際に移動方向があるかどうかで判定する
 	isMoving = (m_dir.LengthSquared() > 0.0001f);
-	
+	if (isMoving)
+	{
+		m_dir = Math::Vector3::TransformNormal(m_dir, camRotMat);
+	}
+	m_dir.Normalize();
+
 	// ★ 着地アニメ中は移動方向を完全にゼロにする
 	if (m_isLanding && !m_isAttacking)
 	{
@@ -63,7 +71,6 @@ void Player::Update()
 		isMoving = false;
 	}
 
-	m_nowPos += m_dir * moveSpeed;
 
 	//================================================================================
 	// ジャンプ処理
@@ -177,14 +184,10 @@ void Player::Update()
 	}
 
 	//================================================================================
-	// ワールド行列の更新
+	// キャラ回転（自然な向き変更）
 	//================================================================================
 
-//================================================================================
-// キャラ回転（自然な向き変更）
-//================================================================================
-
-// 移動している時だけ向きを変える
+	// 移動している時だけ向きを変える
 	if (isMoving)
 	{
 		Math::Vector3 nowDir = m_mWorld.Forward();   // 現在の向き
@@ -206,25 +209,30 @@ void Player::Update()
 
 
 		// ★ 回転速度を制限（自然な向き変更の核心）
-		const float rotSpeed = DirectX::XMConvertToRadians(5.0f); // 1フレーム最大5度
+		const float rotSpeed = DirectX::XMConvertToRadians(5.0f); // 1フレームの回転速度上限
 		angle = std::clamp(angle, -rotSpeed, rotSpeed);
 
 		// ★ 現在角度に加算（これが一番重要）
 		m_angleY += angle;
 	}
 
+	m_nowPos += m_dir * moveSpeed;
+
+	//======================================
+	// ワールド行列の更新
+	//======================================
+	
 	// 回転行列
 	Math::Matrix rotMat = Math::Matrix::CreateRotationY(m_angleY);
-
+	
 	// 平行移動
 	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
 
 	// ワールド行列
 	m_mWorld = rotMat * transMat;
 
-	Math::Vector3 forward = m_mWorld.Forward();
-	m_pDebugWire->AddDebugLine(m_nowPos, m_nowPos + forward, { 1,0,0,1 }); // 赤線で前方向
-
+	//Math::Vector3 forward = m_mWorld.Forward();
+	//m_pDebugWire->AddDebugLine(m_nowPos, m_nowPos + forward, { 1,0,0,1 }); // 赤線で前方向
 
 	//===============================================================================
 	// LogWindowに表示(発表時は非表示)
@@ -249,6 +257,8 @@ void Player::Update()
 	KdDebugGUI::Instance().AddLog("m_isJumping : %s\n", m_isJumping ? "true" : "false");
 	KdDebugGUI::Instance().AddLog("m_isLanding : %s\n", m_isLanding ? "true" : "false");
 	KdDebugGUI::Instance().AddLog("m_isAttacking : %s\n", m_isAttacking ? "true" : "false");
+	KdDebugGUI::Instance().AddLog("%f\n", m_angleY);
+
 
 }
 
@@ -259,116 +269,27 @@ void Player::PostUpdate()
 	//	当たり判定
 	//================================================================================
 
-	//共通のローカル変数
-	float maxOverlap = 0.0f;
-	Math::Vector3 hitPos = Math::Vector3::Zero;
-	Math::Vector3 hitDir = Math::Vector3::Zero;
-	bool hit = false;
-
-
-	//==================================
-	//　レイ判定（地面）
-	//==================================
-
-	//KdCollider::RayInfo rayInfo;
-	//rayInfo.m_pos = m_nowPos;
-
-	//// 許容範囲を設定
-	//static const float enableStepHigh = 0.2f;
-	//rayInfo.m_pos.y += enableStepHigh;			
-
-	//// 方向を設定
-	//rayInfo.m_dir = { 0.0f, -1.0f, 0.0f };
-
-	//// 長さを設定
-	//rayInfo.m_range = enableStepHigh + m_gravity;
-
-	//// 当たり判定をしたいタイプを設定
-	//rayInfo.m_type = KdCollider::TypeGround ;
-
-	//std::list<KdCollider::CollisionResult> retRayList;
-
-	//// 当たり判定
-	//for (auto& obj : SceneManager::Instance().GetObjList())
-	//{
-	//	obj->Intersects(rayInfo, &retRayList);
-	//}
-
-	//// 当たったリストから一番近いオブジェクトを検出
-
-	//for (auto& ret : retRayList)
-	//{
-	//	if (maxOverlap < ret.m_overlapDistance)
-	//	{
-	//		maxOverlap = ret.m_overlapDistance;
-	//		hitPos = ret.m_hitPos;
-	//		hit = true;
-	//	}
-	//}
-
-	//// 当たっていたら
-	//if (hit)
-	//{
-	//	m_nowPos = hitPos;	// レイの着弾地点に着地
-	//	m_gravity = 0.0f;
-	//}
-
-	//==================================
-	//　球判定（壁）
-	//==================================
-
-	KdCollider::SphereInfo sphere;
-	sphere.m_type = KdCollider::TypeGround;	// 当たり判定をしたいタイプを設定
-	sphere.m_sphere.Center = {m_nowPos.x, m_nowPos.y + 1.0f, m_nowPos.z};
-	sphere.m_sphere.Radius = 0.5f;
-
-	Math::Color col = Math::Color(1, 0, 1, 1); 
-	m_pDebugWire->AddDebugSphere(sphere.m_sphere.Center, sphere.m_sphere.Radius, col);
-
-	std::list<KdCollider::CollisionResult> retSphereList;
-
-	// 当たったリストから一番近いオブジェクトを検出
-	for (auto& obj : SceneManager::Instance().GetObjList())
-	{
-		obj->Intersects(sphere, &retSphereList);
-	}
-
-	for (auto& ret : retSphereList)
-	{
-		if (ret.m_overlapDistance > maxOverlap)
-		{
-			maxOverlap = ret.m_overlapDistance;
-			hitPos = ret.m_hitPos;
-			hitDir = ret.m_hitDir;
-			hit = true;
-		}
-	}
-
-	if (hit)
-	{
-		hitDir.y = 0;
-		hitDir.Normalize();
-
-		m_nowPos += hitDir * maxOverlap;
-	}
+	//=======================================================================================================================
+	// カプセル判定
+	//=======================================================================================================================
 	
-
-//========================
-// カプセル（地面）
-//========================
+	//地面
 	{
+		float maxOverlap = 0.0f;
+		Math::Vector3 hitDir = Math::Vector3::Zero;
+		bool hit = false;
 
 		KdCollider::CapsuleInfo capsule;
 		capsule.m_type = KdCollider::TypeGround;
-		capsule.m_radius = 0.25f;
+		capsule.m_radius = 0.3f;
 
 		capsule.m_start = m_nowPos;
-		capsule.m_start.y += 0.25f;
+		capsule.m_start.y += 0.3f;
 
 		capsule.m_end = m_nowPos;
 		capsule.m_end.y += 1.5f;
 
-		m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,1,1 });
+		m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, {1,0,0,1});
 
 		std::list<KdCollider::CollisionResult> retCapsuleList;
 		for (auto& obj : SceneManager::Instance().GetObjList())
@@ -381,7 +302,6 @@ void Player::PostUpdate()
 			if (ret.m_overlapDistance > maxOverlap)
 			{
 				maxOverlap = ret.m_overlapDistance;
-				hitPos = ret.m_hitPos;
 				hitDir = ret.m_hitDir;
 				hit = true;
 			}
@@ -389,25 +309,66 @@ void Player::PostUpdate()
 
 		if (hit)
 		{
-			hitDir.x = 0;
-			hitDir.z = 0;
-			hitDir.Normalize();
-
-			m_nowPos += hitDir * maxOverlap;
-			m_gravity = 0.0f;
-
-			m_isJumping = false;
+			float pushUp = hitDir.y * maxOverlap;
+			if (pushUp > 0.0f)
+			{
+				m_nowPos.y += pushUp;
+				m_gravity = 0.0f;
+				m_isJumping = false;
+			}
 		}
 		else
 		{
-			if(!m_isJumping)
+			if (!m_isJumping)
 			{
 				m_isJumping = true;
 			}
 		}
 	}
 
-	//========================================
+	//壁
+	{
+		float maxOverlap = 0.0f;
+		Math::Vector3 hitDir = Math::Vector3::Zero;
+		bool hit = false;
+
+		KdCollider::CapsuleInfo capsule;
+		capsule.m_type = KdCollider::TypeBump;
+		capsule.m_radius = 0.4f;
+
+		capsule.m_start = m_nowPos;
+		capsule.m_start.y += 0.8f;
+		capsule.m_end = m_nowPos;
+		capsule.m_end.y += 1.2f;
+
+
+		std::list<KdCollider::CollisionResult> retCapsuleList;
+		for (auto& obj : SceneManager::Instance().GetObjList())
+		{
+			obj->Intersects(capsule, &retCapsuleList);
+		}
+
+		for (auto& ret : retCapsuleList)
+		{
+			if (ret.m_overlapDistance > maxOverlap)
+			{
+				maxOverlap = ret.m_overlapDistance;
+
+				hitDir = ret.m_hitDir;
+				hitDir.y =0;
+
+				hitDir.Normalize();
+				hit = true;
+			}
+		}
+
+		if (hit)
+		{
+			// ★ 押し返し量を少し強める（安全係数）
+			const float pushStrength = 1.2f;
+			m_nowPos += hitDir * (maxOverlap * pushStrength);
+		}
+	}
 }
 
 void Player::DrawLit()
