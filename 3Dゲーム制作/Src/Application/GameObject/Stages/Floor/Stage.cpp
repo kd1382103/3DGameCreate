@@ -5,10 +5,10 @@ void Stage::Init()
 	if (!m_model)
 	{
 		m_model = std::make_shared<KdModelData>();
-		m_model->Load("Asset/Models/stage/Stage.gltf");
+		m_model->Load("Asset/Models/stages/Stage/stage.gltf");
 
 		m_pCollider = std::make_unique<KdCollider>();
-		m_pCollider->RegisterCollisionShape("Stage", m_model, KdCollider::TypeGround);
+		m_pCollider->RegisterCollisionShape("Stage", m_model, KdCollider::TypeGround | KdCollider::TypeBump);
 	}
 }
 

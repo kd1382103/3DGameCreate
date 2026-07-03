@@ -8,6 +8,7 @@ void Player::Init()
 		m_model = std::make_shared<KdModelWork>();
 		m_model->SetModelData("Asset/Models/player/manModel/Player.gltf");
 
+
 		//3Dアニメーションの描画
 		auto anim = m_model->GetAnimation(0);
 		m_animator.SetAnimation(anim, true); // ループ再生
@@ -80,7 +81,7 @@ void Player::Update()
 	m_nowPos.y -= m_gravity;     // y位置更新（放物線）
 
 	// --- アニメーション切り替え ---
-	if (m_nowPos.y > 0.0f)
+	if (m_isJumping)
 	{
 		// 上昇中
 		if (m_isJumping && m_gravity < 0.0f)
@@ -103,50 +104,40 @@ void Player::Update()
 	}
 	else
 	{
-		// 着地した瞬間
-		if (m_isJumping)
+		m_isJumping = false;
+
+		// 着地の強さを判定
+		bool isHardLanding = (m_gravity >= 0.4f);
+
+		m_gravity = 0.0f;
+
+		if (isHardLanding)
 		{
-			m_isJumping = false;
+			// ★ 高所落下 → 着地硬直あり
+			m_nowAnimIndex = 14; // Jump_Land
+			m_animator.SetAnimation(m_model->GetAnimation(14), false);
 
-			// 着地の強さを判定
-			bool isHardLanding = (m_gravity >= 0.4f); 
-
-			m_gravity = 0.0f;
-
-			if (isHardLanding)
-			{
-				// ★ 高所落下 → 着地硬直あり
-				m_nowAnimIndex = 14; // Jump_Land
-				m_animator.SetAnimation(m_model->GetAnimation(14), false);
-
-				m_isLanding = true;  // ← 着地硬直フラグ
-				return;              // ← Idle に上書きされないように止める
-			}
-			else
-			{
-				//アニメーションの都合で、着地硬直なしの時は、着地アニメーションを再生しない（現状）
-				
-				m_isLanding = false; // ← 着地硬直なし
-				
-				// return しない → そのまま Walk/Run に移行できる
-			}
+			m_isLanding = true;  // ← 着地硬直フラグ
+			return;              // ← Idle に上書きされないように止める
 		}
+		else
+		{
+			//アニメーションの都合で、着地硬直なしの時は、着地アニメーションを再生しない（現状）
+
+			m_isLanding = false; // ← 着地硬直なし
+
+			// return しない → そのまま Walk/Run に移行できる
+		}
+	
 
 		if (m_animator.IsAnimationEnd())
 		{
 			m_isLanding = false;
 		}
 
-		if (!m_isLanding && !m_isAttacking)
+		if (!m_isJumping && !m_isLanding && !m_isAttacking)
 		{
-			int nextAnim = 9; // Idle
-
-			if (isMoving)
-			{
-				if (isRunning) nextAnim = 36; // Run
-				else nextAnim = 41;           // Walk
-			}
-
+			int nextAnim = isRunning ? 36 : (isMoving ? 41 : 9);
 			if (nextAnim != m_nowAnimIndex)
 			{
 				m_nowAnimIndex = nextAnim;
@@ -177,7 +168,8 @@ void Player::Update()
 	//================================================================================
 	// アニメーション処理
 	//================================================================================
-	m_animator.AdvanceTime(m_model->WorkNodes(), 1.0f);
+	float animSpeed = isRunning ? 1.5f : 1.0f;
+	m_animator.AdvanceTime(m_model->WorkNodes(), animSpeed);
 
 	if (m_model->NeedCalcNodeMatrices())
 	{
@@ -241,25 +233,28 @@ void Player::Update()
 	KdDebugGUI::Instance().ClearLog();
 
 	//アニメーションの番号一覧をLogWindowに表示
-	for (int i = 0; ; i++)
-	{
-		auto anim = m_model->GetAnimation(i);
-		if (!anim) break; // 取得できなくなったら終了
+	//for (int i = 0; ; i++)
+	//{
+	//	auto anim = m_model->GetAnimation(i);
+	//	if (!anim) break; // 取得できなくなったら終了
 
-		KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
-	}
-
-	auto anim = m_model->GetAnimation(14);
-	KdDebugGUI::Instance().AddLog("Jump_Land length: %f\n", anim->m_maxLength);
+	//	KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
+	//}
 
 	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
 	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
 	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.y);
 
+	KdDebugGUI::Instance().AddLog("Gravity : %f\n", m_gravity);
+	KdDebugGUI::Instance().AddLog("m_isJumping : %s\n", m_isJumping ? "true" : "false");
+	KdDebugGUI::Instance().AddLog("m_isLanding : %s\n", m_isLanding ? "true" : "false");
+	KdDebugGUI::Instance().AddLog("m_isAttacking : %s\n", m_isAttacking ? "true" : "false");
+
 }
 
 void Player::PostUpdate()
 {
+
 	//================================================================================
 	//	当たり判定
 	//================================================================================
@@ -275,77 +270,70 @@ void Player::PostUpdate()
 	//　レイ判定（地面）
 	//==================================
 
-	KdCollider::RayInfo rayInfo;
-	rayInfo.m_pos = m_nowPos;
+	//KdCollider::RayInfo rayInfo;
+	//rayInfo.m_pos = m_nowPos;
 
-	// 許容範囲を設定
-	static const float enableStepHigh = 0.2f;
-	rayInfo.m_pos.y += enableStepHigh;			
+	//// 許容範囲を設定
+	//static const float enableStepHigh = 0.2f;
+	//rayInfo.m_pos.y += enableStepHigh;			
 
-	// 方向を設定
-	rayInfo.m_dir = { 0.0f, -1.0f, 0.0f };
+	//// 方向を設定
+	//rayInfo.m_dir = { 0.0f, -1.0f, 0.0f };
 
-	// 長さを設定
-	rayInfo.m_range = enableStepHigh + m_gravity;
+	//// 長さを設定
+	//rayInfo.m_range = enableStepHigh + m_gravity;
 
-	// 当たり判定をしたいタイプを設定
-	rayInfo.m_type = KdCollider::TypeGround;
+	//// 当たり判定をしたいタイプを設定
+	//rayInfo.m_type = KdCollider::TypeGround ;
 
-	std::list<KdCollider::CollisionResult> retRayList;
+	//std::list<KdCollider::CollisionResult> retRayList;
 
-	// 当たり判定
-	for (auto& obj : SceneManager::Instance().GetObjList())
-	{
-		obj->Intersects(rayInfo, &retRayList);
-	}
+	//// 当たり判定
+	//for (auto& obj : SceneManager::Instance().GetObjList())
+	//{
+	//	obj->Intersects(rayInfo, &retRayList);
+	//}
 
-	// 当たったリストから一番近いオブジェクトを検出
+	//// 当たったリストから一番近いオブジェクトを検出
 
-	for (auto& ret : retRayList)
-	{
-		if (maxOverlap < ret.m_overlapDistance)
-		{
-			maxOverlap = ret.m_overlapDistance;
-			hitPos = ret.m_hitPos;
-			hit = true;
-		}
-	}
+	//for (auto& ret : retRayList)
+	//{
+	//	if (maxOverlap < ret.m_overlapDistance)
+	//	{
+	//		maxOverlap = ret.m_overlapDistance;
+	//		hitPos = ret.m_hitPos;
+	//		hit = true;
+	//	}
+	//}
 
-	// 当たっていたら
-	if (hit)
-	{
-		m_nowPos = hitPos;	// レイの着弾地点に着地
-		m_gravity = 0.0f;
-	}
+	//// 当たっていたら
+	//if (hit)
+	//{
+	//	m_nowPos = hitPos;	// レイの着弾地点に着地
+	//	m_gravity = 0.0f;
+	//}
 
 	//==================================
-	//　カプセル判定（地面）
+	//　球判定（壁）
 	//==================================
-	KdCollider::CapsuleInfo capsule;
-	capsule.m_type = KdCollider::TypeGround;	// 当たり判定をしたいタイプを設定
-	capsule.m_radius = 0.3f;				// 半径
 
-	// 下端
-	capsule.m_start = m_nowPos;
-	capsule.m_start.y += 1.0f;   // 足元
-
-	// 上端
-	capsule.m_end = m_nowPos;
-	capsule.m_end.y += 1.5f;     // 胴体くらいまで
-
+	KdCollider::SphereInfo sphere;
+	sphere.m_type = KdCollider::TypeGround;	// 当たり判定をしたいタイプを設定
+	sphere.m_sphere.Center = {m_nowPos.x, m_nowPos.y + 1.0f, m_nowPos.z};
+	sphere.m_sphere.Radius = 0.5f;
 
 	Math::Color col = Math::Color(1, 0, 1, 1); 
-	m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, col);
+	m_pDebugWire->AddDebugSphere(sphere.m_sphere.Center, sphere.m_sphere.Radius, col);
 
-	std::list<KdCollider::CollisionResult> retCapsuleList;
+	std::list<KdCollider::CollisionResult> retSphereList;
 
 	// 当たったリストから一番近いオブジェクトを検出
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
-		obj->Intersects(capsule, &retCapsuleList);
+		obj->Intersects(sphere, &retSphereList);
 	}
 
-	for (auto& ret : retCapsuleList)
+	for (auto& ret : retSphereList)
 	{
 		if (ret.m_overlapDistance > maxOverlap)
 		{
@@ -364,6 +352,61 @@ void Player::PostUpdate()
 		m_nowPos += hitDir * maxOverlap;
 	}
 	
+
+//========================
+// カプセル（地面）
+//========================
+	{
+
+		KdCollider::CapsuleInfo capsule;
+		capsule.m_type = KdCollider::TypeGround;
+		capsule.m_radius = 0.25f;
+
+		capsule.m_start = m_nowPos;
+		capsule.m_start.y += 0.25f;
+
+		capsule.m_end = m_nowPos;
+		capsule.m_end.y += 1.5f;
+
+		m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,1,1 });
+
+		std::list<KdCollider::CollisionResult> retCapsuleList;
+		for (auto& obj : SceneManager::Instance().GetObjList())
+		{
+			obj->Intersects(capsule, &retCapsuleList);
+		}
+
+		for (auto& ret : retCapsuleList)
+		{
+			if (ret.m_overlapDistance > maxOverlap)
+			{
+				maxOverlap = ret.m_overlapDistance;
+				hitPos = ret.m_hitPos;
+				hitDir = ret.m_hitDir;
+				hit = true;
+			}
+		}
+
+		if (hit)
+		{
+			hitDir.x = 0;
+			hitDir.z = 0;
+			hitDir.Normalize();
+
+			m_nowPos += hitDir * maxOverlap;
+			m_gravity = 0.0f;
+
+			m_isJumping = false;
+		}
+		else
+		{
+			if(!m_isJumping)
+			{
+				m_isJumping = true;
+			}
+		}
+	}
+
 	//========================================
 }
 

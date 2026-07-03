@@ -94,8 +94,14 @@
     <Filter Include="Src\Application\GameObject\BaseObject">
       <UniqueIdentifier>{6ac7ed51-9de6-415e-bb3e-0550ad641c96}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Application\GameObject\Stage">
+    <Filter Include="Src\Application\GameObject\Stages">
       <UniqueIdentifier>{d196e47f-b7fd-4663-a0be-744308966463}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Stages\Wall">
+      <UniqueIdentifier>{4f7edd5c-4672-4dbf-adb2-20d841de1ef2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Stages\Floor">
+      <UniqueIdentifier>{f47b2cf3-843c-4308-852c-4542231b7ea5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -288,8 +294,11 @@
     <ClInclude Include="Src\Application\GameObject\BaseObject\BaseObject.h">
       <Filter>Src\Application\GameObject\BaseObject</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\Stage\Stage.h">
-      <Filter>Src\Application\GameObject\Stage</Filter>
+    <ClInclude Include="Src\Application\GameObject\Stages\Floor\Stage.h">
+      <Filter>Src\Application\GameObject\Stages\Floor</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Stages\Wall\Wall.h">
+      <Filter>Src\Application\GameObject\Stages\Wall</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -452,8 +461,11 @@
     <ClCompile Include="Src\Application\GameObject\BaseObject\BaseObject.cpp">
       <Filter>Src\Application\GameObject\BaseObject</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\Stage\Stage.cpp">
-      <Filter>Src\Application\GameObject\Stage</Filter>
+    <ClCompile Include="Src\Application\GameObject\Stages\Floor\Stage.cpp">
+      <Filter>Src\Application\GameObject\Stages\Floor</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Stages\Wall\Wall.cpp">
+      <Filter>Src\Application\GameObject\Stages\Wall</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

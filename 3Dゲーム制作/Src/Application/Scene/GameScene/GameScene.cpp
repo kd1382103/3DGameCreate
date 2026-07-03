@@ -2,7 +2,7 @@
 #include"../SceneManager.h"
 
 #include<Application/GameObject/Player/Player.h>
-#include<Application/GameObject/Stage/Stage.h>
+#include<Application/GameObject/Stages/Floor/Stage.h>
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 
 void GameScene::Event()

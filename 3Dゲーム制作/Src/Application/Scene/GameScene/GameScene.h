@@ -2,9 +2,6 @@
 
 #include"../BaseScene/BaseScene.h"
 
-class Player;
-
-class Stage;
 class GameScene : public BaseScene
 {
 public :
