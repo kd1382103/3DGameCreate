@@ -653,109 +653,109 @@ bool KdBoxCollision::Intersects(const KdCollider::RayInfo& target, const Math::M
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // BOXvsカプセルの当たり判定
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-//
-//bool KdBoxCollision::Intersects(
-//	const KdCollider::CapsuleInfo& target,
-//	const Math::Matrix& world,
-//	KdCollider::CollisionResult* pRes)
-//{
-//	if (!m_enable) return false;
-//
-//	// BOX のワールド形状
-//	DirectX::BoundingBox aabbWS;
-//	DirectX::BoundingOrientedBox obbWS;
-//	m_Abox.Transform(aabbWS, world);
-//	m_Obox.Transform(obbWS, world);
-//
-//	// カプセル線分のワールド変換
-//	Math::Vector3 s = Math::Vector3::Transform(target.m_start, world);
-//	Math::Vector3 e = Math::Vector3::Transform(target.m_end, world);
-//
-//	Math::Vector3 seg = e - s;
-//	float segLen = seg.Length();
-//	Math::Vector3 segN = seg / segLen;
-//
-//	// BOX中心
-//	Math::Vector3 boxCenter = (!m_IsOriented)
-//		? Math::Vector3(aabbWS.Center)
-//		: Math::Vector3(obbWS.Center);
-//
-//	// BOX中心から線分への射影
-//	float t = (boxCenter - s).Dot(segN);
-//	t = std::clamp(t, 0.0f, segLen);
-//
-//	// カプセル線分上の最近接点
-//	Math::Vector3 capsulePoint = s + segN * t;
-//
-//	// カプセルを球に変換
-//	DirectX::BoundingSphere sphere;
-//	sphere.Center = capsulePoint;
-//	sphere.Radius = target.m_radius;
-//
-//	// まず高速判定
-//	bool isHit = (!m_IsOriented)
-//		? sphere.Intersects(aabbWS)
-//		: sphere.Intersects(obbWS);
-//
-//	if (!isHit) return false;
-//	if (!pRes) return true;
-//
-//	// BOX の最近接点計算（SphereVSBox と同じ）
-//	Math::Vector3 localPoint;
-//
-//	DirectX::XMFLOAT4 obbQuat = { 0,0,0,1 };
-//
-//	if (!m_IsOriented)
-//	{
-//		localPoint = capsulePoint - Math::Vector3(aabbWS.Center);
-//	}
-//	else
-//	{
-//		obbQuat = obbWS.Orientation;
-//		localPoint = XMVector3InverseRotate(
-//			capsulePoint - Math::Vector3(obbWS.Center),
-//			Math::Vector4(obbQuat)
-//		);
-//	}
-//
-//	Math::Vector3 outPos = { 0,0,0 };
-//	Math::Vector3 ext = (!m_IsOriented)
-//		? Math::Vector3(aabbWS.Extents)
-//		: Math::Vector3(obbWS.Extents);
-//
-//	for (int i = 0; i < 3; i++)
-//	{
-//		float dist = (&localPoint.x)[i];
-//		if (dist > (&ext.x)[i]) dist = (&ext.x)[i];
-//		else if (dist < -(&ext.x)[i]) dist = -(&ext.x)[i];
-//		(&outPos.x)[i] = dist;
-//	}
-//
-//	if (m_IsOriented)
-//	{
-//		outPos = XMVector3Rotate(outPos, Math::Vector4(obbQuat));
-//		outPos += Math::Vector3(obbWS.Center);
-//	}
-//	else
-//	{
-//		outPos += Math::Vector3(aabbWS.Center);
-//	}
-//
-//	// 押し返し方向
-//	Math::Vector3 hitDir = outPos - capsulePoint;
-//	float betweenDistance = hitDir.Length();
-//	hitDir.Normalize();
-//	pRes->m_hitDir = hitDir;
-//	pRes->m_overlapDistance = target.m_radius - betweenDistance;
-//
-//	// 衝突位置
-//	pRes->m_hitPos =
-//		capsulePoint + pRes->m_hitDir * (target.m_radius + pRes->m_overlapDistance * 0.5f);
-//
-//	pRes->m_hitNDir = pRes->m_hitDir;
-//
-//	return true;
-//}
+
+bool KdBoxCollision::Intersects(
+	const KdCollider::CapsuleInfo& target,
+	const Math::Matrix& world,
+	KdCollider::CollisionResult* pRes)
+{
+	if (!m_enable) return false;
+
+	// BOX のワールド形状
+	DirectX::BoundingBox aabbWS;
+	DirectX::BoundingOrientedBox obbWS;
+	m_Abox.Transform(aabbWS, world);
+	m_Obox.Transform(obbWS, world);
+
+	// カプセル線分のワールド変換
+	Math::Vector3 s = Math::Vector3::Transform(target.m_start, world);
+	Math::Vector3 e = Math::Vector3::Transform(target.m_end, world);
+
+	Math::Vector3 seg = e - s;
+	float segLen = seg.Length();
+	Math::Vector3 segN = seg / segLen;
+
+	// BOX中心
+	Math::Vector3 boxCenter = (!m_IsOriented)
+		? Math::Vector3(aabbWS.Center)
+		: Math::Vector3(obbWS.Center);
+
+	// BOX中心から線分への射影
+	float t = (boxCenter - s).Dot(segN);
+	t = std::clamp(t, 0.0f, segLen);
+
+	// カプセル線分上の最近接点
+	Math::Vector3 capsulePoint = s + segN * t;
+
+	// カプセルを球に変換
+	DirectX::BoundingSphere sphere;
+	sphere.Center = capsulePoint;
+	sphere.Radius = target.m_radius;
+
+	// まず高速判定
+	bool isHit = (!m_IsOriented)
+		? sphere.Intersects(aabbWS)
+		: sphere.Intersects(obbWS);
+
+	if (!isHit) return false;
+	if (!pRes) return true;
+
+	// BOX の最近接点計算（SphereVSBox と同じ）
+	Math::Vector3 localPoint;
+
+	DirectX::XMFLOAT4 obbQuat = { 0,0,0,1 };
+
+	if (!m_IsOriented)
+	{
+		localPoint = capsulePoint - Math::Vector3(aabbWS.Center);
+	}
+	else
+	{
+		obbQuat = obbWS.Orientation;
+		localPoint = XMVector3InverseRotate(
+			capsulePoint - Math::Vector3(obbWS.Center),
+			Math::Vector4(obbQuat)
+		);
+	}
+
+	Math::Vector3 outPos = { 0,0,0 };
+	Math::Vector3 ext = (!m_IsOriented)
+		? Math::Vector3(aabbWS.Extents)
+		: Math::Vector3(obbWS.Extents);
+
+	for (int i = 0; i < 3; i++)
+	{
+		float dist = (&localPoint.x)[i];
+		if (dist > (&ext.x)[i]) dist = (&ext.x)[i];
+		else if (dist < -(&ext.x)[i]) dist = -(&ext.x)[i];
+		(&outPos.x)[i] = dist;
+	}
+
+	if (m_IsOriented)
+	{
+		outPos = XMVector3Rotate(outPos, Math::Vector4(obbQuat));
+		outPos += Math::Vector3(obbWS.Center);
+	}
+	else
+	{
+		outPos += Math::Vector3(aabbWS.Center);
+	}
+
+	// 押し返し方向
+	Math::Vector3 hitDir = outPos - capsulePoint;
+	float betweenDistance = hitDir.Length();
+	hitDir.Normalize();
+	pRes->m_hitDir = hitDir;
+	pRes->m_overlapDistance = target.m_radius - betweenDistance;
+
+	// 衝突位置
+	pRes->m_hitPos =
+		capsulePoint + pRes->m_hitDir * (target.m_radius + pRes->m_overlapDistance * 0.5f);
+
+	pRes->m_hitNDir = pRes->m_hitDir;
+
+	return true;
+}
 
 
 // ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### #####
@@ -1042,34 +1042,39 @@ bool KdPolygonCollision::Intersects(const KdCollider::RayInfo& target, const Mat
 
 bool KdCapsuleCollision::Intersects(const DirectX::BoundingSphere& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes)
 {
-	Math::Vector3 ws = Math::Vector3::Transform(m_start, world);
-	Math::Vector3 we = Math::Vector3::Transform(m_end, world);
+	// カプセル線分のワールド変換
+	Math::Vector3 s = Math::Vector3::Transform(m_start, world);
+	Math::Vector3 e = Math::Vector3::Transform(m_end, world);
 
-	Math::Vector3 seg = we - ws;
+	Math::Vector3 seg = e - s;
 	float segLen = seg.Length();
 	Math::Vector3 segN = seg / segLen;
 
-	Math::Vector3 v = Math::Vector3(target.Center) - ws;
-	float t = v.Dot(segN);        // ★ 修正ポイント
+	// 球中心から線分への射影
+	Math::Vector3 c = Math::Vector3(target.Center);
+	float t = (c - s).Dot(segN);
 	t = std::clamp(t, 0.0f, segLen);
 
-	Math::Vector3 closestPoint = ws + segN * t;
+	Math::Vector3 closest = s + segN * t;
 
-	DirectX::BoundingSphere capsuleSphere;
-	capsuleSphere.Center = closestPoint;
-	capsuleSphere.Radius = m_radius;
+	// 距離判定
+	float dist = (closest - c).Length();
+	float hitDist = m_radius + target.Radius;
 
-	bool isHit = capsuleSphere.Intersects(target);
-	if (!pRes || !isHit) return isHit;
+	if (dist > hitDist) return false;
+	if (!pRes) return true;
 
-	// 押し返し処理（SphereCollision と同じ）
-	Math::Vector3 hitDir = Math::Vector3(target.Center) - closestPoint;
+	// 押し返し方向
+	Math::Vector3 hitDir = c - closest;
 	float betweenDistance = hitDir.Length();
-
 	hitDir.Normalize();
+
 	pRes->m_hitDir = hitDir;
-	pRes->m_overlapDistance = (m_radius + target.Radius) - betweenDistance;
-	pRes->m_hitPos = closestPoint + pRes->m_hitDir * (m_radius - pRes->m_overlapDistance * 0.5f);
+	pRes->m_overlapDistance = hitDist - betweenDistance;
+
+	// 衝突位置
+	pRes->m_hitPos = closest + hitDir * (m_radius - pRes->m_overlapDistance * 0.5f);
+	pRes->m_hitNDir = hitDir;
 
 	return true;
 }
@@ -1077,92 +1082,67 @@ bool KdCapsuleCollision::Intersects(const DirectX::BoundingSphere& target,const 
 //=======================================================
 // カプセル vs Box(AABB)の当たり判定
 //=======================================================
-bool KdBoxCollision::Intersects(const KdCollider::CapsuleInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes)
+bool KdCapsuleCollision::Intersects(
+	const DirectX::BoundingBox& target,
+	const Math::Matrix& world,
+	KdCollider::CollisionResult* pRes)
 {
 	if (!m_enable) return false;
 
-	// BOXのワールド形状
-	DirectX::BoundingBox aabbWS;
-	DirectX::BoundingOrientedBox obbWS;
-
-	m_Abox.Transform(aabbWS, world);
-	m_Obox.Transform(obbWS, world);
-
 	// カプセル線分のワールド変換
-	Math::Vector3 s = Math::Vector3::Transform(target.m_start, world);
-	Math::Vector3 e = Math::Vector3::Transform(target.m_end, world);
+	Math::Vector3 s = Math::Vector3::Transform(m_start, world);
+	Math::Vector3 e = Math::Vector3::Transform(m_end, world);
 
 	Math::Vector3 seg = e - s;
 	float segLen = seg.Length();
 	Math::Vector3 segN = seg / segLen;
 
-	// BOX中心との最近接点
-	Math::Vector3 c = (!m_IsOriented) ? Math::Vector3(aabbWS.Center)
-		: Math::Vector3(obbWS.Center);
-
-	float t = (c - s).Dot(segN);
+	// BOX中心から線分への射影
+	Math::Vector3 boxCenter = Math::Vector3(target.Center);
+	float t = (boxCenter - s).Dot(segN);
 	t = std::clamp(t, 0.0f, segLen);
 
 	Math::Vector3 capsulePoint = s + segN * t;
 
-	// カプセルを球として扱う
+	// カプセル → 球に変換
 	DirectX::BoundingSphere sphere;
 	sphere.Center = capsulePoint;
-	sphere.Radius = target.m_radius;
+	sphere.Radius = m_radius;
 
-	bool isHit = (!m_IsOriented)
-		? sphere.Intersects(aabbWS)
-		: sphere.Intersects(obbWS);
+	// 高速判定
+	bool isHit = sphere.Intersects(target);
+	if (!isHit) return false;
+	if (!pRes) return true;
 
-	if (!pRes || !isHit) return isHit;
-
-	// 最近接点計算（AABB / OBB 共通）
-	Math::Vector3 localPoint;
-
-	if (!m_IsOriented)
-	{
-		localPoint = capsulePoint - Math::Vector3(aabbWS.Center);
-	}
-	else
-	{
-		DirectX::XMFLOAT4 q = obbWS.Orientation;
-		localPoint = XMVector3InverseRotate(capsulePoint - Math::Vector3(obbWS.Center), Math::Vector4(q));
-	}
+	// 最近接点計算（SphereVSBox と同じ）
+	Math::Vector3 localPoint = capsulePoint - Math::Vector3(target.Center);
 
 	Math::Vector3 outPos = { 0,0,0 };
-	Math::Vector3 ext = (!m_IsOriented) ? Math::Vector3(aabbWS.Extents)
-		: Math::Vector3(obbWS.Extents);
-
 	for (int i = 0; i < 3; i++)
 	{
 		float dist = (&localPoint.x)[i];
-		if (dist > (&ext.x)[i]) dist = (&ext.x)[i];
-		else if (dist < -(&ext.x)[i]) dist = -(&ext.x)[i];
+		float ext = (&target.Extents.x)[i];
+
+		if (dist > ext) dist = ext;
+		else if (dist < -ext) dist = -ext;
+
 		(&outPos.x)[i] = dist;
 	}
+	outPos += Math::Vector3(target.Center);
 
-	if (m_IsOriented)
-	{
-		DirectX::XMFLOAT4 q = obbWS.Orientation;
-		outPos = XMVector3Rotate(outPos, Math::Vector4(q));
-		outPos += Math::Vector3(obbWS.Center);
-	}
-	else
-	{
-		outPos += Math::Vector3(aabbWS.Center);
-	}
-
+	// 押し返し方向
 	Math::Vector3 hitDir = outPos - capsulePoint;
 	float betweenDistance = hitDir.Length();
-
 	hitDir.Normalize();
+
 	pRes->m_hitDir = hitDir;
-	pRes->m_overlapDistance = target.m_radius - betweenDistance;
+	pRes->m_overlapDistance = m_radius - betweenDistance;
 
+	// 衝突位置
 	pRes->m_hitPos =
-		capsulePoint + pRes->m_hitDir * (target.m_radius + pRes->m_overlapDistance * 0.5f);
+		capsulePoint + hitDir * (m_radius + pRes->m_overlapDistance * 0.5f);
 
-	pRes->m_hitNDir = pRes->m_hitDir;
+	pRes->m_hitNDir = hitDir;
 
 	return true;
 }
@@ -1179,11 +1159,7 @@ bool KdCapsuleCollision::Intersects(
 {
 	if (!m_enable) return false;
 
-	// ★ target をワールド変換（KdBoxCollision と同じ）
-	DirectX::BoundingOrientedBox obbWS;
-	target.Transform(obbWS, world);
-
-	// カプセルのワールド座標
+	// カプセル線分のワールド変換
 	Math::Vector3 s = Math::Vector3::Transform(m_start, world);
 	Math::Vector3 e = Math::Vector3::Transform(m_end, world);
 
@@ -1191,38 +1167,35 @@ bool KdCapsuleCollision::Intersects(
 	float segLen = seg.Length();
 	Math::Vector3 segN = seg / segLen;
 
-	// OBB中心との最近接点
-	Math::Vector3 c = Math::Vector3(obbWS.Center);
-	float t = (c - s).Dot(segN);   // ★ Dot はメンバー関数
+	// BOX中心から線分への射影
+	Math::Vector3 boxCenter = Math::Vector3(target.Center);
+	float t = (boxCenter - s).Dot(segN);
 	t = std::clamp(t, 0.0f, segLen);
 
 	Math::Vector3 capsulePoint = s + segN * t;
 
-	// OBB の回転
-	DirectX::XMFLOAT4 obbQuat = obbWS.Orientation;
-
-	// カプセルの球を OBB のローカル空間へ
-	Math::Vector3 localPoint =
-		XMVector3InverseRotate(capsulePoint - Math::Vector3(obbWS.Center), Math::Vector4(obbQuat));
-
-	// ローカル空間で AABB として扱う
-	DirectX::BoundingBox localBox;
-	localBox.Center = { 0,0,0 };
-	localBox.Extents = obbWS.Extents;
-
+	// カプセル → 球に変換
 	DirectX::BoundingSphere sphere;
-	sphere.Center = localPoint;
+	sphere.Center = capsulePoint;
 	sphere.Radius = m_radius;
 
-	bool isHit = localBox.Intersects(sphere);
-	if (!pRes || !isHit) return isHit;
+	// 高速判定
+	bool isHit = sphere.Intersects(target);
+	if (!isHit) return false;
+	if (!pRes) return true;
 
-	// AABB の最近接点
+	// OBBローカルへ変換
+	DirectX::XMFLOAT4 obbQuat = target.Orientation;
+	Math::Vector3 localPoint =
+		XMVector3InverseRotate(capsulePoint - Math::Vector3(target.Center),
+			Math::Vector4(obbQuat));
+
+	// 最近接点
 	Math::Vector3 outPos = { 0,0,0 };
 	for (int i = 0; i < 3; i++)
 	{
 		float dist = (&localPoint.x)[i];
-		float ext = (&localBox.Extents.x)[i];
+		float ext = (&target.Extents.x)[i];
 
 		if (dist > ext) dist = ext;
 		else if (dist < -ext) dist = -ext;
@@ -1230,20 +1203,23 @@ bool KdCapsuleCollision::Intersects(
 		(&outPos.x)[i] = dist;
 	}
 
-	// ローカル → ワールドへ戻す
-	Math::Vector3 rotated = Math::Vector3(XMVector3Rotate(outPos, Math::Vector4(obbQuat)));
-	Math::Vector3 worldHitPos = rotated + Math::Vector3(obbWS.Center);
+	// ローカル → ワールド
+	outPos = XMVector3Rotate(outPos, Math::Vector4(obbQuat));
+	outPos += Math::Vector3(target.Center);
 
 	// 押し返し方向
-	Math::Vector3 hitDir = worldHitPos - capsulePoint;
+	Math::Vector3 hitDir = outPos - capsulePoint;
 	float betweenDistance = hitDir.Length();
-
 	hitDir.Normalize();
+
 	pRes->m_hitDir = hitDir;
 	pRes->m_overlapDistance = m_radius - betweenDistance;
 
+	// 衝突位置
 	pRes->m_hitPos =
-		capsulePoint + pRes->m_hitDir * (m_radius + pRes->m_overlapDistance * 0.5f);
+		capsulePoint + hitDir * (m_radius + pRes->m_overlapDistance * 0.5f);
+
+	pRes->m_hitNDir = hitDir;
 
 	return true;
 }
@@ -1252,46 +1228,47 @@ bool KdCapsuleCollision::Intersects(
 // カプセル vs カプセルの当たり判定
 //=======================================================
 
-bool KdCapsuleCollision::Intersects(const KdCollider::CapsuleInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes)
+bool KdCapsuleCollision::Intersects(
+	const KdCollider::CapsuleInfo& target,
+	const Math::Matrix& world,
+	KdCollider::CollisionResult* pRes)
 {
 	if (!m_enable) return false;
 
-	// 自分のカプセル（ワールド）
-	Math::Vector3 p1 = Math::Vector3::Transform(m_start, world);
-	Math::Vector3 q1 = Math::Vector3::Transform(m_end, world);
+	Math::Vector3 s1 = Math::Vector3::Transform(m_start, world);
+	Math::Vector3 e1 = Math::Vector3::Transform(m_end, world);
 
-	// 相手のカプセル（ワールド）
-	Math::Vector3 p2 = Math::Vector3::Transform(target.m_start, world);
-	Math::Vector3 q2 = Math::Vector3::Transform(target.m_end, world);
+	Math::Vector3 s2 = Math::Vector3::Transform(target.m_start, world);
+	Math::Vector3 e2 = Math::Vector3::Transform(target.m_end, world);
 
-	// 線分同士の最近接点を求める
 	Math::Vector3 c1, c2;
-	float dist = SegmentSegmentDistance(p1, q1, p2, q2, c1, c2);
+	float dist = SegmentSegmentDistance(s1, e1, s2, e2, c1, c2);
 
-	float limit = m_radius + target.m_radius;
+	float hitDist = m_radius + target.m_radius;
 
-	if (dist > limit) return false;
-
+	if (dist > hitDist) return false;
 	if (!pRes) return true;
 
-	// 押し返し方向
 	Math::Vector3 hitDir = c2 - c1;
 	float betweenDistance = hitDir.Length();
-
 	hitDir.Normalize();
-	pRes->m_hitDir = hitDir;
-	pRes->m_overlapDistance = limit - betweenDistance;
 
-	// 衝突位置（線分1側）
-	pRes->m_hitPos = c1 + pRes->m_hitDir * (m_radius - pRes->m_overlapDistance * 0.5f);
+	pRes->m_hitDir = hitDir;
+	pRes->m_overlapDistance = hitDist - betweenDistance;
+	pRes->m_hitPos = c1 + hitDir * (m_radius - pRes->m_overlapDistance * 0.5f);
+	pRes->m_hitNDir = hitDir;
 
 	return true;
 }
+
 //=======================================================
 // カプセル vs レイの当たり判定
 //=======================================================
 
-bool KdCapsuleCollision::Intersects(const KdCollider::RayInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes)
+bool KdCapsuleCollision::Intersects(
+	const KdCollider::RayInfo& target,
+	const Math::Matrix& world,
+	KdCollider::CollisionResult* pRes)
 {
 	if (!m_enable) return false;
 
@@ -1299,151 +1276,202 @@ bool KdCapsuleCollision::Intersects(const KdCollider::RayInfo& target,const Math
 	Math::Vector3 s = Math::Vector3::Transform(m_start, world);
 	Math::Vector3 e = Math::Vector3::Transform(m_end, world);
 
-	// Ray の情報
-	Math::Vector3 rayPos = target.m_pos;
-	Math::Vector3 rayDir = target.m_dir;
-
 	Math::Vector3 segPoint, rayPoint;
+	float dist = SegmentRayDistance(s, e, target.m_pos, target.m_dir, segPoint, rayPoint);
 
-	float dist = SegmentRayDistance(s, e, rayPos, rayDir, segPoint, rayPoint);
-
-	// 半径以内なら衝突
 	if (dist > m_radius) return false;
-
-	// 詳細不要なら true だけ返す
 	if (!pRes) return true;
 
-	// 押し返し方向
 	Math::Vector3 hitDir = rayPoint - segPoint;
 	float betweenDistance = hitDir.Length();
-
 	hitDir.Normalize();
+
 	pRes->m_hitDir = hitDir;
 	pRes->m_overlapDistance = m_radius - betweenDistance;
-
-	// 衝突位置（カプセル側）
-	pRes->m_hitPos = segPoint + pRes->m_hitDir * (m_radius - pRes->m_overlapDistance * 0.5f);
-
-	// 法線方向（レイ → カプセル）
-	pRes->m_hitNDir = pRes->m_hitDir;
+	pRes->m_hitPos = segPoint + hitDir * (m_radius - pRes->m_overlapDistance * 0.5f);
+	pRes->m_hitNDir = hitDir;
 
 	return true;
 }
 
 //=======================================================
-// カプセル vs モデル・ポリゴンの当たり判定（ダミー）
+// カプセル vs モデルの当たり判定
 //=======================================================
 
-bool KdModelCollision::Intersects(const KdCollider::CapsuleInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes)
+bool KdModelCollision::Intersects(
+	const KdCollider::CapsuleInfo& target,
+	const Math::Matrix& world,
+	KdCollider::CollisionResult* pRes)
 {
-	if (!m_enable || !m_shape) return false;
+	// 早期リターン
+	if (!m_enable || !m_shape) { return false; }
 
-	auto spModelData = m_shape->GetData();
-	if (!spModelData) return false;
+	std::shared_ptr<KdModelData> spModelData = m_shape->GetData();
+	if (!spModelData) { return false; }
 
 	const auto& dataNodes = spModelData->GetOriginalNodes();
 	const auto& workNodes = m_shape->GetNodes();
 
-	// カプセル線分のワールド変換
-	Math::Vector3 s = Math::Vector3::Transform(target.m_start, world);
-	Math::Vector3 e = Math::Vector3::Transform(target.m_end, world);
+	// カプセル線分（ワールド）
+	Math::Vector3 s = target.m_start;
+	Math::Vector3 e = target.m_end;
+	float radius = target.m_radius;
 
-	Math::Vector3 seg = e - s;
-	float segLen = seg.Length();
-	Math::Vector3 segN = seg / segLen;
-
-	const int samples = 10;
-	float step = segLen / samples;
+	// Sphere と同じ押し返し用の位置
+	Math::Vector3 pushedStart = s;
+	Math::Vector3 pushedEnd = e;
 
 	bool isHit = false;
-	CollisionMeshResult nearest;
-	float nearestOverlap = 0.0f;
 
-	// モデルのコリジョンメッシュノードを走査
-	for (int nodeIndex : spModelData->GetCollisionMeshNodeIndices())
+	Math::Vector3 hitPos;
+	Math::Vector3 hitNDir;
+
+	// 当たり判定ノードとのみ判定
+	for (int index : spModelData->GetCollisionMeshNodeIndices())
 	{
-		const auto& dataNode = dataNodes[nodeIndex];
-		const auto& workNode = workNodes[nodeIndex];
+		const auto& dataNode = dataNodes[index];
+		const auto& workNode = workNodes[index];
 
-		if (!dataNode.m_spMesh) continue;
+		if (!dataNode.m_spMesh) { continue; }
 
 		auto mesh = dataNode.m_spMesh;
+
+		// メッシュのワールド行列
 		Math::Matrix meshWorld = workNode.m_worldTransform * world;
 
-		DirectX::BoundingSphere sphere;
-		sphere.Radius = target.m_radius;
+		const auto& positions = mesh->GetVertexPositions();
+		const auto& faces = mesh->GetFaces();
 
-		// カプセル線分を球に分解して判定
-		for (int i = 0; i <= samples; i++)
+		// 三角形単位で判定
+		for (const auto& face : faces)
 		{
-			float t = step * i;
-			Math::Vector3 pos = s + segN * t;
-			sphere.Center = pos;
+			Math::Vector3 p0 = Math::Vector3::Transform(positions[face.Idx[0]], meshWorld);
+			Math::Vector3 p1 = Math::Vector3::Transform(positions[face.Idx[1]], meshWorld);
+			Math::Vector3 p2 = Math::Vector3::Transform(positions[face.Idx[2]], meshWorld);
 
-			CollisionMeshResult tmp;
-			if (MeshIntersect(*mesh, sphere, meshWorld, &tmp))
-			{
-				isHit = true;
+			// ★ 線分と三角形の最近接点
+			Math::Vector3 c = KdCapsuleCollision::ClosestPointSegmentTriangle(pushedStart, pushedEnd, p0, p1, p2);
 
-				if (tmp.m_overlapDistance > nearestOverlap)
-				{
-					nearestOverlap = tmp.m_overlapDistance;
-					nearest = tmp;
-				}
-			}
+			// ★ 距離判定
+			float dist = (c - pushedStart).Length();
+			if (dist > radius) { continue; }
+
+			// pRes が不要なら即 true（Sphere と同じ構造）
+			if (!pRes) { return true; }
+
+			isHit = true;
+
+			float overlap = radius - dist;
+
+			// ★ 押し返し（Sphere と同じ構造）
+			Math::Vector3 pushDir = (c - pushedStart);
+			pushDir.Normalize();
+
+			pushedStart += pushDir * overlap;
+			pushedEnd += pushDir * overlap;
+
+			hitPos = c;
+			hitNDir = pushDir;
 		}
 	}
 
-	if (!isHit) return false;
-
-	if (pRes)
+	if (pRes && isHit)
 	{
-		pRes->m_hitPos = nearest.m_hitPos;
-		pRes->m_hitDir = nearest.m_hitDir;
-		pRes->m_hitNDir = nearest.m_hitNDir;
-		pRes->m_overlapDistance = nearest.m_overlapDistance;
+		// 最後に当たった座標
+		pRes->m_hitPos = hitPos;
+
+		// 押し返しベクトル（Sphere と同じ構造）
+		Math::Vector3 pushVec = pushedStart - s;
+		pRes->m_overlapDistance = pushVec.Length();
+
+		pRes->m_hitDir = pushVec;
+		pRes->m_hitDir.Normalize();
+
+		// 最後に当たった面の法線
+		pRes->m_hitNDir = hitNDir;
 	}
 
-	return true;
+	return isHit;
 }
 
-bool KdPolygonCollision::Intersects(const KdCollider::CapsuleInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes)
+//=======================================================
+// カプセル vs ポリゴンの当たり判定
+//=======================================================
+bool KdPolygonCollision::Intersects(
+	const KdCollider::CapsuleInfo& target,
+	const Math::Matrix& world,
+	KdCollider::CollisionResult* pRes)
 {
-	if (!m_enable || !m_polygon) return false;
+	// 早期リターン
+	if (!m_enable || !m_shape) { return false; }
 
-	// カプセル線分のワールド変換
-	Math::Vector3 s = Math::Vector3::Transform(target.m_start, world);
-	Math::Vector3 e = Math::Vector3::Transform(target.m_end, world);
+	const auto& verts = m_shape->GetVertices();
+	if (verts.size() < 3) { return false; }
 
-	Math::Vector3 seg = e - s;
-	float segLen = seg.Length();
-	Math::Vector3 segN = seg / segLen;
+	// カプセル線分（ワールド）
+	Math::Vector3 s = target.m_start;
+	Math::Vector3 e = target.m_end;
+	float radius = target.m_radius;
 
-	// ポリゴンの中心（頂点の平均）
-	Math::Vector3 polyCenter = Math::Vector3::Zero;
-	const auto& verts = m_polygon->GetVertices();
-	for (auto& v : verts)
+	// Sphere と同じ押し返し用の位置
+	Math::Vector3 pushedStart = s;
+	Math::Vector3 pushedEnd = e;
+
+	bool isHit = false;
+
+	Math::Vector3 hitPos;
+	Math::Vector3 hitNDir;
+
+	// ★ ポリゴンを三角形に分解して判定（扇形分割）
+	for (int i = 1; i < (int)verts.size() - 1; ++i)
 	{
-		polyCenter += Math::Vector3::Transform(v.pos, world);
+		Math::Vector3 p0 = Math::Vector3::Transform(verts[0].pos, world);
+		Math::Vector3 p1 = Math::Vector3::Transform(verts[i].pos, world);
+		Math::Vector3 p2 = Math::Vector3::Transform(verts[i + 1].pos, world);
+
+		// ★ 線分と三角形の最近接点
+		Math::Vector3 c = KdCapsuleCollision::ClosestPointSegmentTriangle(pushedStart, pushedEnd, p0, p1, p2);
+
+		// ★ 距離判定
+		float dist = (c - pushedStart).Length();
+		if (dist > radius) { continue; }
+
+		// pRes が不要なら即 true（Sphere と同じ構造）
+		if (!pRes) { return true; }
+
+		isHit = true;
+
+		float overlap = radius - dist;
+
+		// ★ 押し返し（Sphere と同じ構造）
+		Math::Vector3 pushDir = (c - pushedStart);
+		pushDir.Normalize();
+
+		pushedStart += pushDir * overlap;
+		pushedEnd += pushDir * overlap;
+
+		hitPos = c;
+		hitNDir = pushDir;
 	}
-	polyCenter /= (float)verts.size();
 
-	// 線分上の最近接点
-	float t = (polyCenter - s).Dot(segN);
-	t = std::clamp(t, 0.0f, segLen);
+	if (pRes && isHit)
+	{
+		// 最後に当たった座標
+		pRes->m_hitPos = hitPos;
 
-	Math::Vector3 capsulePoint = s + segN * t;
+		// 押し返しベクトル（Sphere と同じ構造）
+		Math::Vector3 pushVec = pushedStart - s;
+		pRes->m_overlapDistance = pushVec.Length();
 
-	// カプセルを球として扱う
-	DirectX::BoundingSphere sphere;
-	sphere.Center = capsulePoint;
-	sphere.Radius = target.m_radius;
+		pRes->m_hitDir = pushVec;
+		pRes->m_hitDir.Normalize();
 
-	// ★ 既存の SphereVSPolygon 判定を使う
-	return Intersects(sphere, world, pRes);
+		// 最後に当たった面の法線
+		pRes->m_hitNDir = hitNDir;
+	}
+
+	return isHit;
 }
-
-
 float KdCapsuleCollision::SegmentSegmentDistance(const Math::Vector3& p1, const Math::Vector3& q1, const Math::Vector3& p2, const Math::Vector3& q2, Math::Vector3& c1, Math::Vector3& c2)
 {
 	Math::Vector3 d1 = q1 - p1;   // 線分1の方向
@@ -1527,3 +1555,59 @@ float KdCapsuleCollision::SegmentRayDistance(const Math::Vector3& segA,const Mat
 	return (outSegPoint - outRayPoint).Length();
 }
 
+Math::Vector3 KdCapsuleCollision::ClosestPointSegmentTriangle(const Math::Vector3& s,const Math::Vector3& e,const Math::Vector3& p0,const Math::Vector3& p1,const Math::Vector3& p2)
+{
+	// 線分方向
+	Math::Vector3 seg = e - s;
+	float segLenSq = seg.LengthSquared();
+
+	// 線分上の最近接点を求める補助関数
+	auto ClosestPointOnSegment = [](const Math::Vector3& a, const Math::Vector3& b, const Math::Vector3& p)
+		{
+			Math::Vector3 ab = b - a;
+			float t = (p - a).Dot(ab) / ab.Dot(ab);
+			t = std::clamp(t, 0.0f, 1.0f);
+			return a + ab * t;
+		};
+
+	// ★ ① 三角形の最近接点（標準的なバリセントリック法）
+	Math::Vector3 v0 = p1 - p0;
+	Math::Vector3 v1 = p2 - p0;
+	Math::Vector3 v2 = s - p0;
+
+	float d00 = v0.Dot(v0);
+	float d01 = v0.Dot(v1);
+	float d11 = v1.Dot(v1);
+	float d20 = v2.Dot(v0);
+	float d21 = v2.Dot(v1);
+
+	float denom = d00 * d11 - d01 * d01;
+
+	float v = (d11 * d20 - d01 * d21) / denom;
+	float w = (d00 * d21 - d01 * d20) / denom;
+	float u = 1.0f - v - w;
+
+	// Clamp 
+	u = std::max(0.0f, u);
+	v = std::max(0.0f, v);
+	w = std::max(0.0f, w);
+
+	float sum = u + v + w;
+	if (sum > 0.0f)
+	{
+		u /= sum;
+		v /= sum;
+		w /= sum;
+	}
+
+	Math::Vector3 triPoint = p0 * u + p1 * v + p2 * w;
+
+	// ★ ② 線分側の最近接点
+	float t = (triPoint - s).Dot(seg) / segLenSq;
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	Math::Vector3 segPoint = s + seg * t;
+
+	return triPoint;
+	return segPoint;
+}

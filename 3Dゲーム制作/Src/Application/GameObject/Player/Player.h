@@ -23,9 +23,6 @@ private:
 
 	std::weak_ptr<TPSCamera>m_wpCamera;
 
-	//カメラ情報
-	//std::weak_ptr<CameraBase> m_wpCamera;
-
 	//方向
 	Math::Vector3 m_dir;
 

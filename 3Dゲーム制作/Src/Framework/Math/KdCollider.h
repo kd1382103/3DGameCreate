@@ -386,6 +386,9 @@ public:
 	bool Intersects(const KdCollider::RayInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes) override;
 	bool Intersects(const KdCollider::CapsuleInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes) override;
 
+	// 線分と三角形の最近接点を返す
+	static Math::Vector3 ClosestPointSegmentTriangle(const Math::Vector3& s, const Math::Vector3& e, const Math::Vector3& p0, const Math::Vector3& p1, const Math::Vector3& p2);
+
 private:
 	Math::Vector3 m_start;
 	Math::Vector3 m_end;
@@ -393,6 +396,8 @@ private:
 	float SegmentSegmentDistance(const Math::Vector3& p1, const Math::Vector3& q1,const Math::Vector3& p2, const Math::Vector3& q2,Math::Vector3& c1, Math::Vector3& c2);
 	float SegmentRayDistance(const Math::Vector3& segA, const Math::Vector3& segB, const Math::Vector3& rayPos,
 		const Math::Vector3& rayDir, Math::Vector3& outSegPoint, Math::Vector3& outRayPoint);
+
+	
 };
 
 
