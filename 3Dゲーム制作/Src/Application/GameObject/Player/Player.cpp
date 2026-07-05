@@ -64,7 +64,7 @@ void Player::Update()
 	}
 	m_dir.Normalize();
 
-	// ★ 着地アニメ中は移動方向を完全にゼロにする
+	// ★ 着地アニメまたは攻撃アニメ中は移動方向を完全にゼロにする
 	if (m_isLanding && !m_isAttacking)
 	{
 		m_dir = { 0,0,0 };
@@ -76,13 +76,22 @@ void Player::Update()
 	// ジャンプ処理
 	//================================================================================
 
-	if (!m_isJumping && (GetAsyncKeyState(VK_SPACE) & 0x8000))
+	// ★ 着地アニメまたは攻撃アニメ中はジャンプできない
+	if (m_isLanding || m_isAttacking)
 	{
-		m_isJumping = true;			// ジャンプ開始
-		m_gravity = -0.15f;			// 重力反転
-		m_nowAnimIndex = 16;		// Jump_Start
-		m_animator.SetAnimation(m_model->GetAnimation(16), false);
 	}
+	else
+	{
+		if (!m_isJumping && (GetAsyncKeyState(VK_SPACE) & 0x8000))
+		{
+			m_isJumping = true;			// ジャンプ開始
+			m_gravity = -0.15f;			// 重力反転
+			m_nowAnimIndex = 16;		// Jump_Start
+			m_animator.SetAnimation(m_model->GetAnimation(16), false);
+		}
+
+	}
+
 
 	m_gravity += 0.005f;
 	m_nowPos.y -= m_gravity;
@@ -113,9 +122,17 @@ void Player::Update()
 		}
 	}
 
-	if (m_animator.IsAnimationEnd())
+	/*if (m_animator.IsAnimationEnd())
 	{
 		m_isLanding = false;
+	}*/
+
+	if (m_isLanding)
+	{
+		if (m_nowAnimIndex == 14 && m_animator.IsAnimationEnd())
+		{
+			m_isLanding = false;
+		}
 	}
 
 	if (!m_isJumping && !m_isLanding && !m_isAttacking)
@@ -277,13 +294,13 @@ void Player::PostUpdate()
 			m_gravity = 0.0f;
 
 			bool wasJumping = m_isJumping;
-			m_isJumping = false;
 
+			m_isJumping = false;
+	
 			if (wasJumping)
 			{
 				// 着地の強さを判定
 				bool isHardLanding = (fabs(landingSpeed) >= 0.2f);
-
 
 				if (isHardLanding)
 				{
@@ -291,15 +308,11 @@ void Player::PostUpdate()
 					m_nowAnimIndex = 14; // Jump_Land
 					m_animator.SetAnimation(m_model->GetAnimation(14), false);
 					m_isLanding = true;  // ← 着地硬直フラグ
-					//return;              //Idle に上書きされないように止める
 				}
 				else
 				{
 					m_isLanding = false; // ← 着地硬直なし
 				}
-
-				m_isJumping = false;    // ジャンプ可能
-
 			}
 		}
 		else
@@ -308,52 +321,147 @@ void Player::PostUpdate()
 		}
 	}
 
+	//========================
+	// 地面（カプセル判定）
+	//========================
+	{
+	//	float maxOverlap = 0.0f;
+	//	Math::Vector3 bestDir = Math::Vector3::Zero;
+	//	bool hit = false;
+
+	//	KdCollider::CapsuleInfo capsule;
+	//	capsule.m_type = KdCollider::TypeGround;
+	//	capsule.m_radius = 0.3f;
+
+	//	capsule.m_start = m_nowPos + Math::Vector3(0, 0.3, 0);
+	//	capsule.m_end = m_nowPos + Math::Vector3(0, 1.5f, 0);
+
+	//	m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,0,1 });
+
+	//	std::list<KdCollider::CollisionResult> retCapsuleList;
+	//	for (auto& obj : SceneManager::Instance().GetObjList())
+	//	{
+	//		obj->Intersects(capsule, &retCapsuleList);
+	//	}
+
+	//	for (auto& ret : retCapsuleList)
+	//	{
+	//		if (ret.m_overlapDistance > maxOverlap)
+	//		{
+	//			maxOverlap = ret.m_overlapDistance;
+
+	//			// 地面なので「上方向成分だけ」使う
+	//			float up = ret.m_hitNDir.y;
+
+	//			if (up > 0.00001f)
+	//			{
+	//				bestDir = Math::Vector3(0, up, 0);
+	//				hit = true;
+	//			}
+	//			else
+	//			{
+	//				// 法線が水平に近い場合のフォールバック
+	//				float fallbackUp = ret.m_hitDir.y;
+	//				if (fallbackUp > 0.00001f)
+	//				{
+	//					bestDir = Math::Vector3(0, fallbackUp, 0);
+	//					hit = true;
+	//				}
+	//			}
+	//		}
+	//	}
+
+	//	if (hit)
+	//	{
+	//		// ★ 着地直前の落下速度を保存（高所落下判定用）
+	//		float landingSpeed = m_gravity;
+
+	//		// 上方向だけ押し上げる
+	//		m_nowPos.y += bestDir.y * (maxOverlap * 0.95f);
+
+	//		// 重力停止
+	//		m_gravity = 0.0f;
+
+	//		bool wasJumping = m_isJumping;
+			// ★ 着地硬直中はジャンプ不可
+	//if (!m_isLanding)
+	//{
+	//	m_isJumping = false;   // ← ジャンプ可能に戻すのは硬直中以外
+	//	return;
+	//}
+
+	//		if (wasJumping)
+	//		{
+	//			// ★ 高所落下かどうか判定
+	//			bool isHardLanding = (fabs(landingSpeed) >= 0.2f);
+
+	//			if (isHardLanding)
+	//			{
+	//				// ★ 高所落下 → 着地硬直あり
+	//				m_nowAnimIndex = 14; // Jump_Land
+	//				m_animator.SetAnimation(m_model->GetAnimation(14), false);
+
+	//				m_isLanding = true;  // 着地硬直フラグ
+	//			}
+	//			else
+	//			{
+	//				// ★ 軽い着地 → 硬直なし
+	//				m_isLanding = false;
+	//			}
+	//		}
+	//	}
+	//	else
+	//	{
+	//		// 空中へ
+	//		m_isJumping = true;
+	//	}
+	}
 
 	//========================
 	//壁・構造体（カプセル）
 	//========================
-
-	float maxOverlap = 0.0f;
-	Math::Vector3 bestDir = Math::Vector3::Zero;
-	bool hit = false;
-
-	KdCollider::CapsuleInfo capsule;
-	capsule.m_type = KdCollider::TypeBump;
-	capsule.m_radius = 0.3f;
-	capsule.m_start = m_nowPos + Math::Vector3(0, 0.5f, 0);
-	capsule.m_end = m_nowPos + Math::Vector3(0, 1.5f, 0);
-
-	m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,1,1 });
-
-	std::list<KdCollider::CollisionResult> retCapsuleList;
-	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
-		obj->Intersects(capsule, &retCapsuleList);
-	}
+		float maxOverlap = 0.0f;
+		Math::Vector3 bestDir = Math::Vector3::Zero;
+		bool hit = false;
 
-	for (auto& ret : retCapsuleList)
-	{
-		if (ret.m_overlapDistance > maxOverlap)
+		KdCollider::CapsuleInfo capsule;
+		capsule.m_type = KdCollider::TypeBump;
+		capsule.m_radius = 0.3f;
+		capsule.m_start = m_nowPos + Math::Vector3(0, 0.5f, 0);
+		capsule.m_end = m_nowPos + Math::Vector3(0, 1.5f, 0);
+
+		m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,1,1 });
+
+		std::list<KdCollider::CollisionResult> retCapsuleList;
+		for (auto& obj : SceneManager::Instance().GetObjList())
 		{
-			maxOverlap = ret.m_overlapDistance;
-			Math::Vector3 dir = ret.m_hitNDir;
-			dir.y = 0;
-
-			if (dir.LengthSquared() > 0.00001f) { dir.Normalize(); }
-			else
-			{
-				Math::Vector3 fallback = ret.m_hitDir;
-				fallback.y = 0;
-				fallback.Normalize();
-				dir = fallback;
-			}
-
-			bestDir = dir;
-			hit = true;
+			obj->Intersects(capsule, &retCapsuleList);
 		}
-	}
-	if (hit) { m_nowPos += bestDir * (maxOverlap * 0.9f); }
 
+		for (auto& ret : retCapsuleList)
+		{
+			if (ret.m_overlapDistance > maxOverlap)
+			{
+				maxOverlap = ret.m_overlapDistance;
+				Math::Vector3 dir = ret.m_hitNDir;
+				dir.y = 0;
+
+				if (dir.LengthSquared() > 0.00001f) { dir.Normalize(); }
+				else
+				{
+					Math::Vector3 fallback = ret.m_hitDir;
+					fallback.y = 0;
+					fallback.Normalize();
+					dir = fallback;
+				}
+
+				bestDir = dir;
+				hit = true;
+			}
+		}
+		if (hit) { m_nowPos += bestDir * (maxOverlap * 0.9f); }
+	}
 
 	//======================================
 	// ワールド行列の更新
@@ -371,13 +479,11 @@ void Player::PostUpdate()
 }
 
 void Player::DrawLit()
-{	if (!m_model) { return; }
-
+{	
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model,m_mWorld);
 }
 
 void Player::GenerateDepthMapFromLight()
 {
-	if (!m_model) { return; }
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }

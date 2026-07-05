@@ -1303,6 +1303,8 @@ bool KdModelCollision::Intersects(
 	const Math::Matrix& world,
 	KdCollider::CollisionResult* pRes)
 {
+
+	//コライダーとモデルの存在チェック
 	if (!m_enable || !m_shape) { return false; }
 
 	std::shared_ptr<KdModelData> spModelData = m_shape->GetData();
@@ -1325,7 +1327,7 @@ bool KdModelCollision::Intersects(
 	Math::Vector3 hitPos;
 	Math::Vector3 hitNDir;
 
-	// 当たり判定ノードとのみ判定
+	// 当たり判定ように登録されたノードとのみ判定
 	for (int index : spModelData->GetCollisionMeshNodeIndices())
 	{
 		const auto& dataNode = dataNodes[index];
@@ -1335,20 +1337,20 @@ bool KdModelCollision::Intersects(
 
 		auto mesh = dataNode.m_spMesh;
 
-		// メッシュのワールド行列
+		//モデルのノード行列 × モデル全体のワールド行列（三角形の頂点をワールド座標変換）
 		Math::Matrix meshWorld = workNode.m_worldTransform * world;
 
 		const auto& positions = mesh->GetVertexPositions();
 		const auto& faces = mesh->GetFaces();
 
-		// 三角形単位で判定
+		// 三角形単位で判定（メッシュの三角形を一枚ずつワールド座標に変換）
 		for (const auto& face : faces)
 		{
 			Math::Vector3 p0 = Math::Vector3::Transform(positions[face.Idx[0]], meshWorld);
 			Math::Vector3 p1 = Math::Vector3::Transform(positions[face.Idx[1]], meshWorld);
 			Math::Vector3 p2 = Math::Vector3::Transform(positions[face.Idx[2]], meshWorld);
 
-			// カプセル vs 三角形 最近接点
+			// カプセル と 三角形 　の最近接点を求める
 			Math::Vector3 segPoint, triPoint;
 			KdCapsuleCollision::ClosestPointSegmentTriangle(
 				pushedStart, pushedEnd,
@@ -1356,6 +1358,7 @@ bool KdModelCollision::Intersects(
 				segPoint, triPoint
 			);
 
+			//衝突判定
 			float dist = (triPoint - segPoint).Length();
 			if (dist > radius) { continue; }
 
@@ -1365,7 +1368,7 @@ bool KdModelCollision::Intersects(
 
 			float overlap = radius - dist;
 
-			// ★ 三角形法線
+			// 三角形法線（法線が取れない場合は最近接点で代用）
 			Math::Vector3 triNormal = (p1 - p0).Cross(p2 - p0);
 			if (triNormal.LengthSquared() > 0.00001f)
 			{
@@ -1378,27 +1381,33 @@ bool KdModelCollision::Intersects(
 				if (triNormal.LengthSquared() > 0.00001f) triNormal.Normalize();
 			}
 
-			// ★ 法線方向に押し返し
+			//カプセル線分のめり込んだ分だけ法線方向に押し返し
 			pushedStart += triNormal * overlap;
 			pushedEnd += triNormal * overlap;
 
+			//衝突位置と法線を保存
 			hitPos = triPoint;
 			hitNDir = triNormal;
 
-			// 三角形頂点も保存（必要なら）
 			pRes->m_triP0 = p0;
 			pRes->m_triP1 = p1;
 			pRes->m_triP2 = p2;
 		}
 	}
 
+	//押し返しの結果をCollusionResultにまとめて返す
+
+	//構造体がある時のみ処理
 	if (pRes && isHit)
 	{
+		//衝突位置の保存
 		pRes->m_hitPos = hitPos;
 
+		//押し返しベクトルの計算
 		Math::Vector3 pushVec = pushedStart - s;
 		pRes->m_overlapDistance = pushVec.Length();
 
+		//押し返し方向の決定
 		if (pushVec.LengthSquared() > 0.00001f)
 		{
 			pRes->m_hitDir = pushVec;
@@ -1409,6 +1418,7 @@ bool KdModelCollision::Intersects(
 			pRes->m_hitDir = Math::Vector3::Zero;
 		}
 
+		//三角形法線の保存
 		pRes->m_hitNDir = hitNDir;
 	}
 
@@ -1424,15 +1434,18 @@ bool KdPolygonCollision::Intersects(
 	const Math::Matrix& world,
 	KdCollider::CollisionResult* pRes)
 {
+	//コライダーとポリゴンの存在チェック
 	if (!m_enable || !m_shape) return false;
 
 	const auto& verts = m_shape->GetVertices();
 	if (verts.size() < 3) return false;
 
+	// カプセル線分（ワールド）
 	Math::Vector3 s = target.m_start;
 	Math::Vector3 e = target.m_end;
 	float radius = target.m_radius;
 
+	// 押し返し用線分
 	Math::Vector3 pushedStart = s;
 	Math::Vector3 pushedEnd = e;
 
@@ -1441,6 +1454,7 @@ bool KdPolygonCollision::Intersects(
 	Math::Vector3 hitPos;
 	Math::Vector3 hitNDir;
 
+	//ポリゴンを複数の三角形に分解して判定（三角形ファン）
 	for (int i = 1; i < (int)verts.size() - 1; ++i)
 	{
 		Math::Vector3 p0 = Math::Vector3::Transform(verts[0].pos, world);
@@ -1448,12 +1462,15 @@ bool KdPolygonCollision::Intersects(
 		Math::Vector3 p2 = Math::Vector3::Transform(verts[i + 1].pos, world);
 
 		Math::Vector3 segPoint, triPoint;
+
+		//カプセル線分と三角形の最近接点を求める
 		KdCapsuleCollision::ClosestPointSegmentTriangle(
 			pushedStart, pushedEnd,
 			p0, p1, p2,
 			segPoint, triPoint
 		);
 
+		//衝突判定
 		float dist = (triPoint - segPoint).Length();
 		if (dist > radius) continue;
 
@@ -1461,6 +1478,7 @@ bool KdPolygonCollision::Intersects(
 
 		isHit = true;
 
+		//押し返し処理
 		float overlap = radius - dist;
 
 		Math::Vector3 triNormal = (p1 - p0).Cross(p2 - p0);
@@ -1477,17 +1495,24 @@ bool KdPolygonCollision::Intersects(
 		pushedStart += triNormal * overlap;
 		pushedEnd += triNormal * overlap;
 
+		//衝突情報の保存
 		hitPos = triPoint;
 		hitNDir = triNormal;
 	}
 
+	//押し返しの結果をCollusionResultにまとめて返す
+
+	//構造体がある時のみ処理
 	if (pRes && isHit)
 	{
+		//衝突位置の保存
 		pRes->m_hitPos = hitPos;
 
+		//押し返しベクトルの計算
 		Math::Vector3 pushVec = pushedStart - s;
 		pRes->m_overlapDistance = pushVec.Length();
 
+		//押し返し方向の決定
 		if (pushVec.LengthSquared() > 0.00001f)
 		{
 			pRes->m_hitDir = pushVec;
@@ -1498,6 +1523,7 @@ bool KdPolygonCollision::Intersects(
 			pRes->m_hitDir = Math::Vector3::Zero;
 		}
 
+		//三角形法線の保存
 		pRes->m_hitNDir = hitNDir;
 	}
 
