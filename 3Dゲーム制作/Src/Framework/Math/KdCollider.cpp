@@ -1303,7 +1303,6 @@ bool KdModelCollision::Intersects(
 	const Math::Matrix& world,
 	KdCollider::CollisionResult* pRes)
 {
-	// 早期リターン
 	if (!m_enable || !m_shape) { return false; }
 
 	std::shared_ptr<KdModelData> spModelData = m_shape->GetData();
@@ -1317,7 +1316,7 @@ bool KdModelCollision::Intersects(
 	Math::Vector3 e = target.m_end;
 	float radius = target.m_radius;
 
-	// Sphere と同じ押し返し用の位置
+	// 押し返し用線分
 	Math::Vector3 pushedStart = s;
 	Math::Vector3 pushedEnd = e;
 
@@ -1349,50 +1348,73 @@ bool KdModelCollision::Intersects(
 			Math::Vector3 p1 = Math::Vector3::Transform(positions[face.Idx[1]], meshWorld);
 			Math::Vector3 p2 = Math::Vector3::Transform(positions[face.Idx[2]], meshWorld);
 
-			// ★ 線分と三角形の最近接点
-			Math::Vector3 c = KdCapsuleCollision::ClosestPointSegmentTriangle(pushedStart, pushedEnd, p0, p1, p2);
+			// カプセル vs 三角形 最近接点
+			Math::Vector3 segPoint, triPoint;
+			KdCapsuleCollision::ClosestPointSegmentTriangle(
+				pushedStart, pushedEnd,
+				p0, p1, p2,
+				segPoint, triPoint
+			);
 
-			// ★ 距離判定
-			float dist = (c - pushedStart).Length();
+			float dist = (triPoint - segPoint).Length();
 			if (dist > radius) { continue; }
 
-			// pRes が不要なら即 true（Sphere と同じ構造）
 			if (!pRes) { return true; }
 
 			isHit = true;
 
 			float overlap = radius - dist;
 
-			// ★ 押し返し（Sphere と同じ構造）
-			Math::Vector3 pushDir = (c - pushedStart);
-			pushDir.Normalize();
+			// ★ 三角形法線
+			Math::Vector3 triNormal = (p1 - p0).Cross(p2 - p0);
+			if (triNormal.LengthSquared() > 0.00001f)
+			{
+				triNormal.Normalize();
+			}
+			else
+			{
+				// 法線が取れない場合は最近接方向でフォールバック
+				triNormal = triPoint - segPoint;
+				if (triNormal.LengthSquared() > 0.00001f) triNormal.Normalize();
+			}
 
-			pushedStart += pushDir * overlap;
-			pushedEnd += pushDir * overlap;
+			// ★ 法線方向に押し返し
+			pushedStart += triNormal * overlap;
+			pushedEnd += triNormal * overlap;
 
-			hitPos = c;
-			hitNDir = pushDir;
+			hitPos = triPoint;
+			hitNDir = triNormal;
+
+			// 三角形頂点も保存（必要なら）
+			pRes->m_triP0 = p0;
+			pRes->m_triP1 = p1;
+			pRes->m_triP2 = p2;
 		}
 	}
 
 	if (pRes && isHit)
 	{
-		// 最後に当たった座標
 		pRes->m_hitPos = hitPos;
 
-		// 押し返しベクトル（Sphere と同じ構造）
 		Math::Vector3 pushVec = pushedStart - s;
 		pRes->m_overlapDistance = pushVec.Length();
 
-		pRes->m_hitDir = pushVec;
-		pRes->m_hitDir.Normalize();
+		if (pushVec.LengthSquared() > 0.00001f)
+		{
+			pRes->m_hitDir = pushVec;
+			pRes->m_hitDir.Normalize();
+		}
+		else
+		{
+			pRes->m_hitDir = Math::Vector3::Zero;
+		}
 
-		// 最後に当たった面の法線
 		pRes->m_hitNDir = hitNDir;
 	}
 
 	return isHit;
 }
+
 
 //=======================================================
 // カプセル vs ポリゴンの当たり判定
@@ -1402,18 +1424,15 @@ bool KdPolygonCollision::Intersects(
 	const Math::Matrix& world,
 	KdCollider::CollisionResult* pRes)
 {
-	// 早期リターン
-	if (!m_enable || !m_shape) { return false; }
+	if (!m_enable || !m_shape) return false;
 
 	const auto& verts = m_shape->GetVertices();
-	if (verts.size() < 3) { return false; }
+	if (verts.size() < 3) return false;
 
-	// カプセル線分（ワールド）
 	Math::Vector3 s = target.m_start;
 	Math::Vector3 e = target.m_end;
 	float radius = target.m_radius;
 
-	// Sphere と同じ押し返し用の位置
 	Math::Vector3 pushedStart = s;
 	Math::Vector3 pushedEnd = e;
 
@@ -1422,56 +1441,69 @@ bool KdPolygonCollision::Intersects(
 	Math::Vector3 hitPos;
 	Math::Vector3 hitNDir;
 
-	// ★ ポリゴンを三角形に分解して判定（扇形分割）
 	for (int i = 1; i < (int)verts.size() - 1; ++i)
 	{
 		Math::Vector3 p0 = Math::Vector3::Transform(verts[0].pos, world);
 		Math::Vector3 p1 = Math::Vector3::Transform(verts[i].pos, world);
 		Math::Vector3 p2 = Math::Vector3::Transform(verts[i + 1].pos, world);
 
-		// ★ 線分と三角形の最近接点
-		Math::Vector3 c = KdCapsuleCollision::ClosestPointSegmentTriangle(pushedStart, pushedEnd, p0, p1, p2);
+		Math::Vector3 segPoint, triPoint;
+		KdCapsuleCollision::ClosestPointSegmentTriangle(
+			pushedStart, pushedEnd,
+			p0, p1, p2,
+			segPoint, triPoint
+		);
 
-		// ★ 距離判定
-		float dist = (c - pushedStart).Length();
-		if (dist > radius) { continue; }
+		float dist = (triPoint - segPoint).Length();
+		if (dist > radius) continue;
 
-		// pRes が不要なら即 true（Sphere と同じ構造）
-		if (!pRes) { return true; }
+		if (!pRes) return true;
 
 		isHit = true;
 
 		float overlap = radius - dist;
 
-		// ★ 押し返し（Sphere と同じ構造）
-		Math::Vector3 pushDir = (c - pushedStart);
-		pushDir.Normalize();
+		Math::Vector3 triNormal = (p1 - p0).Cross(p2 - p0);
+		if (triNormal.LengthSquared() > 0.00001f)
+		{
+			triNormal.Normalize();
+		}
+		else
+		{
+			triNormal = triPoint - segPoint;
+			if (triNormal.LengthSquared() > 0.00001f) triNormal.Normalize();
+		}
 
-		pushedStart += pushDir * overlap;
-		pushedEnd += pushDir * overlap;
+		pushedStart += triNormal * overlap;
+		pushedEnd += triNormal * overlap;
 
-		hitPos = c;
-		hitNDir = pushDir;
+		hitPos = triPoint;
+		hitNDir = triNormal;
 	}
 
 	if (pRes && isHit)
 	{
-		// 最後に当たった座標
 		pRes->m_hitPos = hitPos;
 
-		// 押し返しベクトル（Sphere と同じ構造）
 		Math::Vector3 pushVec = pushedStart - s;
 		pRes->m_overlapDistance = pushVec.Length();
 
-		pRes->m_hitDir = pushVec;
-		pRes->m_hitDir.Normalize();
+		if (pushVec.LengthSquared() > 0.00001f)
+		{
+			pRes->m_hitDir = pushVec;
+			pRes->m_hitDir.Normalize();
+		}
+		else
+		{
+			pRes->m_hitDir = Math::Vector3::Zero;
+		}
 
-		// 最後に当たった面の法線
 		pRes->m_hitNDir = hitNDir;
 	}
 
 	return isHit;
 }
+
 float KdCapsuleCollision::SegmentSegmentDistance(const Math::Vector3& p1, const Math::Vector3& q1, const Math::Vector3& p2, const Math::Vector3& q2, Math::Vector3& c1, Math::Vector3& c2)
 {
 	Math::Vector3 d1 = q1 - p1;   // 線分1の方向
@@ -1555,20 +1587,12 @@ float KdCapsuleCollision::SegmentRayDistance(const Math::Vector3& segA,const Mat
 	return (outSegPoint - outRayPoint).Length();
 }
 
-Math::Vector3 KdCapsuleCollision::ClosestPointSegmentTriangle(const Math::Vector3& s,const Math::Vector3& e,const Math::Vector3& p0,const Math::Vector3& p1,const Math::Vector3& p2)
+void KdCapsuleCollision::ClosestPointSegmentTriangle(const Math::Vector3& s,const Math::Vector3& e,const Math::Vector3& p0,const Math::Vector3& p1,const Math::Vector3& p2, Math::Vector3& outSegPoint, Math::Vector3& outTriPoint)
 {
 	// 線分方向
 	Math::Vector3 seg = e - s;
 	float segLenSq = seg.LengthSquared();
 
-	// 線分上の最近接点を求める補助関数
-	auto ClosestPointOnSegment = [](const Math::Vector3& a, const Math::Vector3& b, const Math::Vector3& p)
-		{
-			Math::Vector3 ab = b - a;
-			float t = (p - a).Dot(ab) / ab.Dot(ab);
-			t = std::clamp(t, 0.0f, 1.0f);
-			return a + ab * t;
-		};
 
 	// ★ ① 三角形の最近接点（標準的なバリセントリック法）
 	Math::Vector3 v0 = p1 - p0;
@@ -1600,14 +1624,11 @@ Math::Vector3 KdCapsuleCollision::ClosestPointSegmentTriangle(const Math::Vector
 		w /= sum;
 	}
 
-	Math::Vector3 triPoint = p0 * u + p1 * v + p2 * w;
+	outTriPoint = p0 * u + p1 * v + p2 * w;
 
 	// ★ ② 線分側の最近接点
-	float t = (triPoint - s).Dot(seg) / segLenSq;
+	float t = (outTriPoint - s).Dot(seg) / segLenSq;
 	t = std::clamp(t, 0.0f, 1.0f);
 
-	Math::Vector3 segPoint = s + seg * t;
-
-	return triPoint;
-	return segPoint;
+	outSegPoint = s + seg * t;
 }

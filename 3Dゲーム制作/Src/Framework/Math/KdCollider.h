@@ -177,6 +177,11 @@ public:
 		Math::Vector3 m_hitDir;			// 対象からの方向ベクトル（押し返しなどに使う
 		Math::Vector3 m_hitNDir;		// HITした面の法線ベクトル
 		float m_overlapDistance = 0.0f; // 重なり量
+
+		//追加（カプセル用）
+		Math::Vector3 m_triP0;
+		Math::Vector3 m_triP1;
+		Math::Vector3 m_triP2;
 	};
 
 	KdCollider() {}
@@ -387,7 +392,7 @@ public:
 	bool Intersects(const KdCollider::CapsuleInfo& target,const Math::Matrix& world,KdCollider::CollisionResult* pRes) override;
 
 	// 線分と三角形の最近接点を返す
-	static Math::Vector3 ClosestPointSegmentTriangle(const Math::Vector3& s, const Math::Vector3& e, const Math::Vector3& p0, const Math::Vector3& p1, const Math::Vector3& p2);
+	static void ClosestPointSegmentTriangle(const Math::Vector3& s, const Math::Vector3& e, const Math::Vector3& p0, const Math::Vector3& p1, const Math::Vector3& p2, Math::Vector3& outSegPoint,Math::Vector3& outTriPoint);
 
 private:
 	Math::Vector3 m_start;

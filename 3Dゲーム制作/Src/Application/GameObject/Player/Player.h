@@ -47,5 +47,4 @@ private:
 	Math::Vector3 m_move;
 	Math::Vector3 m_fall;
 
-
 };
