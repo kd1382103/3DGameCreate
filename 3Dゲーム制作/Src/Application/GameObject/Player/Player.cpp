@@ -34,16 +34,27 @@ void Player::Update()
 	// 移動処理
 	//================================================================================
 
-	float moveSpeed = 0.1f;
-	float runSpeed = 0.2f;
-
+	float moveSpeed = 0.05f;
+	float runSpeed = 0.15f;
 	m_dir = Math::Vector3::Zero;
 
 	bool isRunning = false;
+	bool isFalling = (m_gravity > 0.0f);
 
 	if (!m_isLanding && !m_isAttacking)
 	{
-		if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
+		if (!m_isJumping)   // 地上だけ走り更新
+		{
+			if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
+			{
+				m_keepRunning = true;      // 地上で走っていた
+			}
+			else
+			{
+				m_keepRunning = false;     // 地上で歩いていた
+			}
+		}
+		if (m_keepRunning)
 		{
 			isRunning = true;
 			moveSpeed = runSpeed;
@@ -53,6 +64,7 @@ void Player::Update()
 		if (GetAsyncKeyState('S') & 0x8000) { m_dir += {0, 0, -1}; }
 		if (GetAsyncKeyState('A') & 0x8000) { m_dir += {-1, 0, 0}; }
 		if (GetAsyncKeyState('D') & 0x8000) { m_dir += {1, 0, 0}; }
+
 	}
 
 	// ★ 実際に移動方向があるかどうかで判定する
@@ -324,7 +336,7 @@ void Player::PostUpdate()
 	//========================
 	// 地面（カプセル判定）
 	//========================
-	{
+	//{
 	//	float maxOverlap = 0.0f;
 	//	Math::Vector3 bestDir = Math::Vector3::Zero;
 	//	bool hit = false;
@@ -333,7 +345,7 @@ void Player::PostUpdate()
 	//	capsule.m_type = KdCollider::TypeGround;
 	//	capsule.m_radius = 0.3f;
 
-	//	capsule.m_start = m_nowPos + Math::Vector3(0, 0.3, 0);
+	//	capsule.m_start = m_nowPos + Math::Vector3(0, 0.5, 0);
 	//	capsule.m_end = m_nowPos + Math::Vector3(0, 1.5f, 0);
 
 	//	m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,0,1 });
@@ -383,12 +395,12 @@ void Player::PostUpdate()
 	//		m_gravity = 0.0f;
 
 	//		bool wasJumping = m_isJumping;
-			// ★ 着地硬直中はジャンプ不可
-	//if (!m_isLanding)
-	//{
-	//	m_isJumping = false;   // ← ジャンプ可能に戻すのは硬直中以外
-	//	return;
-	//}
+	//		// ★ 着地硬直中はジャンプ不可
+	//		if (!m_isLanding)
+	//		{
+	//			m_isJumping = false;   // ← ジャンプ可能に戻すのは硬直中以外
+	//			return;
+	//		}
 
 	//		if (wasJumping)
 	//		{
@@ -415,7 +427,7 @@ void Player::PostUpdate()
 	//		// 空中へ
 	//		m_isJumping = true;
 	//	}
-	}
+	//}
 
 	//========================
 	//壁・構造体（カプセル）

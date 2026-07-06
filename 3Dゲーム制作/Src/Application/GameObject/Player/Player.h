@@ -27,11 +27,11 @@ private:
 	Math::Vector3 m_dir;
 
 	//移動・走り
-	bool isMoving = false;
-	bool isRunning = false;
 	float m_angleY = DirectX::XMConvertToRadians(180.0f); 
 
-	//アニメーション管理
+	bool m_keepRunning = false;
+
+	//アニメーション管理m
 	int m_nowAnimIndex = -1;
 
 	//ジャンプ
