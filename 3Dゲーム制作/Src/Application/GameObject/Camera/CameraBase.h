@@ -8,8 +8,9 @@ public:
 
 	void Init()				override;
 	void PreDraw()			override;
-
 	void SetTarget(const std::shared_ptr<KdGameObject>& target);
+
+	//virtual bool IsFPS() const { return false; }
 
 	// 「絶対変更しません！見るだけ！」な書き方
 	const std::shared_ptr<KdCamera>& GetCamera() const
@@ -42,6 +43,9 @@ public:
 		m_wpHitObjectList.push_back(object);
 	}
 
+	void SetActive(bool active) { m_active = active; }
+	bool IsActive() const { return m_active; }
+
 protected:
 	// カメラ回転用角度
 	Math::Vector3								m_DegAng		= Math::Vector3::Zero;
@@ -57,4 +61,7 @@ protected:
 
 	// カメラ回転用マウス座標の差分
 	POINT										m_FixMousePos{};
+
+	bool m_active = false;
+
 };

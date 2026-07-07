@@ -155,6 +155,8 @@ void KdAnimationData::Node::Interpolate(Math::Matrix& rDst, float time)
 	}
 }
 
+extern float g_deltaTime; // フレーム時間（1/60 ≒ 0.016f）
+
 void KdAnimator::AdvanceTime(std::vector<KdModelWork::Node>& rNodes, float speed)
 {
 	if (!m_spAnimation) { return; }

@@ -215,6 +215,20 @@ bool Application::Init(int w, int h)
 	// 例えばカーソルを消したい場合
 	//ShowCursor(false);
 
+	//===================================================================
+	//トグルキー登録
+	//===================================================================
+	auto& input = KdInputManager::Instance();
+
+	// キーボードデバイスを追加（初回のみ）
+	KdInputCollector* keyboard = new KdInputCollector();
+	input.AddDevice("Keyboard", keyboard);
+
+	// トグルキー登録（初回のみ）
+	keyboard->AddButton("ToggleKey", new KdInputButtonForWindows('M'));
+	keyboard->AddButton("ChangeKey", new KdInputButtonForWindows('F'));
+
+	//↑一番最初に実行したいものはここより上に書く
 	return true;
 }
 

@@ -285,9 +285,6 @@
     <ClInclude Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.h">
       <Filter>Src\Application\GameObject\Camera\TPSCamera</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.h">
-      <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\GameObject\Player\Player.h">
       <Filter>Src\Application\GameObject\Player</Filter>
     </ClInclude>
@@ -299,6 +296,9 @@
     </ClInclude>
     <ClInclude Include="Src\Application\GameObject\Stages\Wall\Wall.h">
       <Filter>Src\Application\GameObject\Stages\Wall</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.h">
+      <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -452,9 +452,6 @@
     <ClCompile Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.cpp">
       <Filter>Src\Application\GameObject\Camera\TPSCamera</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.cpp">
-      <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Player\Player.cpp">
       <Filter>Src\Application\GameObject\Player</Filter>
     </ClCompile>
@@ -466,6 +463,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Stages\Wall\Wall.cpp">
       <Filter>Src\Application\GameObject\Stages\Wall</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.cpp">
+      <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

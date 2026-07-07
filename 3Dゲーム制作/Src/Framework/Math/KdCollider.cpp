@@ -1340,8 +1340,8 @@ bool KdModelCollision::Intersects(
 		//モデルのノード行列 × モデル全体のワールド行列（三角形の頂点をワールド座標変換）
 		Math::Matrix meshWorld = workNode.m_worldTransform * world;
 
-		const auto& positions = mesh->GetVertexPositions();
-		const auto& faces = mesh->GetFaces();
+		const auto& positions = mesh->GetVertexPositions();	//頂点座標取得
+		const auto& faces = mesh->GetFaces();				//面座標取得
 
 		// 三角形単位で判定（メッシュの三角形を一枚ずつワールド座標に変換）
 		for (const auto& face : faces)

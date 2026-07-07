@@ -1,4 +1,5 @@
 ﻿#include "Player.h"
+
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/Scene/SceneManager.h>
 void Player::Init()
@@ -224,9 +225,12 @@ void Player::Update()
 
 	m_nowPos += m_dir * moveSpeed;
 
-
+	//デバック（プレイヤーの向いている方向）
 	//Math::Vector3 forward = m_mWorld.Forward();
 	//m_pDebugWire->AddDebugLine(m_nowPos, m_nowPos + forward, { 1,0,0,1 }); // 赤線で前方向
+
+	float t = m_animator.GetAnimeCurrentTime();
+	m_attackAnimeTime = t;   // ← 一時保存
 
 	//===============================================================================
 	// LogWindowに表示(発表時は非表示)
@@ -243,15 +247,14 @@ void Player::Update()
 	//	KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
 	//}
 
-	KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
-	KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
-	KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.y);
+	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
+	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
+	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.y);
 
-	KdDebugGUI::Instance().AddLog("Gravity : %f\n", m_gravity);
-	KdDebugGUI::Instance().AddLog("m_isJumping : %s\n", m_isJumping ? "true" : "false");
-	KdDebugGUI::Instance().AddLog("m_isLanding : %s\n", m_isLanding ? "true" : "false");
-	KdDebugGUI::Instance().AddLog("m_isAttacking : %s\n", m_isAttacking ? "true" : "false");
-
+	//KdDebugGUI::Instance().AddLog("Gravity : %f\n", m_gravity);
+	//KdDebugGUI::Instance().AddLog("m_isJumping : %s\n", m_isJumping ? "true" : "false");
+	//KdDebugGUI::Instance().AddLog("m_isLanding : %s\n", m_isLanding ? "true" : "false");
+	//KdDebugGUI::Instance().AddLog("m_isAttacking : %s\n", m_isAttacking ? "true" : "false");
 
 }
 
@@ -266,7 +269,6 @@ void Player::PostUpdate()
 	// 地面（レイ判定）
 	//========================
 	{
-		// 足元より少し上からレイを落とす
 		KdCollider::RayInfo ray;
 		ray.m_type = KdCollider::TypeGround;
 
@@ -334,102 +336,6 @@ void Player::PostUpdate()
 	}
 
 	//========================
-	// 地面（カプセル判定）
-	//========================
-	//{
-	//	float maxOverlap = 0.0f;
-	//	Math::Vector3 bestDir = Math::Vector3::Zero;
-	//	bool hit = false;
-
-	//	KdCollider::CapsuleInfo capsule;
-	//	capsule.m_type = KdCollider::TypeGround;
-	//	capsule.m_radius = 0.3f;
-
-	//	capsule.m_start = m_nowPos + Math::Vector3(0, 0.5, 0);
-	//	capsule.m_end = m_nowPos + Math::Vector3(0, 1.5f, 0);
-
-	//	m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,0,1 });
-
-	//	std::list<KdCollider::CollisionResult> retCapsuleList;
-	//	for (auto& obj : SceneManager::Instance().GetObjList())
-	//	{
-	//		obj->Intersects(capsule, &retCapsuleList);
-	//	}
-
-	//	for (auto& ret : retCapsuleList)
-	//	{
-	//		if (ret.m_overlapDistance > maxOverlap)
-	//		{
-	//			maxOverlap = ret.m_overlapDistance;
-
-	//			// 地面なので「上方向成分だけ」使う
-	//			float up = ret.m_hitNDir.y;
-
-	//			if (up > 0.00001f)
-	//			{
-	//				bestDir = Math::Vector3(0, up, 0);
-	//				hit = true;
-	//			}
-	//			else
-	//			{
-	//				// 法線が水平に近い場合のフォールバック
-	//				float fallbackUp = ret.m_hitDir.y;
-	//				if (fallbackUp > 0.00001f)
-	//				{
-	//					bestDir = Math::Vector3(0, fallbackUp, 0);
-	//					hit = true;
-	//				}
-	//			}
-	//		}
-	//	}
-
-	//	if (hit)
-	//	{
-	//		// ★ 着地直前の落下速度を保存（高所落下判定用）
-	//		float landingSpeed = m_gravity;
-
-	//		// 上方向だけ押し上げる
-	//		m_nowPos.y += bestDir.y * (maxOverlap * 0.95f);
-
-	//		// 重力停止
-	//		m_gravity = 0.0f;
-
-	//		bool wasJumping = m_isJumping;
-	//		// ★ 着地硬直中はジャンプ不可
-	//		if (!m_isLanding)
-	//		{
-	//			m_isJumping = false;   // ← ジャンプ可能に戻すのは硬直中以外
-	//			return;
-	//		}
-
-	//		if (wasJumping)
-	//		{
-	//			// ★ 高所落下かどうか判定
-	//			bool isHardLanding = (fabs(landingSpeed) >= 0.2f);
-
-	//			if (isHardLanding)
-	//			{
-	//				// ★ 高所落下 → 着地硬直あり
-	//				m_nowAnimIndex = 14; // Jump_Land
-	//				m_animator.SetAnimation(m_model->GetAnimation(14), false);
-
-	//				m_isLanding = true;  // 着地硬直フラグ
-	//			}
-	//			else
-	//			{
-	//				// ★ 軽い着地 → 硬直なし
-	//				m_isLanding = false;
-	//			}
-	//		}
-	//	}
-	//	else
-	//	{
-	//		// 空中へ
-	//		m_isJumping = true;
-	//	}
-	//}
-
-	//========================
 	//壁・構造体（カプセル）
 	//========================
 	{
@@ -481,21 +387,47 @@ void Player::PostUpdate()
 
 	// 回転行列
 	Math::Matrix rotMat = Math::Matrix::CreateRotationY(m_angleY);
-
-	// 平行移動
+	m_rotation.y = DirectX::XMConvertToDegrees(m_angleY);
 	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
 
 	// ワールド行列
 	m_mWorld = rotMat * transMat;
 
+	if (m_isAttacking)
+	{
+		float t = m_attackAnimeTime;
+
+		// 例：攻撃アニメの 20〜35 フレームだけ踏み込む
+		if (t > 20.0f && t < 35.0f)
+		{
+			Math::Vector3 forward = m_mWorld.Forward();
+			forward.Normalize();
+			m_nowPos += forward * 0.05f;
+		}
+	}
+
 }
 
 void Player::DrawLit()
 {	
+	//if (auto cam = m_wpCamera.lock())
+	//{
+	//	if (cam->IsFPS())
+	//	{
+	//		return;
+	//	}
+	//}
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model,m_mWorld);
 }
 
 void Player::GenerateDepthMapFromLight()
 {
+	/*if (auto cam = m_wpCamera.lock())
+	{
+		if (cam->IsFPS())
+		{
+			return;
+		}
+	}*/
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+class CameraBase;
 class BaseScene
 {
 public :
@@ -27,6 +28,7 @@ public :
 	{
 		m_objList.push_back(_obj);
 	}
+	
 
 protected :
 
@@ -36,4 +38,7 @@ protected :
 
 	// 全オブジェクトのアドレスをリストで管理
 	std::list<std::shared_ptr<KdGameObject>> m_objList;
+	std::shared_ptr<CameraBase>m_camera;
+
 };
+

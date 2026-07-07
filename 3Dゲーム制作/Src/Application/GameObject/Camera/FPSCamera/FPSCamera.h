@@ -9,4 +9,9 @@ public:
 
 	void Init()				override;
 	void PostUpdate()		override;
+
+	bool m_mouseFree = false;
+
+private:
+
 };

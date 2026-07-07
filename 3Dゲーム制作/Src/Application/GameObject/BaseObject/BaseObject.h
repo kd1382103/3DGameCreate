@@ -1,4 +1,5 @@
 ﻿#pragma once
+class BaseScene;
 class BaseObject :public KdGameObject
 {
 public:

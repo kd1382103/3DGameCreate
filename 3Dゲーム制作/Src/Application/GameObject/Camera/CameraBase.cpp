@@ -13,6 +13,7 @@ void CameraBase::Init()
 
 void CameraBase::PreDraw()
 {
+	//if (!m_active) { return; }
 	if (!m_spCamera) { return; }
 
 	m_spCamera->SetCameraMatrix(m_mWorld);

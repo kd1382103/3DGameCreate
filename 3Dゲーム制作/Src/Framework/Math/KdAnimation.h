@@ -68,6 +68,8 @@ public:
 	// アニメーションの更新
 	void AdvanceTime(std::vector<KdModelWork::Node>& rNodes, float speed = 1.0f);
 
+	float GetAnimeCurrentTime()const { return m_time; }
+
 private:
 
 	std::shared_ptr<KdAnimationData>	m_spAnimation = nullptr;	// 再生するアニメーションデータ

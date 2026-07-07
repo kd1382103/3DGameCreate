@@ -1,5 +1,4 @@
 ﻿#include "BaseObject.h"
-
 void BaseObject::Init()
 {}
 

@@ -1,5 +1,6 @@
 ﻿#include "BaseScene.h"
 
+#include<Application/GameObject/Camera/CameraBase.h>
 void BaseScene::PreUpdate()
 {
 	// Updateの前の更新処理
@@ -41,6 +42,12 @@ void BaseScene::Update()
 
 void BaseScene::PostUpdate()
 {
+	// ★ カメラ更新を追加
+	if (m_camera)
+	{
+		m_camera->PostUpdate();
+	}
+
 	for (auto& obj : m_objList)
 	{
 		obj->PostUpdate();
@@ -49,6 +56,8 @@ void BaseScene::PostUpdate()
 
 void BaseScene::PreDraw()
 {
+	
+
 	for (auto& obj : m_objList)
 	{
 		obj->PreDraw();
@@ -149,4 +158,5 @@ void BaseScene::Event()
 void BaseScene::Init()
 {
 	// 各シーンで必要な内容を実装(オーバーライド)する
+	m_camera = std::make_shared<CameraBase>();
 }
