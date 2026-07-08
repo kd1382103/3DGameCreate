@@ -41,8 +41,10 @@ void Player::Update()
 	if (GetAsyncKeyState('D') & 0x8000) m_dir += {1, 0, 0};
 
 	m_moving = (m_dir.LengthSquared() > 0.0001f);
-	m_running = (GetAsyncKeyState(VK_SHIFT) & 0x8000);
-	m_jumping = (GetAsyncKeyState(VK_SPACE) & 0x8000);
+	if (!m_isJumping)
+	{
+		m_running = (GetAsyncKeyState(VK_SHIFT) & 0x8000);
+	}
 	m_attacking = (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
 
 	//================================================================================
@@ -63,6 +65,8 @@ void Player::Update()
 	case PlayerState::Idle:    UpdateIdle();    break;
 	case PlayerState::Run:     UpdateRun();     break;
 	case PlayerState::Attack:  UpdateAttack();  break;
+	case PlayerState::Landing:  UpdateLanding();  break;
+	case PlayerState::Fall:  UpdateFall();  break;
 	}
 
 	//================================================================================
@@ -77,10 +81,28 @@ void Player::Update()
 	}
 
 	//================================================================================
-	// 重力
+	// 重力（下降）
 	//================================================================================
-	m_gravity += 0.005f;     // 常に重力を増加
-	m_nowPos.y -= m_gravity; // 下方向へ移動
+	m_gravity += 0.005f;
+	m_nowPos.y -= m_gravity;
+
+	//================================================================================
+	// 落下判定呼び出し
+	//================================================================================
+	if (m_gravity > 0.01f)
+	{
+		m_isJumping = true;
+
+		// ステートを落下へ
+		if (m_state != PlayerState::Fall)
+		{
+			ChangeState(PlayerState::Fall);
+		}
+	}
+	else
+	{
+		m_isJumping = false;
+	}
 
 
 	//	//デバック（プレイヤーの向いている方向）
@@ -94,16 +116,16 @@ void Player::Update()
 	//	// LogWindowに表示(発表時は非表示)
 	//	//===============================================================================
 	//
-	//	KdDebugGUI::Instance().ClearLog();
+		KdDebugGUI::Instance().ClearLog();
 	//
-	//	//アニメーションの番号一覧をLogWindowに表示
-	//	//for (int i = 0; ; i++)
-	//	//{
-	//	//	auto anim = m_model->GetAnimation(i);
-	//	//	if (!anim) break; // 取得できなくなったら終了
-	//
-	//	//	KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
-	//	//}
+		////アニメーションの番号一覧をLogWindowに表示
+		//for (int i = 0; ; i++)
+		//{
+		//	auto anim = m_model->GetAnimation(i);
+		//	if (!anim) break; // 取得できなくなったら終了
+	
+		//	KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
+		//}
 	//
 	//	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
 	//	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
@@ -165,6 +187,15 @@ void Player::PostUpdate()
 			float landingSpeed = m_gravity;
 			m_nowPos.y = hitPos.y;
 			m_gravity = 0.0f;
+
+			// ★ 高所落下の着地硬直判定
+			if (landingSpeed > 0.2f)   // 落下速度が大きいなら硬直
+			{
+				m_isLanding = true;
+				m_nowAnimIndex = 14; // 着地アニメ
+				m_animator.SetAnimation(m_model->GetAnimation(14), false);
+				ChangeState(PlayerState::Landing);
+			}
 		}
 	}
 
@@ -267,7 +298,7 @@ void Player::GenerateDepthMapFromLight()
 
 void Player::UpdateIdle()
 {
-	if (m_isLanding || m_isAttacking) return;
+	if (m_isLanding || m_isAttacking || m_isJumping) return;
 
 	// 移動入力があれば Run へ
 	if (m_moving)
@@ -294,7 +325,7 @@ void Player::UpdateIdle()
 void Player::UpdateRun()
 {
 	// 着地硬直中・攻撃中は行動できない
-	if (m_isLanding || m_isAttacking) return;
+	if (m_isLanding || m_isAttacking || m_isJumping) return;
 
 	//===============================
 	// 移動入力が消えたら Idle へ
@@ -373,6 +404,70 @@ void Player::UpdateAttack()
 	if (m_animator.IsAnimationEnd())
 	{
 		m_isAttacking = false;
+		ChangeState(PlayerState::Idle);
+		return;
+	}
+}
+
+void Player::UpdateLanding()
+{
+	if (m_nowAnimIndex != 14)
+	{
+		m_nowAnimIndex = 14;
+		m_animator.SetAnimation(m_model->GetAnimation(14), false);
+	}
+
+	if (m_animator.IsAnimationEnd())
+	{
+		m_isLanding = false;
+		ChangeState(PlayerState::Idle);
+	}
+}
+
+void Player::UpdateFall()
+{
+	//===============================
+	// 落下アニメ（Jump_Fall = 15）
+	//===============================
+	if (m_nowAnimIndex != 15)
+	{
+		m_nowAnimIndex = 15;
+		m_animator.SetAnimation(m_model->GetAnimation(15), false);
+	}
+
+	//===============================
+	// 落下中の慣性移動
+	//===============================
+	float fallSpeed = m_running ? 0.12f : 0.04f;
+	m_nowPos += m_dir * fallSpeed;
+
+	//===============================
+	// キャラ回転（空中でも向きを変える）
+	//===============================
+	{
+		Math::Vector3 nowDir = m_mWorld.Forward();
+		Math::Vector3 targetDir = m_dir;
+
+		nowDir.Normalize();
+		targetDir.Normalize();
+
+		float dot = std::clamp(nowDir.Dot(targetDir), -1.0f, 1.0f);
+		float angle = acos(dot);
+
+		Math::Vector3 cross = nowDir.Cross(targetDir);
+		if (cross.y < 0) angle = -angle;
+
+		const float rotSpeed = DirectX::XMConvertToRadians(5.0f);
+		angle = std::clamp(angle, -rotSpeed, rotSpeed);
+
+		m_angleY += angle;
+	}
+
+	//===============================
+	// 着地したら Idle へ
+	//===============================
+	if (!m_isJumping)   
+	{
 		ChangeState(PlayerState::Idle);
 		return;
 	}

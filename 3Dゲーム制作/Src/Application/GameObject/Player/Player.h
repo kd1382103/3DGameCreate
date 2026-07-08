@@ -26,6 +26,8 @@ public:
 		Idle,
 		Run,
 		Attack,
+		Landing,
+		Fall,
 	};
 
 	PlayerState m_state = PlayerState::Idle;
@@ -50,8 +52,8 @@ private:
 	float m_attackAnimeTime;
 
 	//ジャンプ
-	bool m_isJumping = false;
 	bool m_isLanding = false;
+	bool m_isJumping = false;
 	Math::Vector3 m_jumpDir = Math::Vector3::Zero;
 
 
@@ -69,6 +71,8 @@ private:
 	void UpdateIdle();
 	void UpdateRun();
 	void UpdateAttack();
+	void UpdateLanding();
+	void UpdateFall();
 	//void UpdateDodge();
 	//void UpdateHit();
 	//void UpdateDown();

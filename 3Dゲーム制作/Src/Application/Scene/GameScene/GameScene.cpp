@@ -71,7 +71,7 @@ void GameScene::Init()
 	//プレイヤー
 	player = std::make_shared<Player>();
 	player->Init();
-	player->SetPos(Math::Vector3{ 0,0,0 });
+	player->SetPos(Math::Vector3{ 0,5,0 });
 	AddObject(player);
 
 	//各オブジェクトに必要な情報を格納
