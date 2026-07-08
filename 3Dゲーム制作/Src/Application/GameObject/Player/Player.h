@@ -4,6 +4,7 @@
 class CameraBase;
 class Player :public BaseObject
 {
+
 public:
 	Player() {}
 	~Player() override { Release(); }
@@ -21,10 +22,18 @@ public:
 	//void SetRotationY(float y) { m_rotation.y = y; }
 	//const Math::Vector3& GetRotation() const { return m_rotation; }
 
+	enum class PlayerState {
+		Idle,
+		Run,
+		Attack,
+	};
+
+	PlayerState m_state = PlayerState::Idle;
+	float m_stateTimer = 0.0f;
+
 private:
 	std::shared_ptr<KdModelWork>m_model;
 	KdAnimator m_animator;
-
 	std::weak_ptr<CameraBase>m_wpCamera;
 
 	//方向
@@ -32,7 +41,7 @@ private:
 	Math::Vector3 m_rotation = Math::Vector3::Zero;
 
 	//移動・走り
-	float m_angleY = DirectX::XMConvertToRadians(180.0f); 
+	float m_angleY = DirectX::XMConvertToRadians(180.0f);
 
 	bool m_keepRunning = false;
 
@@ -43,6 +52,8 @@ private:
 	//ジャンプ
 	bool m_isJumping = false;
 	bool m_isLanding = false;
+	Math::Vector3 m_jumpDir = Math::Vector3::Zero;
+
 
 	//攻撃
 	bool m_isAttacking = false;
@@ -54,5 +65,18 @@ private:
 	//重力
 	float m_gravity = 0.0f;
 
+	//ステートマシン
+	void UpdateIdle();
+	void UpdateRun();
+	void UpdateAttack();
+	//void UpdateDodge();
+	//void UpdateHit();
+	//void UpdateDown();
 
+	void ChangeState(PlayerState next);
+
+	bool m_moving	 = false;
+	bool m_running	 = false;
+	bool m_jumping	 = false;
+	bool m_attacking = false;
 };

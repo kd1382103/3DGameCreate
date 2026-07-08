@@ -30,159 +30,45 @@ void Player::Update()
 	{
 		camRotMat = m_wpCamera.lock()->GetRotationYMatrix();
 	}
-
 	//================================================================================
-	// 移動処理
+	// 移動入力（WASD）
 	//================================================================================
-
-	float moveSpeed = 0.05f;
-	float runSpeed = 0.15f;
 	m_dir = Math::Vector3::Zero;
 
-	bool isRunning = false;
-	bool isFalling = (m_gravity > 0.0f);
+	if (GetAsyncKeyState('W') & 0x8000) m_dir += {0, 0, 1};
+	if (GetAsyncKeyState('S') & 0x8000) m_dir += {0, 0, -1};
+	if (GetAsyncKeyState('A') & 0x8000) m_dir += {-1, 0, 0};
+	if (GetAsyncKeyState('D') & 0x8000) m_dir += {1, 0, 0};
 
-	if (!m_isLanding && !m_isAttacking)
-	{
-		if (!m_isJumping)   // 地上だけ走り更新
-		{
-			if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
-			{
-				m_keepRunning = true;      // 地上で走っていた
-			}
-			else
-			{
-				m_keepRunning = false;     // 地上で歩いていた
-			}
-		}
-		if (m_keepRunning)
-		{
-			isRunning = true;
-			moveSpeed = runSpeed;
-		}
+	m_moving = (m_dir.LengthSquared() > 0.0001f);
+	m_running = (GetAsyncKeyState(VK_SHIFT) & 0x8000);
+	m_jumping = (GetAsyncKeyState(VK_SPACE) & 0x8000);
+	m_attacking = (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
 
-		if (GetAsyncKeyState('W') & 0x8000) { m_dir += {0, 0, 1}; }
-		if (GetAsyncKeyState('S') & 0x8000) { m_dir += {0, 0, -1}; }
-		if (GetAsyncKeyState('A') & 0x8000) { m_dir += {-1, 0, 0}; }
-		if (GetAsyncKeyState('D') & 0x8000) { m_dir += {1, 0, 0}; }
-
-	}
-
-	// ★ 実際に移動方向があるかどうかで判定する
-	bool isMoving = (m_dir.LengthSquared() > 0.0001f);
-
-	if (isMoving)
+	//================================================================================
+	// 	カメラ方向へ変換
+	//================================================================================
+	if (m_moving && !m_wpCamera.expired())
 	{
 		m_dir = Math::Vector3::TransformNormal(m_dir, camRotMat);
+		m_dir.Normalize();
 	}
-	m_dir.Normalize();
-
-	// ★ 着地アニメまたは攻撃アニメ中は移動方向を完全にゼロにする
-	if (m_isLanding && !m_isAttacking)
-	{
-		m_dir = { 0,0,0 };
-		isMoving = false;
-	}
-
 
 	//================================================================================
-	// ジャンプ処理
+	//	ステート呼び出し
 	//================================================================================
 
-	// ★ 着地アニメまたは攻撃アニメ中はジャンプできない
-	if (m_isLanding || m_isAttacking)
+	switch (m_state)
 	{
+	case PlayerState::Idle:    UpdateIdle();    break;
+	case PlayerState::Run:     UpdateRun();     break;
+	case PlayerState::Attack:  UpdateAttack();  break;
 	}
-	else
-	{
-		if (!m_isJumping && (GetAsyncKeyState(VK_SPACE) & 0x8000))
-		{
-			m_isJumping = true;			// ジャンプ開始
-			m_gravity = -0.15f;			// 重力反転
-			m_nowAnimIndex = 16;		// Jump_Start
-			m_animator.SetAnimation(m_model->GetAnimation(16), false);
-		}
-
-	}
-
-
-	m_gravity += 0.005f;
-	m_nowPos.y -= m_gravity;
-
-	//================================================================================
-	// --- アニメーション切り替え ---
-	//================================================================================
-
-	if (m_isJumping)
-	{
-		// 上昇中
-		if (m_isJumping && m_gravity < 0.0f)
-		{
-			if (m_nowAnimIndex != 16)
-			{
-				m_nowAnimIndex = 16;
-				m_animator.SetAnimation(m_model->GetAnimation(16), false);
-			}
-		}
-		else
-		{
-			// 下降
-			if (m_nowAnimIndex != 15)
-			{
-				m_nowAnimIndex = 15;
-				m_animator.SetAnimation(m_model->GetAnimation(15), false);
-			}
-		}
-	}
-
-	/*if (m_animator.IsAnimationEnd())
-	{
-		m_isLanding = false;
-	}*/
-
-	if (m_isLanding)
-	{
-		if (m_nowAnimIndex == 14 && m_animator.IsAnimationEnd())
-		{
-			m_isLanding = false;
-		}
-	}
-
-	if (!m_isJumping && !m_isLanding && !m_isAttacking)
-	{
-		int nextAnim = isRunning ? 36 : (isMoving ? 41 : 9);
-		if (nextAnim != m_nowAnimIndex)
-		{
-			m_nowAnimIndex = nextAnim;
-			m_animator.SetAnimation(m_model->GetAnimation(nextAnim), true);
-		}
-	}
-
-	
-	//================================================================================
-	//　攻撃処理
-	//================================================================================
-
-	//現状、アニメーションのみ当たり判定等は後ほど実装
-	if (!m_isAttacking && (GetAsyncKeyState(VK_LBUTTON) & 0x8000))
-	{
-		m_isAttacking = true;
-
-		m_nowAnimIndex = 39;
-		m_animator.SetAnimation(m_model->GetAnimation(39), false);
-	}
-
-	// 攻撃アニメ終了チェック
-	if (m_isAttacking && m_animator.IsAnimationEnd())
-	{
-		m_isAttacking = false;
-	}
-
 
 	//================================================================================
 	// アニメーション処理
 	//================================================================================
-	float animSpeed = isRunning ? 1.5f : 1.0f;
+	float animSpeed = m_running ? 1.5f : 1.0f;
 	m_animator.AdvanceTime(m_model->WorkNodes(), animSpeed);
 
 	if (m_model->NeedCalcNodeMatrices())
@@ -191,71 +77,44 @@ void Player::Update()
 	}
 
 	//================================================================================
-	// キャラ回転（自然な向き変更）
+	// 重力
 	//================================================================================
-
-	// 移動している時だけ向きを変える
-	if (isMoving)
-	{
-		Math::Vector3 nowDir = m_mWorld.Forward();   // 現在の向き
-		Math::Vector3 targetDir = m_dir;              // 移動方向
-
-		// 正規化（安全）
-		nowDir.Normalize();
-		targetDir.Normalize();
-
-		// 範囲を制限したうえで内積を求める
-		float dot = std::clamp(nowDir.Dot(targetDir), -1.0f, 1.0f);
-
-		// 差分角度（ラジアン）
-		float angle = acos(dot);
-
-		// 外積で符号判定
-		Math::Vector3 cross = nowDir.Cross(targetDir);
-		if (cross.y < 0) angle = -angle;
+	m_gravity += 0.005f;     // 常に重力を増加
+	m_nowPos.y -= m_gravity; // 下方向へ移動
 
 
-		// ★ 回転速度を制限（自然な向き変更の核心）
-		const float rotSpeed = DirectX::XMConvertToRadians(5.0f); // 1フレームの回転速度上限
-		angle = std::clamp(angle, -rotSpeed, rotSpeed);
-
-		// ★ 現在角度に加算（これが一番重要）
-		m_angleY += angle;
-	}
-
-	m_nowPos += m_dir * moveSpeed;
-
-	//デバック（プレイヤーの向いている方向）
-	//Math::Vector3 forward = m_mWorld.Forward();
-	//m_pDebugWire->AddDebugLine(m_nowPos, m_nowPos + forward, { 1,0,0,1 }); // 赤線で前方向
-
-	float t = m_animator.GetAnimeCurrentTime();
-	m_attackAnimeTime = t;   // ← 一時保存
-
-	//===============================================================================
-	// LogWindowに表示(発表時は非表示)
-	//===============================================================================
-
-	KdDebugGUI::Instance().ClearLog();
-
-	//アニメーションの番号一覧をLogWindowに表示
-	//for (int i = 0; ; i++)
-	//{
-	//	auto anim = m_model->GetAnimation(i);
-	//	if (!anim) break; // 取得できなくなったら終了
-
-	//	KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
+	//	//デバック（プレイヤーの向いている方向）
+	//	//Math::Vector3 forward = m_mWorld.Forward();
+	//	//m_pDebugWire->AddDebugLine(m_nowPos, m_nowPos + forward, { 1,0,0,1 }); // 赤線で前方向
+	//
+	//	float t = m_animator.GetAnimeCurrentTime();
+	//	m_attackAnimeTime = t;   // ← 一時保存
+	//
+	//	//===============================================================================
+	//	// LogWindowに表示(発表時は非表示)
+	//	//===============================================================================
+	//
+	//	KdDebugGUI::Instance().ClearLog();
+	//
+	//	//アニメーションの番号一覧をLogWindowに表示
+	//	//for (int i = 0; ; i++)
+	//	//{
+	//	//	auto anim = m_model->GetAnimation(i);
+	//	//	if (!anim) break; // 取得できなくなったら終了
+	//
+	//	//	KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
+	//	//}
+	//
+	//	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
+	//	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
+	//	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.y);
+	//
+	//	//KdDebugGUI::Instance().AddLog("Gravity : %f\n", m_gravity);
+	//	//KdDebugGUI::Instance().AddLog("m_isJumping : %s\n", m_isJumping ? "true" : "false");
+	//	//KdDebugGUI::Instance().AddLog("m_isLanding : %s\n", m_isLanding ? "true" : "false");
+	//	//KdDebugGUI::Instance().AddLog("m_isAttacking : %s\n", m_isAttacking ? "true" : "false");
+	//
 	//}
-
-	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
-	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
-	//KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.y);
-
-	//KdDebugGUI::Instance().AddLog("Gravity : %f\n", m_gravity);
-	//KdDebugGUI::Instance().AddLog("m_isJumping : %s\n", m_isJumping ? "true" : "false");
-	//KdDebugGUI::Instance().AddLog("m_isLanding : %s\n", m_isLanding ? "true" : "false");
-	//KdDebugGUI::Instance().AddLog("m_isAttacking : %s\n", m_isAttacking ? "true" : "false");
-
 }
 
 void Player::PostUpdate()
@@ -306,32 +165,6 @@ void Player::PostUpdate()
 			float landingSpeed = m_gravity;
 			m_nowPos.y = hitPos.y;
 			m_gravity = 0.0f;
-
-			bool wasJumping = m_isJumping;
-
-			m_isJumping = false;
-	
-			if (wasJumping)
-			{
-				// 着地の強さを判定
-				bool isHardLanding = (fabs(landingSpeed) >= 0.2f);
-
-				if (isHardLanding)
-				{
-					// ★ 高所落下 → 着地硬直あり
-					m_nowAnimIndex = 14; // Jump_Land
-					m_animator.SetAnimation(m_model->GetAnimation(14), false);
-					m_isLanding = true;  // ← 着地硬直フラグ
-				}
-				else
-				{
-					m_isLanding = false; // ← 着地硬直なし
-				}
-			}
-		}
-		else
-		{
-			m_isJumping = true;
 		}
 	}
 
@@ -430,4 +263,124 @@ void Player::GenerateDepthMapFromLight()
 		}
 	}*/
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
+}
+
+void Player::UpdateIdle()
+{
+	if (m_isLanding || m_isAttacking) return;
+
+	// 移動入力があれば Run へ
+	if (m_moving)
+	{
+		ChangeState(PlayerState::Run);
+		return;
+	}
+
+	// 攻撃
+	if (m_attacking)
+	{
+		ChangeState(PlayerState::Attack);
+		return;
+	}
+
+	// Idle アニメ
+	if (m_nowAnimIndex != 9)
+	{
+		m_nowAnimIndex = 9;
+		m_animator.SetAnimation(m_model->GetAnimation(9), true);
+	}
+}
+
+void Player::UpdateRun()
+{
+	// 着地硬直中・攻撃中は行動できない
+	if (m_isLanding || m_isAttacking) return;
+
+	//===============================
+	// 移動入力が消えたら Idle へ
+	//===============================
+	if (!m_moving)
+	{
+		ChangeState(PlayerState::Idle);
+		return;
+	}
+
+	//===============================
+	// 攻撃
+	//===============================
+	if (m_attacking && !m_isAttacking)
+	{
+		ChangeState(PlayerState::Attack);
+		return;
+	}
+
+	//===============================
+	// 着地中は移動禁止
+	//===============================
+	if (m_isLanding)
+	{
+		m_dir = { 0,0,0 };
+	}
+
+	//===============================
+	// Run / Walk アニメ切替
+	//===============================
+	int nextAnim = m_running ? 36 : 41;
+	if (m_nowAnimIndex != nextAnim)
+	{
+		m_nowAnimIndex = nextAnim;
+		m_animator.SetAnimation(m_model->GetAnimation(nextAnim), true);
+	}
+
+	//===============================
+	// キャラ回転
+	//===============================
+	{
+		Math::Vector3 nowDir = m_mWorld.Forward();
+		Math::Vector3 targetDir = m_dir;
+
+		nowDir.Normalize();
+		targetDir.Normalize();
+
+		float dot = std::clamp(nowDir.Dot(targetDir), -1.0f, 1.0f);
+		float angle = acos(dot);
+
+		Math::Vector3 cross = nowDir.Cross(targetDir);
+		if (cross.y < 0) angle = -angle;
+
+		const float rotSpeed = DirectX::XMConvertToRadians(5.0f);
+		angle = std::clamp(angle, -rotSpeed, rotSpeed);
+
+		m_angleY += angle;
+	}
+
+	//===============================
+	// 実際の移動
+	//===============================
+	float moveSpeed = m_running ? 0.15f : 0.05f;
+	m_nowPos += m_dir * moveSpeed;
+}
+
+void Player::UpdateAttack()
+{
+	if (!m_isAttacking)
+	{
+		m_isAttacking = true;
+		m_nowAnimIndex = 39;
+		m_animator.SetAnimation(m_model->GetAnimation(39), false);
+	}
+
+	if (m_animator.IsAnimationEnd())
+	{
+		m_isAttacking = false;
+		ChangeState(PlayerState::Idle);
+		return;
+	}
+}
+
+
+void Player::ChangeState(PlayerState next)
+{
+	m_state = next;
+	m_stateTimer = 0.0f;
 }
