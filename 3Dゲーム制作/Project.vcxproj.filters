@@ -103,6 +103,15 @@
     <Filter Include="Src\Application\GameObject\Stages\Floor">
       <UniqueIdentifier>{f47b2cf3-843c-4308-852c-4542231b7ea5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\UI">
+      <UniqueIdentifier>{1c71f351-afaf-40e4-9326-baacea12143e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\PlayerUI">
+      <UniqueIdentifier>{6d316474-daf6-4fde-88ed-8117fdb3104d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\PlayerUI\SkillGauge">
+      <UniqueIdentifier>{bf9332a6-15cd-4078-a703-ad02a161d076}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -300,6 +309,9 @@
     <ClInclude Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.h">
       <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.h">
+      <Filter>Src\Application\GameObject\UI\PlayerUI\SkillGauge</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -466,6 +478,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.cpp">
       <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.cpp">
+      <Filter>Src\Application\GameObject\UI\PlayerUI\SkillGauge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

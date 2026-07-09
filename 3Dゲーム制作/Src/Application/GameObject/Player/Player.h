@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include<Application/GameObject/BaseObject/BaseObject.h>
 
+class SkillGauge;
 class CameraBase;
 class Player :public BaseObject
 {
@@ -16,6 +17,7 @@ public:
 	void GenerateDepthMapFromLight()	override;
 
 	void SetCamera(std::shared_ptr<CameraBase> camera) { m_wpCamera = camera; }
+	void SetSkillGaugeUI(const std::shared_ptr<SkillGauge>& ui) { m_uiSkillGauge = ui; }
 	void SetPos(Math::Vector3 pos) { m_nowPos = pos; };
 
 	//void SetRotation(const Math::Vector3& rot) { m_rotation = rot; }
@@ -25,9 +27,14 @@ public:
 	enum class PlayerState {
 		Idle,
 		Run,
-		Attack,
+		//Jump,
+		Attack1,
+		Attack2,
+		Attack3,
+		Skill,
 		Landing,
 		Fall,
+		Dodge,
 	};
 
 	PlayerState m_state = PlayerState::Idle;
@@ -37,6 +44,8 @@ private:
 	std::shared_ptr<KdModelWork>m_model;
 	KdAnimator m_animator;
 	std::weak_ptr<CameraBase>m_wpCamera;
+
+	std::shared_ptr<SkillGauge> m_uiSkillGauge;
 
 	//方向
 	Math::Vector3 m_dir = Math::Vector3::Zero;
@@ -53,12 +62,7 @@ private:
 
 	//ジャンプ
 	bool m_isLanding = false;
-	bool m_isJumping = false;
 	Math::Vector3 m_jumpDir = Math::Vector3::Zero;
-
-
-	//攻撃
-	bool m_isAttacking = false;
 
 
 	Math::Vector3 m_move;
@@ -68,19 +72,48 @@ private:
 	float m_gravity = 0.0f;
 
 	//ステートマシン
-	void UpdateIdle();
-	void UpdateRun();
-	void UpdateAttack();
-	void UpdateLanding();
-	void UpdateFall();
+	void UpdateIdle();		//待機
+	void UpdateRun();		//歩き・走り
+	//void UpdateJump();		//ジャンプ
+	void UpdateAttack1();	//攻撃一段目
+	void UpdateAttack2();	//攻撃二段目
+	void UpdateAttack3();	//攻撃三段目
+	void UpdateSkill();		//スキル
+	void UpdateDodge();		//回避
+	void UpdateLanding();	//高所着地処理
+	void UpdateFall();		//落下処理
 	//void UpdateDodge();
 	//void UpdateHit();
 	//void UpdateDown();
 
 	void ChangeState(PlayerState next);
 
+	//その状態かどうかフラグ
 	bool m_moving	 = false;
 	bool m_running	 = false;
-	bool m_jumping	 = false;
+	//bool m_jumping	 = false;
+	//bool m_jumpOnce = false;
 	bool m_attacking = false;
+	bool m_attackOnce = false;
+	bool m_skillOnce = false;
+	bool m_dodgeing = false;
+
+	//キー管理関数
+	bool IsKeyPressedOnce(int vk);
+	std::unordered_map<int, bool> m_prevKeyState;
+	//　↑　C++標準ライブラリの連想コンテナにある
+	//		「int をキーにして bool を保存するハッシュテーブル」
+
+	//キャラクターの位置フレームにおける回転速度上限
+	float m_rotationSpeedDeg = 20.0f;
+
+	//攻撃予約
+	bool m_canNextAttack = false;
+	bool m_skillReserved = false;
+
+	//スキルコスト&ゲージ
+	float m_skillGauge = 100.0f;        // 最大100
+	const int m_skillCost = 50;    // スキル発動に必要なコスト
+	int m_skillGaugeMax = 100;   // 最大値
+	float m_skillRegen = 0.25f;  // 毎フレームの自動回復量（超微量）
 };

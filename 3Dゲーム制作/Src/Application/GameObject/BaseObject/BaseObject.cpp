@@ -13,3 +13,6 @@ void BaseObject::DrawLit()
 
 void BaseObject::GenerateDepthMapFromLight()
 {}
+
+void BaseObject::DrawSprite()
+{}

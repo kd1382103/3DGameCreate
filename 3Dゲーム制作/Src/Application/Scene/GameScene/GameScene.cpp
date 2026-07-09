@@ -2,7 +2,11 @@
 #include"../SceneManager.h"
 
 #include<Application/GameObject/Player/Player.h>
+
 #include<Application/GameObject/Stages/Floor/Stage.h>
+
+#include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
+
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/Camera/FPSCamera/FPSCamera.h>
 #include<Application/GameObject/Camera/CameraBase.h>
@@ -74,8 +78,16 @@ void GameScene::Init()
 	player->SetPos(Math::Vector3{ 0,5,0 });
 	AddObject(player);
 
+	//プレイヤーのUI系列
+	skillGauge = std::make_shared<SkillGauge>();
+	skillGauge->Init();
+	skillGauge->SetGauge(100, 100);
+	AddObject(skillGauge);
+
+
 	//各オブジェクトに必要な情報を格納
 	tpsCamera->SetTarget(player);
 	//fpsCamera->SetTarget(player);
 	player->SetCamera(m_camera);
+	player->SetSkillGaugeUI(skillGauge);
 }
