@@ -2,6 +2,7 @@
 #include"../SceneManager.h"
 
 #include<Application/GameObject/Player/Player.h>
+#include<Application/GameObject/EnemyBase/Enemy1/Enemy1.h>
 
 #include<Application/GameObject/Stages/Floor/Stage.h>
 
@@ -79,6 +80,12 @@ void GameScene::Init()
 	player->Init();
 	player->SetPos(Math::Vector3{ 0,5,0 });
 	AddObject(player);
+
+	enemy1 = std::make_shared<Enemy1>();
+	enemy1->Init();
+	enemy1->SetPos({ 5, 0, 5 });
+	enemy1->SetTarget(player);
+	AddObject(enemy1);
 
 	//プレイヤーのUI系列
 	{

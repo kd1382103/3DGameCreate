@@ -18,6 +18,21 @@ public:
 
 	std::unordered_map<UIType, std::shared_ptr<BaseObject>> m_uiMap;
 
+	enum class PlayerState {
+		Idle,
+		Run,
+		//Jump,
+		Attack1,
+		Attack2,
+		Attack3,
+		Skill,
+		Landing,
+		Fall,
+		Dodge,
+	};
+
+	PlayerState m_state = PlayerState::Idle;
+	float m_stateTimer = 0.0f;
 
 	Player() {}
 	~Player() override { Release(); }
@@ -36,21 +51,7 @@ public:
 	//void SetRotationY(float y) { m_rotation.y = y; }
 	//const Math::Vector3& GetRotation() const { return m_rotation; }
 
-	enum class PlayerState {
-		Idle,
-		Run,
-		//Jump,
-		Attack1,
-		Attack2,
-		Attack3,
-		Skill,
-		Landing,
-		Fall,
-		Dodge,
-	};
 
-	PlayerState m_state = PlayerState::Idle;
-	float m_stateTimer = 0.0f;
 
 	template <class T>
 	std::shared_ptr<T> GetUI(UIType type)
@@ -70,6 +71,8 @@ private:
 	//方向
 	Math::Vector3 m_dir = Math::Vector3::Zero;
 	Math::Vector3 m_rotation = Math::Vector3::Zero;
+	Math::Vector3 m_nowPos;
+
 
 	//移動・走り
 	float m_angleY = DirectX::XMConvertToRadians(180.0f);

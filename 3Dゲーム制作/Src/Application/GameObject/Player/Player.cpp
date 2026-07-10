@@ -16,6 +16,9 @@ void Player::Init()
 		m_animator.SetAnimation(anim, true); // ループ再生
 
 		m_pDebugWire = std::make_unique<KdDebugWireFrame>();
+
+		m_pCollider = std::make_unique<KdCollider>();
+		m_pCollider->RegisterCollisionShape("Player", m_model, KdCollider::TypeDamage);
 	}
 }
 
@@ -261,8 +264,9 @@ void Player::PostUpdate()
 		capsule.m_radius = 0.3f;
 		capsule.m_start = m_nowPos + Math::Vector3(0, 0.5f, 0);
 		capsule.m_end = m_nowPos + Math::Vector3(0, 1.5f, 0);
+		capsule.m_ownerWorld = m_mWorld;
 
-		m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,1,1 });
+		//m_pDebugWire->AddDebugCapsule(capsule.m_start, capsule.m_end, capsule.m_radius, { 1,1,1,1 });
 
 		std::list<KdCollider::CollisionResult> retCapsuleList;
 		for (auto& obj : SceneManager::Instance().GetObjList())

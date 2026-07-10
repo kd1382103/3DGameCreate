@@ -164,6 +164,7 @@ public:
 
 		Math::Vector3 m_start;   // カプセルの下端
 		Math::Vector3 m_end;     // カプセルの上端
+		Math::Matrix m_ownerWorld;	//対象のワールド行列
 		float m_radius = 0.5f;   // 半径
 
 		UINT m_type = 0;

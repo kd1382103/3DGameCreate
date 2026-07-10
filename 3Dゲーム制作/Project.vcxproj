@@ -277,9 +277,10 @@
     <ClInclude Include="Src\Application\GameObject\Camera\CameraBase.h" />
     <ClInclude Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.h" />
     <ClInclude Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.h" />
+    <ClInclude Include="Src\Application\GameObject\EnemyBase\Enemy1\Enemy1.h" />
+    <ClInclude Include="Src\Application\GameObject\EnemyBase\EnemyBase.h" />
     <ClInclude Include="Src\Application\GameObject\Player\Player.h" />
     <ClInclude Include="Src\Application\GameObject\Stages\Floor\Stage.h" />
-    <ClInclude Include="Src\Application\GameObject\Stages\Wall\Wall.h" />
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\HPGauge\HPGauge.h" />
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.h" />
     <ClInclude Include="Src\Application\main.h" />
@@ -339,9 +340,10 @@
     <ClCompile Include="Src\Application\GameObject\Camera\CameraBase.cpp" />
     <ClCompile Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.cpp" />
     <ClCompile Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.cpp" />
+    <ClCompile Include="Src\Application\GameObject\EnemyBase\Enemy1\Enemy1.cpp" />
+    <ClCompile Include="Src\Application\GameObject\EnemyBase\EnemyBase.cpp" />
     <ClCompile Include="Src\Application\GameObject\Player\Player.cpp" />
     <ClCompile Include="Src\Application\GameObject\Stages\Floor\Stage.cpp" />
-    <ClCompile Include="Src\Application\GameObject\Stages\Wall\Wall.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\HPGauge\HPGauge.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.cpp" />
     <ClCompile Include="Src\Application\main.cpp" />

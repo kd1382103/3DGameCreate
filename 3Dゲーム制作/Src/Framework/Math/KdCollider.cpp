@@ -1230,17 +1230,22 @@ bool KdCapsuleCollision::Intersects(
 
 bool KdCapsuleCollision::Intersects(
 	const KdCollider::CapsuleInfo& target,
-	const Math::Matrix& world,
+	const Math::Matrix& worldSelf,
 	KdCollider::CollisionResult* pRes)
 {
 	if (!m_enable) return false;
 
-	Math::Vector3 s1 = Math::Vector3::Transform(m_start, world);
-	Math::Vector3 e1 = Math::Vector3::Transform(m_end, world);
+	// ★ 自分のカプセル（self）
+	Math::Vector3 s1 = Math::Vector3::Transform(m_start, worldSelf);
+	Math::Vector3 e1 = Math::Vector3::Transform(m_end, worldSelf);
 
-	Math::Vector3 s2 = Math::Vector3::Transform(target.m_start, world);
-	Math::Vector3 e2 = Math::Vector3::Transform(target.m_end, world);
+	// ★ 相手のカプセル（target）
+	// target は「相手の world 行列」で変換しないとダメ
+	Math::Matrix worldTarget = target.m_ownerWorld;   // ← 必要
+	Math::Vector3 s2 = Math::Vector3::Transform(target.m_start, worldTarget);
+	Math::Vector3 e2 = Math::Vector3::Transform(target.m_end, worldTarget);
 
+	// 最近接点
 	Math::Vector3 c1, c2;
 	float dist = SegmentSegmentDistance(s1, e1, s2, e2, c1, c2);
 
@@ -1249,14 +1254,27 @@ bool KdCapsuleCollision::Intersects(
 	if (dist > hitDist) return false;
 	if (!pRes) return true;
 
+	// ★ 安全な方向計算
 	Math::Vector3 hitDir = c2 - c1;
 	float betweenDistance = hitDir.Length();
-	hitDir.Normalize();
+
+	if (betweenDistance < 0.0001f)
+	{
+		// 完全に重なっている → 適当な方向を返す
+		hitDir = Math::Vector3(0, 1, 0);
+		betweenDistance = 0.0f;
+	}
+	else
+	{
+		hitDir /= betweenDistance;  // Normalize の安全版
+	}
 
 	pRes->m_hitDir = hitDir;
-	pRes->m_overlapDistance = hitDist - betweenDistance;
-	pRes->m_hitPos = c1 + hitDir * (m_radius - pRes->m_overlapDistance * 0.5f);
 	pRes->m_hitNDir = hitDir;
+	pRes->m_overlapDistance = hitDist - betweenDistance;
+
+	// ★ ヒット位置（安全版）
+	pRes->m_hitPos = c1 + hitDir * (m_radius - pRes->m_overlapDistance * 0.5f);
 
 	return true;
 }

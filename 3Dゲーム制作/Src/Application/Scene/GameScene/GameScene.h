@@ -6,7 +6,7 @@ class CameraBase;
 class TPSCamera;
 class FPSCamera;
 class Player;
-
+class Enemy1;
 class SkillGauge;
 class HPGauge;
 
@@ -29,6 +29,7 @@ private:
 
 	//キャラクター
 	std::shared_ptr<Player>player;
+	std::shared_ptr<Enemy1>enemy1;
 	
 	//UI
 	std::shared_ptr<SkillGauge>skillGauge;
