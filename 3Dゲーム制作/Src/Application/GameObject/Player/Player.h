@@ -2,11 +2,23 @@
 #include<Application/GameObject/BaseObject/BaseObject.h>
 
 class SkillGauge;
+class HPGauge;
 class CameraBase;
 class Player :public BaseObject
 {
 
 public:
+
+	enum class UIType
+	{
+		SkillGauge,
+		HPGauge,
+		// 必要なら追加
+	};
+
+	std::unordered_map<UIType, std::shared_ptr<BaseObject>> m_uiMap;
+
+
 	Player() {}
 	~Player() override { Release(); }
 
@@ -17,7 +29,7 @@ public:
 	void GenerateDepthMapFromLight()	override;
 
 	void SetCamera(std::shared_ptr<CameraBase> camera) { m_wpCamera = camera; }
-	void SetSkillGaugeUI(const std::shared_ptr<SkillGauge>& ui) { m_uiSkillGauge = ui; }
+	void RegisterUI(UIType type, const std::shared_ptr<BaseObject>& ui) {m_uiMap[type] = ui;}
 	void SetPos(Math::Vector3 pos) { m_nowPos = pos; };
 
 	//void SetRotation(const Math::Vector3& rot) { m_rotation = rot; }
@@ -40,12 +52,20 @@ public:
 	PlayerState m_state = PlayerState::Idle;
 	float m_stateTimer = 0.0f;
 
+	template <class T>
+	std::shared_ptr<T> GetUI(UIType type)
+	{
+		auto it = m_uiMap.find(type);
+		if (it == m_uiMap.end()) return nullptr;
+
+		return std::dynamic_pointer_cast<T>(it->second);
+	}
+
+
 private:
 	std::shared_ptr<KdModelWork>m_model;
 	KdAnimator m_animator;
 	std::weak_ptr<CameraBase>m_wpCamera;
-
-	std::shared_ptr<SkillGauge> m_uiSkillGauge;
 
 	//方向
 	Math::Vector3 m_dir = Math::Vector3::Zero;
@@ -112,8 +132,13 @@ private:
 	bool m_skillReserved = false;
 
 	//スキルコスト&ゲージ
-	float m_skillGauge = 100.0f;        // 最大100
-	const int m_skillCost = 50;    // スキル発動に必要なコスト
 	int m_skillGaugeMax = 100;   // 最大値
+	float m_skillGauge = m_skillGaugeMax;        // 最大100
+	const int m_skillCost = 50;    // スキル発動に必要なコスト
 	float m_skillRegen = 0.25f;  // 毎フレームの自動回復量（超微量）
+
+	int m_hpGaugeMax = 1000;
+	float m_hpGauge = m_hpGaugeMax;
+
+
 };

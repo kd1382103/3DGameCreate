@@ -112,6 +112,9 @@
     <Filter Include="Src\Application\GameObject\UI\PlayerUI\SkillGauge">
       <UniqueIdentifier>{bf9332a6-15cd-4078-a703-ad02a161d076}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\UI\PlayerUI\HPGauge">
+      <UniqueIdentifier>{ac213dff-bc52-4f57-81e7-5d5d7c920699}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -312,6 +315,9 @@
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.h">
       <Filter>Src\Application\GameObject\UI\PlayerUI\SkillGauge</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\HPGauge\HPGauge.h">
+      <Filter>Src\Application\GameObject\UI\PlayerUI\HPGauge</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -481,6 +487,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.cpp">
       <Filter>Src\Application\GameObject\UI\PlayerUI\SkillGauge</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\HPGauge\HPGauge.cpp">
+      <Filter>Src\Application\GameObject\UI\PlayerUI\HPGauge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

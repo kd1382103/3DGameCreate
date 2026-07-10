@@ -2,6 +2,7 @@
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
+#include<Application/GameObject/UI/PlaeyrUI/HPGauge/HPGauge.h>
 #include<Application/Scene/SceneManager.h>
 void Player::Init()
 {
@@ -136,11 +137,21 @@ void Player::Update()
 	float t = m_animator.GetAnimeCurrentTime();
 	m_attackAnimeTime = t;   // ← 一時保存
 
-	if (m_uiSkillGauge)
+	// SkillGauge 更新
+	if (auto ui = GetUI<SkillGauge>(UIType::SkillGauge))
 	{
-		m_uiSkillGauge->SetGauge(m_skillGauge, m_skillGaugeMax);
+		ui->SetGauge(m_skillGauge, m_skillGaugeMax);
 	}
 
+	// HPGauge 更新（作ったら）
+	if (auto ui = GetUI<HPGauge>(UIType::HPGauge))
+	{
+		ui->SetGauge(m_hpGauge, m_hpGaugeMax);
+	}
+
+	//===============================================================================
+	//	デバック関係
+	//===============================================================================
 
 	//===============================================================================
 	// LogWindowに表示(発表時は非表示)
@@ -171,6 +182,11 @@ void Player::Update()
 	KdDebugGUI::Instance().AddLog("m_isAttacking : %s\n", m_attacking ? "true" : "false");
 	KdDebugGUI::Instance().AddLog("m_skillGauge : %f\n", m_skillGauge);*/
 
+	//===============================================================================
+	//	デバックキー一覧
+	//===============================================================================
+
+	//if (GetAsyncKeyState('P') & 0x8000) { m_hpGauge--; }	//体力ゲージの減少確認
 
 }
 

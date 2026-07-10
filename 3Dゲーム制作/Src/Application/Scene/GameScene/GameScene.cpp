@@ -6,6 +6,8 @@
 #include<Application/GameObject/Stages/Floor/Stage.h>
 
 #include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
+#include<Application/GameObject/UI/PlaeyrUI/HPGauge/HPGauge.h>
+
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/Camera/FPSCamera/FPSCamera.h>
@@ -79,15 +81,26 @@ void GameScene::Init()
 	AddObject(player);
 
 	//プレイヤーのUI系列
-	skillGauge = std::make_shared<SkillGauge>();
-	skillGauge->Init();
-	skillGauge->SetGauge(100, 100);
-	AddObject(skillGauge);
+	{
+		//スキルゲージ
+		skillGauge = std::make_shared<SkillGauge>();
+		skillGauge->Init();
+		skillGauge->SetGauge(100, 100);
+		AddObject(skillGauge);
 
+		//体力ゲージ
+
+		hpGauge = std::make_shared<HPGauge>();
+		hpGauge->Init();
+		hpGauge->SetGauge(100, 100);
+		AddObject(hpGauge);
+	}
 
 	//各オブジェクトに必要な情報を格納
 	tpsCamera->SetTarget(player);
 	//fpsCamera->SetTarget(player);
 	player->SetCamera(m_camera);
-	player->SetSkillGaugeUI(skillGauge);
+	player->RegisterUI(Player::UIType::SkillGauge, skillGauge);
+	player->RegisterUI(Player::UIType::HPGauge, hpGauge);
+
 }

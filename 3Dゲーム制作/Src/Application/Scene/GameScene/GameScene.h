@@ -8,6 +8,7 @@ class FPSCamera;
 class Player;
 
 class SkillGauge;
+class HPGauge;
 
 class GameScene : public BaseScene
 {
@@ -31,4 +32,5 @@ private:
 	
 	//UI
 	std::shared_ptr<SkillGauge>skillGauge;
+	std::shared_ptr<HPGauge>hpGauge;
 };
