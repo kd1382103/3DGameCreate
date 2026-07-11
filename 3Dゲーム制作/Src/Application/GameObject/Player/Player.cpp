@@ -1,8 +1,12 @@
 ﻿#include "Player.h"
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
+
+#include<Application/GameObject/EnemyBase/EnemyBase.h>
+
 #include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include<Application/GameObject/UI/PlaeyrUI/HPGauge/HPGauge.h>
+
 #include<Application/Scene/SceneManager.h>
 void Player::Init()
 {
@@ -349,6 +353,15 @@ void Player::GenerateDepthMapFromLight()
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
+void Player::Damage(float dmg)
+{
+	m_hpGauge -= dmg;
+	if (m_hpGauge < 0) m_hpGauge = 0;
+
+	// プレイヤー死亡処理（必要なら）
+	// ChangeState(PlayerState::Dead);
+}
+
 void Player::UpdateIdle()
 {
 	if (m_isLanding) return;
@@ -558,10 +571,10 @@ void Player::UpdateAttack1()
 
 
 	// ★ 攻撃判定（0.15〜0.25秒）
-	/*if (t > 0.15f && t < 0.25f)
+	if (t > 0.15f && t < 0.25f)
 	{
 		DoAttackHitCheck(0.8f);
-	}*/
+	}
 
 	// ★ Attack2 の受付（予約制）
 	if (t > 30.0f && t < 85.0f)
@@ -865,4 +878,30 @@ bool Player::IsKeyPressedOnce(int vk)
 
 	return (now && !prev);      // 押された瞬間だけ true
 }
+
+void Player::DoAttackHitCheck(float range)
+{
+	// 全オブジェクトを走査
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		// 自分自身は無視
+		if (obj.get() == this) continue;
+
+		// BaseObject にキャスト
+		BaseObject* base = dynamic_cast<BaseObject*>(obj.get());
+		if (!base) continue;
+
+		// 敵だけに当てたいなら EnemyBase にキャスト
+		EnemyBase* enemy = dynamic_cast<EnemyBase*>(base);
+		if (!enemy) continue;
+
+		// 距離判定
+		float dist = (enemy->GetPos() - m_nowPos).Length();
+		if (dist < range)
+		{
+			enemy->Damage(20);   // ★共通インターフェース
+		}
+	}
+}
+
 

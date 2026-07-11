@@ -19,9 +19,11 @@ void Enemy1::Init()
 
 void Enemy1::UpdateIdle()
 {
-	if (m_nowAnimIndex != 9)
+	const int IdleAnim = 9;
+
+	if (m_nowAnimIndex != IdleAnim)
 	{
-		m_nowAnimIndex = 9;
+		m_nowAnimIndex = IdleAnim;
 		m_animator->SetAnimation(m_model->GetAnimation(9), true);
 	}
 
@@ -30,9 +32,11 @@ void Enemy1::UpdateIdle()
 
 void Enemy1::UpdateMove()
 {
-	if (m_nowAnimIndex != 36)
+	const int MoveAnim = 36;
+
+	if (m_nowAnimIndex != MoveAnim)
 	{
-		m_nowAnimIndex = 36;
+		m_nowAnimIndex = MoveAnim;
 		m_animator->SetAnimation(m_model->GetAnimation(36), true);
 	}
 
@@ -41,13 +45,30 @@ void Enemy1::UpdateMove()
 
 void Enemy1::UpdateOrbit()
 {
-	if (m_nowAnimIndex != 36)
+	const int OrbitAnim = 36;
+
+	if (m_nowAnimIndex != OrbitAnim)
 	{
-		m_nowAnimIndex = 36;
-		m_animator->SetAnimation(m_model->GetAnimation(36), true);
+		m_nowAnimIndex = OrbitAnim;
+		m_animator->SetAnimation(m_model->GetAnimation(OrbitAnim), true);
 	}
 
 	EnemyBase::UpdateOrbit();
 }
+
+void Enemy1::UpdateAttack()
+{
+	// ★攻撃アニメ番号（君の Enemy.gltf に合わせて変更）
+	const int attackAnim = 12;
+
+	if (m_nowAnimIndex != attackAnim)
+	{
+		m_nowAnimIndex = attackAnim;
+		m_animator->SetAnimation(m_model->GetAnimation(attackAnim), false);
+	}
+
+	EnemyBase::UpdateAttack();
+}
+
 
 

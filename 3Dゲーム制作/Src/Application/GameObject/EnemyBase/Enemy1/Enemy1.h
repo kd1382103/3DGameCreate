@@ -6,8 +6,8 @@ class Enemy1 : public EnemyBase
 public:
 	void Init() override;
 
-
 	void UpdateIdle()		override;
 	void UpdateMove()		override;
 	void UpdateOrbit()		override;
+	void UpdateAttack()		override;
 };

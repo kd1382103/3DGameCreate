@@ -21,6 +21,7 @@ public:
 		Idle,
 		Move,
 		Orbit,
+		Attack,
 		Hit,
 		Dead,
 	};
@@ -37,18 +38,14 @@ public:
 	void SetPos(const Math::Vector3& pos) { m_nowPos = pos; }
 
 	// ダメージ処理
-	virtual void Damage(float dmg)
-	{
-		m_hp -= dmg;
-		if (m_hp <= 0) ChangeState(State::Dead);
-		else ChangeState(State::Hit);
-	}
+	virtual void Damage(float dmg);
 
 protected:
 	// ステート処理
 	virtual void UpdateIdle();
 	virtual void UpdateMove();
 	virtual void UpdateOrbit();
+	virtual void UpdateAttack();
 	virtual void UpdateHit();
 	virtual void UpdateDead();
 	virtual void RotateToMoveDir();
@@ -119,6 +116,8 @@ protected:
 	float m_orbitDist = 2.0f;       // 周回距離
 	float m_orbitSpeedRate = 0.5f;  // 移動速度に対する倍率
 
+	float m_attackDist = 1.5f;		
+
 	float m_gravity = 0.0f;
 	bool m_isGround = false;
 
@@ -126,4 +125,8 @@ protected:
 	std::shared_ptr<KdAnimator> m_animator;   // アニメーション管理
 	int m_nowAnimIndex = 0;                         // 現在のアニメーション番号
 	float m_animSpeed = 1.0f;                 // 再生速度
+
+	//攻撃が当たったかどうか
+	void DoAttackHitCheck();
+
 };

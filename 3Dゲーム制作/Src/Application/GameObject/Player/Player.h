@@ -4,6 +4,7 @@
 class SkillGauge;
 class HPGauge;
 class CameraBase;
+
 class Player :public BaseObject
 {
 
@@ -42,6 +43,8 @@ public:
 	void PostUpdate()					override;
 	void DrawLit()						override;
 	void GenerateDepthMapFromLight()	override;
+
+	void Damage(float dmg)override;
 
 	void SetCamera(std::shared_ptr<CameraBase> camera) { m_wpCamera = camera; }
 	void RegisterUI(UIType type, const std::shared_ptr<BaseObject>& ui) {m_uiMap[type] = ui;}
@@ -143,5 +146,5 @@ private:
 	int m_hpGaugeMax = 1000;
 	float m_hpGauge = m_hpGaugeMax;
 
-
+	void DoAttackHitCheck(float range);
 };

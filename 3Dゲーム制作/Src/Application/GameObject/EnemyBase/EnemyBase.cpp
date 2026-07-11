@@ -17,9 +17,9 @@ void EnemyBase::Update()
 	{
 		float dist = (player->GetPos() - m_nowPos).Length();
 
-		if (dist > m_chaseDist)
+		if (dist <= m_attackDist)
 		{
-			ChangeState(State::Move);
+			ChangeState(State::Attack);
 		}
 		else if (dist <= m_orbitDist)
 		{
@@ -37,6 +37,7 @@ void EnemyBase::Update()
 	case State::Idle:  UpdateIdle();  break;
 	case State::Move:  UpdateMove();  break;
 	case State::Orbit: UpdateOrbit(); break;
+	case State::Attack: UpdateAttack(); break;
 	case State::Hit:   UpdateHit();   break;
 	case State::Dead:  UpdateDead();  break;
 	}
@@ -118,6 +119,35 @@ void EnemyBase::UpdateOrbit()
 	}
 }
 
+void EnemyBase::UpdateAttack()
+{
+	auto player = m_wpPlayer.lock();
+	if (!player)
+	{
+		ChangeState(State::Idle);
+		return;
+	}
+
+	float dist = (player->GetPos() - m_nowPos).Length();
+	if (dist > m_attackDist)
+	{
+		ChangeState(State::Move);
+		return;
+	}
+
+	float t = m_animator->GetAnimeCurrentTime();
+	if (t > 10 && t < 20)
+	{
+		DoAttackHitCheck();
+	}
+
+	if (m_animator->IsAnimationEnd())
+	{
+		ChangeState(State::Idle);
+		return;
+	}
+}
+
 void EnemyBase::UpdateHit()
 {
 	if (m_stateTimer > 20)
@@ -190,6 +220,21 @@ void EnemyBase::UpdateAnimation()
 		m_model->CalcNodeMatrices();
 	}
 }
+
+void EnemyBase::Damage(float dmg)
+{
+	m_hp -= dmg;
+
+	if (m_hp <= 0)
+	{
+		m_hp = 0;
+		ChangeState(State::Dead);
+		return;
+	}
+
+	ChangeState(State::Hit);
+}
+
 
 void EnemyBase::PlayAnimation(const std::string& animName)
 {
@@ -291,5 +336,19 @@ void EnemyBase::GroundCheck()
 		m_isGround = false;
 		m_gravity += 0.005f;
 		m_nowPos.y -= m_gravity;
+	}
+}
+
+void EnemyBase::DoAttackHitCheck()
+{
+	auto player = m_wpPlayer.lock();
+	if (!player) return;
+
+	float dist = (player->GetPos() - m_nowPos).Length();
+
+	// ★攻撃判定距離（近ければヒット）
+	if (dist < 1.2f)
+	{
+		player->Damage(10);   // ★プレイヤーに10ダメージ
 	}
 }
