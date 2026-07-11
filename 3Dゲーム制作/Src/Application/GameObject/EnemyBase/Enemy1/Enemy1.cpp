@@ -2,6 +2,8 @@
 
 void Enemy1::Init()
 {
+	EnemyBase::Init();
+
 	m_model = std::make_shared<KdModelWork>();
 	m_model->SetModelData("Asset/Models/Enemy/manModel/Enemy.gltf");
 
@@ -14,3 +16,38 @@ void Enemy1::Init()
 
 
 }
+
+void Enemy1::UpdateIdle()
+{
+	if (m_nowAnimIndex != 9)
+	{
+		m_nowAnimIndex = 9;
+		m_animator->SetAnimation(m_model->GetAnimation(9), true);
+	}
+
+	EnemyBase::UpdateIdle();
+}
+
+void Enemy1::UpdateMove()
+{
+	if (m_nowAnimIndex != 36)
+	{
+		m_nowAnimIndex = 36;
+		m_animator->SetAnimation(m_model->GetAnimation(36), true);
+	}
+
+	EnemyBase::UpdateMove();
+}
+
+void Enemy1::UpdateOrbit()
+{
+	if (m_nowAnimIndex != 36)
+	{
+		m_nowAnimIndex = 36;
+		m_animator->SetAnimation(m_model->GetAnimation(36), true);
+	}
+
+	EnemyBase::UpdateOrbit();
+}
+
+

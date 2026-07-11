@@ -81,6 +81,7 @@ void GameScene::Init()
 	player->SetPos(Math::Vector3{ 0,5,0 });
 	AddObject(player);
 
+	//敵系
 	enemy1 = std::make_shared<Enemy1>();
 	enemy1->Init();
 	enemy1->SetPos({ 5, 0, 5 });

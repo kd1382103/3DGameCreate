@@ -79,7 +79,7 @@ private:
 
 	bool m_keepRunning = false;
 
-	//アニメーション管理m
+	//アニメーション管理
 	int m_nowAnimIndex = -1;
 	float m_attackAnimeTime;
 
