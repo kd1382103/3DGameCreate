@@ -91,6 +91,9 @@ protected:
 	// カプセル当たり判定（プレイヤーと同じ）
 	void CapsuleCollision();
 
+	//プレイヤーとの当たり判定（ただしプレイヤーは押し返されない）
+	void PlayerCollusion();
+
 	// 地面判定
 	void GroundCheck();
 
@@ -113,10 +116,12 @@ protected:
 	float m_stateTimer = 0.0f;
 
 	float m_chaseDist = 4.0f;       // 追跡開始距離
-	float m_orbitDist = 2.0f;       // 周回距離
+	float m_orbitDist = 1.0f;       // 周回距離
 	float m_orbitSpeedRate = 0.5f;  // 移動速度に対する倍率
 
-	float m_attackDist = 1.5f;		
+	float m_attackDist = 1.5f;
+	float m_attackCooldown = 0.0f;   // 攻撃クールタイム
+	float m_attackInterval = 60.0f;  // 攻撃間隔（60フレーム = 1秒）
 
 	float m_gravity = 0.0f;
 	bool m_isGround = false;

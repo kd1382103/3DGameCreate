@@ -12,22 +12,28 @@ void EnemyBase::Update()
 	m_stateTimer += 1.0f;
 	m_gravity += 0.005f;
 	m_nowPos.y -= m_gravity;
-	// プレイヤー距離チェック（共通）
-	if (auto player = m_wpPlayer.lock())
-	{
-		float dist = (player->GetPos() - m_nowPos).Length();
 
-		if (dist <= m_attackDist)
+	m_attackCooldown -= 1.0f;
+
+	// プレイヤー距離チェック（共通）
+	if (m_state != State::Attack)
+	{
+		if (auto player = m_wpPlayer.lock())
 		{
-			ChangeState(State::Attack);
-		}
-		else if (dist <= m_orbitDist)
-		{
-			ChangeState(State::Orbit);
-		}
-		else
-		{
-			ChangeState(State::Move);
+			float dist = (player->GetPos() - m_nowPos).Length();
+
+			if (dist <= m_attackDist && m_attackCooldown <= 0.0f)
+			{
+				ChangeState(State::Attack);
+			}
+			else if (dist <= m_orbitDist)
+			{
+				ChangeState(State::Orbit);
+			}
+			else
+			{
+				ChangeState(State::Move);
+			}
 		}
 	}
 
@@ -53,6 +59,7 @@ void EnemyBase::PostUpdate()
 
 	CapsuleCollision();
 	GroundCheck();
+	PlayerCollusion();
 }
 
 void EnemyBase::DrawLit()
@@ -116,6 +123,18 @@ void EnemyBase::UpdateOrbit()
 			raw.Normalize();
 			m_nowPos = player->GetPos() + raw * m_orbitDist;
 		}
+
+		// ★攻撃距離かつクールタイム終了なら攻撃へ
+		if (auto player = m_wpPlayer.lock())
+		{
+			float dist = (player->GetPos() - m_nowPos).Length();
+
+			if (dist <= m_attackDist && m_attackCooldown <= 0.0f)
+			{
+				ChangeState(State::Attack);
+				return;
+			}
+		}
 	}
 }
 
@@ -129,11 +148,11 @@ void EnemyBase::UpdateAttack()
 	}
 
 	float dist = (player->GetPos() - m_nowPos).Length();
-	if (dist > m_attackDist)
-	{
-		ChangeState(State::Move);
-		return;
-	}
+	//if (dist > m_attackDist)
+	//{
+	//	ChangeState(State::Move);
+	//	return;
+	//}
 
 	float t = m_animator->GetAnimeCurrentTime();
 	if (t > 10 && t < 20)
@@ -143,7 +162,8 @@ void EnemyBase::UpdateAttack()
 
 	if (m_animator->IsAnimationEnd())
 	{
-		ChangeState(State::Idle);
+		m_attackCooldown = m_attackInterval;
+		ChangeState(State::Orbit);
 		return;
 	}
 }
@@ -292,6 +312,45 @@ void EnemyBase::CapsuleCollision()
 	if (hit) { m_nowPos += bestDir * (maxOverlap * 0.9f); }
 }
 
+void EnemyBase::PlayerCollusion()
+{
+	KdCollider::CapsuleInfo capsule;
+	capsule.m_type = KdCollider::TypeDamage;   // ★プレイヤーと当たる
+	capsule.m_radius = 0.35f;
+	capsule.m_start = m_nowPos + Math::Vector3(0, 0.5f, 0);
+	capsule.m_end = m_nowPos + Math::Vector3(0, 1.5f, 0);
+	capsule.m_ownerWorld = m_mWorld;
+
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		std::list<KdCollider::CollisionResult> retList;
+		obj->Intersects(capsule, &retList);
+
+		if (retList.empty()) continue;
+
+		Player* player = dynamic_cast<Player*>(obj.get());
+		if (!player) continue;
+
+		Math::Vector3 pushDir = m_moveDir;
+		pushDir.y = 0;
+
+		if (pushDir.LengthSquared() > 0.0001f)
+		{
+			pushDir.Normalize();
+			pushDir = -pushDir;
+		}
+		else
+		{
+			Math::Vector3 n = retList.front().m_hitNDir;
+			n.y = 0;
+			n.Normalize();
+			pushDir = n;
+		}
+
+		m_nowPos += pushDir * 0.02f;
+		return;
+	}
+}
 //--------------------------------------
 // 地面判定
 //--------------------------------------
