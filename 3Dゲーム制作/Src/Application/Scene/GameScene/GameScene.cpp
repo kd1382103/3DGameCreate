@@ -86,6 +86,7 @@ void GameScene::Init()
 	enemy1->Init();
 	enemy1->SetPos({ 5, 0, 5 });
 	enemy1->SetTarget(player);
+	enemy1->SetCamera(m_camera);
 	AddObject(enemy1);
 
 	//プレイヤーのUI系列

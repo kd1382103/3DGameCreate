@@ -1,10 +1,20 @@
 ﻿#include "EnemyBase.h"
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Player/Player.h>
+#include <Application/GameObject/Camera/CameraBase.h>
+#include <Application/main.h>
 
 void EnemyBase::Init()
 {
 	m_animator = std::make_shared<KdAnimator>();
+
+	// ★攻撃予知エフェクト（SquarePolygon）
+	m_preAttackEffect = std::make_shared<KdSquarePolygon>();
+	m_preAttackEffect->SetMaterial("Asset/Textures/Effect/PreAttack.png");
+	m_preAttackEffect->SetPivot(KdSquarePolygon::PivotType::Center_Bottom);
+	m_preAttackEffect->Set2DObject(false);
+
+	m_effectAlpha = 0.0f;
 }
 
 void EnemyBase::Update()
@@ -16,7 +26,7 @@ void EnemyBase::Update()
 	m_attackCooldown -= 1.0f;
 
 	// プレイヤー距離チェック（共通）
-	if (m_state != State::Attack)
+	if (m_state != State::Attack && m_state != State::PreAttack)
 	{
 		if (auto player = m_wpPlayer.lock())
 		{
@@ -24,7 +34,9 @@ void EnemyBase::Update()
 
 			if (dist <= m_attackDist && m_attackCooldown <= 0.0f)
 			{
-				ChangeState(State::Attack);
+				m_preAttackTimer = 0.5f;   // ★予備動作の総時間
+				ChangeState(State::PreAttack);
+				return;
 			}
 			else if (dist <= m_orbitDist)
 			{
@@ -40,12 +52,13 @@ void EnemyBase::Update()
 	// ステート処理
 	switch (m_state)
 	{
-	case State::Idle:  UpdateIdle();  break;
-	case State::Move:  UpdateMove();  break;
-	case State::Orbit: UpdateOrbit(); break;
-	case State::Attack: UpdateAttack(); break;
-	case State::Hit:   UpdateHit();   break;
-	case State::Dead:  UpdateDead();  break;
+	case State::Idle:      UpdateIdle();      break;
+	case State::Move:      UpdateMove();      break;
+	case State::Orbit:     UpdateOrbit();     break;
+	case State::PreAttack: UpdatePreAttack(); break;
+	case State::Attack:    UpdateAttack();    break;
+	case State::Hit:       UpdateHit();       break;
+	case State::Dead:      UpdateDead();      break;
 	}
 
 	UpdateAnimation();
@@ -65,7 +78,53 @@ void EnemyBase::PostUpdate()
 void EnemyBase::DrawLit()
 {
 	if (!m_model) return;
+
+	DrawEffect();
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
+}
+
+void EnemyBase::DrawEffect()
+{
+	if (m_state != State::PreAttack) return;
+
+	float size = 0.8f;
+
+	// 顔の近く
+	Math::Vector3 headPos = m_nowPos + Math::Vector3(0, 1.6f, 0);
+
+	// カメラ正面を向く（ビルボード）
+	auto cam = m_wpCamera.lock();
+	Math::Matrix camRot = cam ? cam->GetRotationMatrix() : Math::Matrix::Identity;
+
+	Math::Matrix scale = Math::Matrix::CreateScale(size);
+	Math::Matrix trans = Math::Matrix::CreateTranslation(headPos);
+	Math::Matrix mWorld = scale * camRot * trans;
+
+	// ★フェード（出現 → 最大 → 消失）
+	float total = 0.5f;          // 予備動作の総時間
+	float t = m_preAttackTimer;  // 残り時間
+
+	float alpha = 1.0f;
+
+	if (t > total * 0.7f)
+	{
+		// 出現フェードイン
+		float p = (t - total * 0.7f) / (total * 0.3f);
+		alpha = 1.0f - p;
+	}
+	else if (t < total * 0.3f)
+	{
+		// 消失フェードアウト
+		float p = t / (total * 0.3f);
+		alpha = p;
+	}
+
+	// ★保存して UpdatePreAttack で使う
+	m_effectAlpha = alpha;
+
+	m_preAttackEffect->GetMaterial()->m_baseColorRate.w = alpha;
+
+	KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_preAttackEffect, mWorld);
 }
 
 void EnemyBase::UpdateIdle()
@@ -94,47 +153,44 @@ void EnemyBase::UpdateMove()
 
 void EnemyBase::UpdateOrbit()
 {
-	if (auto player = m_wpPlayer.lock())
+	auto player = m_wpPlayer.lock();
+	if (!player) return;
+
+	Math::Vector3 toPlayer = player->GetPos() - m_nowPos;
+	toPlayer.y = 0;
+
+	float dist = toPlayer.Length();
+
+	if (dist > m_orbitDist)
 	{
-		Math::Vector3 toPlayer = player->GetPos() - m_nowPos;
-		toPlayer.y = 0;
+		ChangeState(State::Move);
+		return;
+	}
 
-		if (toPlayer.LengthSquared() < 0.0001f) return;
+	toPlayer.Normalize();
 
-		toPlayer.Normalize();
+	m_moveDir = toPlayer;
+	RotateToMoveDir();
 
-		// 向きはプレイヤー方向
-		m_moveDir = toPlayer;
-		RotateToMoveDir();
+	Math::Vector3 moveDir = { toPlayer.z, 0, -toPlayer.x };
+	moveDir.Normalize();
 
-		// 横方向に移動
-		Math::Vector3 moveDir = { toPlayer.z, 0, -toPlayer.x };
-		moveDir.Normalize();
+	float orbitSpeed = m_moveSpeed * m_orbitSpeedRate;
+	m_nowPos += moveDir * orbitSpeed;
+}
 
-		float orbitSpeed = m_moveSpeed * m_orbitSpeedRate;
-		m_nowPos += moveDir * orbitSpeed;
+void EnemyBase::UpdatePreAttack()
+{
+	m_moveDir = Math::Vector3::Zero;
 
-		// 距離補正
-		Math::Vector3 raw = m_nowPos - player->GetPos();
-		raw.y = 0;
+	m_preAttackTimer -= Application::Instance().GetDeltaTime();
 
-		if (raw.LengthSquared() > 0.0001f)
-		{
-			raw.Normalize();
-			m_nowPos = player->GetPos() + raw * m_orbitDist;
-		}
-
-		// ★攻撃距離かつクールタイム終了なら攻撃へ
-		if (auto player = m_wpPlayer.lock())
-		{
-			float dist = (player->GetPos() - m_nowPos).Length();
-
-			if (dist <= m_attackDist && m_attackCooldown <= 0.0f)
-			{
-				ChangeState(State::Attack);
-				return;
-			}
-		}
+	// 予備動作終了 → Attack
+	if (m_preAttackTimer <= 0.0f)
+	{
+		EndWarningFlash();
+		ChangeState(State::Attack);
+		return;
 	}
 }
 
@@ -148,11 +204,6 @@ void EnemyBase::UpdateAttack()
 	}
 
 	float dist = (player->GetPos() - m_nowPos).Length();
-	//if (dist > m_attackDist)
-	//{
-	//	ChangeState(State::Move);
-	//	return;
-	//}
 
 	float t = m_animator->GetAnimeCurrentTime();
 	if (t > 10 && t < 20)
@@ -201,9 +252,6 @@ void EnemyBase::RotateToMoveDir()
 	m_angleY += angle;
 }
 
-//--------------------------------------
-// アニメーション関連
-//--------------------------------------
 void EnemyBase::SetAnimator(const AnimatorInfo& info)
 {
 	if (!m_animator || !m_model) return;
@@ -255,7 +303,6 @@ void EnemyBase::Damage(float dmg)
 	ChangeState(State::Hit);
 }
 
-
 void EnemyBase::PlayAnimation(const std::string& animName)
 {
 	AnimatorInfo info;
@@ -266,9 +313,6 @@ void EnemyBase::PlayAnimation(const std::string& animName)
 	SetAnimator(info);
 }
 
-//--------------------------------------
-// カプセル当たり判定
-//--------------------------------------
 void EnemyBase::CapsuleCollision()
 {
 	float maxOverlap = 0.0f;
@@ -315,7 +359,7 @@ void EnemyBase::CapsuleCollision()
 void EnemyBase::PlayerCollusion()
 {
 	KdCollider::CapsuleInfo capsule;
-	capsule.m_type = KdCollider::TypeDamage;   // ★プレイヤーと当たる
+	capsule.m_type = KdCollider::TypeDamage;
 	capsule.m_radius = 0.35f;
 	capsule.m_start = m_nowPos + Math::Vector3(0, 0.5f, 0);
 	capsule.m_end = m_nowPos + Math::Vector3(0, 1.5f, 0);
@@ -351,9 +395,7 @@ void EnemyBase::PlayerCollusion()
 		return;
 	}
 }
-//--------------------------------------
-// 地面判定
-//--------------------------------------
+
 void EnemyBase::GroundCheck()
 {
 	KdCollider::RayInfo ray;
@@ -405,9 +447,36 @@ void EnemyBase::DoAttackHitCheck()
 
 	float dist = (player->GetPos() - m_nowPos).Length();
 
-	// ★攻撃判定距離（近ければヒット）
 	if (dist < 1.2f)
 	{
-		player->Damage(10);   // ★プレイヤーに10ダメージ
+		player->Damage(10);
 	}
+}
+
+void EnemyBase::StartWarningFlash()
+{
+	auto data = m_model->GetData();
+	if (!data) return;
+
+	auto& mats = const_cast<std::vector<KdMaterial>&>(data->GetMaterials());
+
+	for (auto& m : mats)
+	{
+		m.m_emissiveRate = { 20.0f, 20.0f, 20.0f };
+	}
+}
+
+void EnemyBase::EndWarningFlash()
+{
+	auto data = m_model->GetData();
+	if (!data) return;
+
+	auto& mats = const_cast<std::vector<KdMaterial>&>(data->GetMaterials());
+
+	for (auto& m : mats)
+	{
+		m.m_emissiveRate = { 1.0f, 1.0f, 1.0f };
+	}
+
+	m_isWarningFlash = false;
 }

@@ -46,6 +46,8 @@ public:
 	void SetActive(bool active) { m_active = active; }
 	bool IsActive() const { return m_active; }
 
+	Math::Vector3 WorldToScreen(const Math::Vector3& worldPos) const;
+
 protected:
 	// カメラ回転用角度
 	Math::Vector3								m_DegAng		= Math::Vector3::Zero;

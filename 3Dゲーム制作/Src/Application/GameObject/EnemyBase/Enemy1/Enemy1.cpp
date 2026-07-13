@@ -56,10 +56,21 @@ void Enemy1::UpdateOrbit()
 	EnemyBase::UpdateOrbit();
 }
 
+void Enemy1::UpdatePreAttack()
+{
+	if (m_nowAnimIndex != 11)   // 予知アニメ番号
+	{
+		m_nowAnimIndex = 11;
+		m_animator->SetAnimation(m_model->GetAnimation(11), false);
+	}
+
+	EnemyBase::UpdatePreAttack();
+}
+
 void Enemy1::UpdateAttack()
 {
 	// ★攻撃アニメ番号（君の Enemy.gltf に合わせて変更）
-	const int attackAnim = 12;
+	const int attackAnim = 39;
 
 	if (m_nowAnimIndex != attackAnim)
 	{

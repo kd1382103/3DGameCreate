@@ -2,7 +2,7 @@
 #include <Application/GameObject/BaseObject/BaseObject.h>
 
 class Player;
-
+class CameraBase;
 //--------------------------------------
 // アニメーション情報まとめ構造体
 //--------------------------------------
@@ -21,6 +21,7 @@ public:
 		Idle,
 		Move,
 		Orbit,
+		PreAttack,
 		Attack,
 		Hit,
 		Dead,
@@ -33,9 +34,12 @@ public:
 	virtual void Update() override;
 	virtual void PostUpdate() override;
 	virtual void DrawLit() override;
+	void DrawEffect();
 
 	void SetTarget(const std::shared_ptr<Player>& target) { m_wpPlayer = target; }
 	void SetPos(const Math::Vector3& pos) { m_nowPos = pos; }
+	void SetCamera(std::shared_ptr<CameraBase> cam) { m_wpCamera = cam; }
+
 
 	// ダメージ処理
 	virtual void Damage(float dmg);
@@ -45,6 +49,7 @@ protected:
 	virtual void UpdateIdle();
 	virtual void UpdateMove();
 	virtual void UpdateOrbit();
+	virtual void UpdatePreAttack();
 	virtual void UpdateAttack();
 	virtual void UpdateHit();
 	virtual void UpdateDead();
@@ -64,7 +69,7 @@ protected:
 		m_state = next;
 		m_stateTimer = 0.0f;
 
-		switch (m_state)
+		/*switch (m_state)
 		{
 		case State::Idle:
 			PlayAnimation("Idle");
@@ -85,23 +90,30 @@ protected:
 		case State::Dead:
 			PlayAnimation("Dead");
 			break;
-		}
+		}*/
 	}
 
-	// カプセル当たり判定（プレイヤーと同じ）
+	//当たり判定
 	void CapsuleCollision();
-
-	//プレイヤーとの当たり判定（ただしプレイヤーは押し返されない）
+	void DoAttackHitCheck();
 	void PlayerCollusion();
-
-	// 地面判定
 	void GroundCheck();
+
+	//光る処理（攻撃予知）
+	void StartWarningFlash();
+	void EndWarningFlash();
+
 
 protected:
 	std::shared_ptr<KdModelWork> m_model;
 
 	Math::Vector3 m_nowPos = Math::Vector3::Zero;   // 現在座標
 	Math::Vector3 m_moveDir = Math::Vector3::Zero;  // 移動方向
+
+	//攻撃予知
+	std::shared_ptr<KdSquarePolygon> m_preAttackEffect;
+
+	std::weak_ptr<CameraBase> m_wpCamera;
 
 	float m_angleY = 0.0f;                          // 敵の向き（Y回転）
 	float m_rotationSpeedDeg = 5.0f;                // 回転速度（度）
@@ -123,6 +135,11 @@ protected:
 	float m_attackCooldown = 0.0f;   // 攻撃クールタイム
 	float m_attackInterval = 60.0f;  // 攻撃間隔（60フレーム = 1秒）
 
+	//攻撃予知用変数
+	float m_preAttackTimer = 0.0f;
+	float m_warningFlashTime = 0.1f;  // 最後の0.1秒だけ光る
+	bool  m_isWarningFlash = false;
+
 	float m_gravity = 0.0f;
 	bool m_isGround = false;
 
@@ -131,7 +148,5 @@ protected:
 	int m_nowAnimIndex = 0;                         // 現在のアニメーション番号
 	float m_animSpeed = 1.0f;                 // 再生速度
 
-	//攻撃が当たったかどうか
-	void DoAttackHitCheck();
-
+	float m_effectAlpha;
 };

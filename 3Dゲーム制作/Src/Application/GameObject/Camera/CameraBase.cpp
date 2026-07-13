@@ -27,6 +27,7 @@ void CameraBase::SetTarget(const std::shared_ptr<KdGameObject>& target)
 	m_wpTarget = target;
 }
 
+
 void CameraBase::UpdateRotateByMouse()
 {
 	// マウスでカメラを回転させる処理

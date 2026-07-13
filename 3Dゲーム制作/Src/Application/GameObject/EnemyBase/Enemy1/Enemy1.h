@@ -9,5 +9,6 @@ public:
 	void UpdateIdle()		override;
 	void UpdateMove()		override;
 	void UpdateOrbit()		override;
+	void UpdatePreAttack()		override;
 	void UpdateAttack()		override;
 };
