@@ -112,11 +112,26 @@
     <Filter Include="Src\Application\GameObject\UI\PlayerUI\HPGauge">
       <UniqueIdentifier>{ac213dff-bc52-4f57-81e7-5d5d7c920699}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Application\GameObject\EnemyBase">
+    <Filter Include="Src\Application\GameObject\Enemy">
       <UniqueIdentifier>{2063cb49-915c-4314-9ed8-87ab98a0e2a3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Application\GameObject\EnemyBase\Enemy1">
+    <Filter Include="Src\Application\GameObject\Enemy\Enemy1">
       <UniqueIdentifier>{a645c699-ad09-4fef-8c56-2fc5400f6104}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Enemy\EnemyState">
+      <UniqueIdentifier>{07c4cc26-e738-4d66-86f8-4256334d916f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Player\PlayerState">
+      <UniqueIdentifier>{42f8c96a-ad32-471f-ade5-58ff8371f9b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Player\Player">
+      <UniqueIdentifier>{dff606c7-7d81-4a4e-be0a-1ee5fb0d9a64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameData">
+      <UniqueIdentifier>{2b81c0a2-52ad-4693-b176-ac34fb7305a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\StateMachin">
+      <UniqueIdentifier>{72b9f7b6-2da5-4bda-834d-7c7ea7fce4f9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -300,9 +315,6 @@
     <ClInclude Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.h">
       <Filter>Src\Application\GameObject\Camera\TPSCamera</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\Player\Player.h">
-      <Filter>Src\Application\GameObject\Player</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\GameObject\BaseObject\BaseObject.h">
       <Filter>Src\Application\GameObject\BaseObject</Filter>
     </ClInclude>
@@ -318,11 +330,26 @@
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\HPGauge\HPGauge.h">
       <Filter>Src\Application\GameObject\UI\PlayerUI\HPGauge</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\EnemyBase\EnemyBase.h">
-      <Filter>Src\Application\GameObject\EnemyBase</Filter>
+    <ClInclude Include="Src\Application\GameObject\Enemy\EnemyBase.h">
+      <Filter>Src\Application\GameObject\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\EnemyBase\Enemy1\Enemy1.h">
-      <Filter>Src\Application\GameObject\EnemyBase\Enemy1</Filter>
+    <ClInclude Include="Src\Application\GameObject\Enemy\EnemyState\EnemyState.h">
+      <Filter>Src\Application\GameObject\Enemy\EnemyState</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Enemy\Enemy1\Enemy1.h">
+      <Filter>Src\Application\GameObject\Enemy\Enemy1</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Player\PlayerState\PlayerState.h">
+      <Filter>Src\Application\GameObject\Player\PlayerState</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Player\Player\Player.h">
+      <Filter>Src\Application\GameObject\Player\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameData\AnimationBank.h">
+      <Filter>Src\Application\GameData</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\StateMachine\StateMachine.h">
+      <Filter>Src\Application\StateMachin</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -476,9 +503,6 @@
     <ClCompile Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.cpp">
       <Filter>Src\Application\GameObject\Camera\TPSCamera</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\Player\Player.cpp">
-      <Filter>Src\Application\GameObject\Player</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\GameObject\BaseObject\BaseObject.cpp">
       <Filter>Src\Application\GameObject\BaseObject</Filter>
     </ClCompile>
@@ -494,11 +518,23 @@
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\HPGauge\HPGauge.cpp">
       <Filter>Src\Application\GameObject\UI\PlayerUI\HPGauge</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\EnemyBase\EnemyBase.cpp">
-      <Filter>Src\Application\GameObject\EnemyBase</Filter>
+    <ClCompile Include="Src\Application\GameObject\Enemy\EnemyBase.cpp">
+      <Filter>Src\Application\GameObject\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\EnemyBase\Enemy1\Enemy1.cpp">
-      <Filter>Src\Application\GameObject\EnemyBase\Enemy1</Filter>
+    <ClCompile Include="Src\Application\GameObject\Enemy\EnemyState\EnemyState.cpp">
+      <Filter>Src\Application\GameObject\Enemy\EnemyState</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Enemy\Enemy1\Enemy1.cpp">
+      <Filter>Src\Application\GameObject\Enemy\Enemy1</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Player\PlayerState\PlayerState.cpp">
+      <Filter>Src\Application\GameObject\Player\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Player\Player\Player.cpp">
+      <Filter>Src\Application\GameObject\Player\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameData\AnimationBank.cpp">
+      <Filter>Src\Application\GameData</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

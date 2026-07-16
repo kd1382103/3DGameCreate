@@ -1,8 +1,8 @@
 ﻿#include "GameScene.h"
 #include"../SceneManager.h"
 
-#include<Application/GameObject/Player/Player.h>
-#include<Application/GameObject/EnemyBase/Enemy1/Enemy1.h>
+#include<Application/GameObject/Player/Player/Player.h>
+#include<Application/GameObject/Enemy/Enemy1/Enemy1.h>
 
 #include<Application/GameObject/Stages/Floor/Stage.h>
 
@@ -60,12 +60,6 @@ void GameScene::Init()
 	tpsCamera->Init();
 	tpsCamera->SetActive(true);
 	AddObject(tpsCamera);
-
-	/*fpsCamera = std::make_shared<FPSCamera>();
-	fpsCamera->Init();
-	fpsCamera->SetActive(false);
-
-	AddObject(fpsCamera);*/
 
 	m_camera = tpsCamera;
 

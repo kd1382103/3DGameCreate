@@ -42,11 +42,7 @@ void BaseScene::Update()
 
 void BaseScene::PostUpdate()
 {
-	// ★ カメラ更新を追加
-	if (m_camera)
-	{
-		m_camera->PostUpdate();
-	}
+
 
 	for (auto& obj : m_objList)
 	{
@@ -56,8 +52,6 @@ void BaseScene::PostUpdate()
 
 void BaseScene::PreDraw()
 {
-	
-
 	for (auto& obj : m_objList)
 	{
 		obj->PreDraw();

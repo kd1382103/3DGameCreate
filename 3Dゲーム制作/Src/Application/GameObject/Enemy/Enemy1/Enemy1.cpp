@@ -1,0 +1,28 @@
+﻿#include "Enemy1.h"
+
+void Enemy1::Init()
+{
+
+	m_model = std::make_shared<KdModelWork>();
+	m_model->SetModelData("Asset/Models/Enemy/manModel/Enemy.gltf");
+
+	EnemyBase::Init();
+
+	// 個別設定
+	m_hp = 50;
+	m_moveSpeed = 0.04f;
+	m_attackDist = 1.2f;
+	m_attackDamage = 5.0f;
+	detectRange = 6.0f;
+
+	//アニメ番号
+	animIdleIndex = 9;
+	animWalkIndex = 36;
+	animDashIndex = 36;
+	animAttack1Index = 39;
+	animSkillIndex = 11;   // 予備動作
+
+	//コライダー
+	m_pCollider = std::make_unique<KdCollider>();
+	m_pCollider->RegisterCollisionShape("Enemy1", m_model, KdCollider::TypeDamage);
+}
