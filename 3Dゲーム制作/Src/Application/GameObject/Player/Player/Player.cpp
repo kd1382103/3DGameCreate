@@ -270,6 +270,10 @@ bool Player::IsKeyPressedOnce(int vk)
 
 void Player::DoAttackHitCheck(float range)
 {
+	Math::Vector3 forward = GetForward();
+	forward.y = 0;
+	forward.Normalize();
+
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
 		if (obj.get() == this) continue;
@@ -277,10 +281,18 @@ void Player::DoAttackHitCheck(float range)
 		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
 		if (!enemy) continue;
 
-		float dist = (enemy->GetPos() - m_nowPos).Length();
-		if (dist < range)
-		{
-			enemy->Damage(20);
-		}
+		Math::Vector3 toEnemy = enemy->GetPos() - m_nowPos;
+		float dist = toEnemy.Length();
+		if (dist > range) continue;
+
+		// 角度チェック（前方60度）
+		toEnemy.y = 0;
+		toEnemy.Normalize();
+		float dot = forward.Dot(toEnemy);
+		float angle = acos(dot);
+		if (angle > DirectX::XMConvertToRadians(60.0f)) continue;
+
+		// ヒット
+		enemy->Damage(20);
 	}
 }

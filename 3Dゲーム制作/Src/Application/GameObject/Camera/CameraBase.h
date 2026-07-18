@@ -48,6 +48,23 @@ public:
 
 	Math::Vector3 WorldToScreen(const Math::Vector3& worldPos) const;
 
+	Math::Matrix GetBillboardMatrix() const
+	{
+		auto cam = m_spCamera;
+		if (!cam) return Math::Matrix::Identity;
+
+		// カメラのワールド行列を取得
+		Math::Matrix camWorld = cam->GetCameraMatrix();
+
+		// 平行移動を消す（回転だけ使う）
+		camWorld._41 = camWorld._42 = camWorld._43 = 0;
+
+		// カメラの向きに合わせるために反転
+		Math::Matrix billboard = camWorld.Invert();
+
+		return billboard;
+	}
+
 protected:
 	// カメラ回転用角度
 	Math::Vector3								m_DegAng		= Math::Vector3::Zero;

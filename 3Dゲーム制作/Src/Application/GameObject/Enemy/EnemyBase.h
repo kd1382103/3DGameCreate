@@ -17,6 +17,7 @@ public:
 	void Update() override;
 	void PostUpdate() override;
 	void DrawLit() override;
+	void DrawUnLit() override;
 
 	void SetTarget(const std::shared_ptr<Player>& target) { m_wpPlayer = target; }
 	void SetPos(const Math::Vector3& pos) { m_nowPos = pos; }

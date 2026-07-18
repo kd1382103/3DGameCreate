@@ -121,7 +121,7 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 	//}
 
 	// 攻撃判定（攻撃1専用）
-	if (t > 0.15f && t < 0.25f)
+	if (t > 15.0f && t < 25.0f)
 	{
 		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
@@ -141,13 +141,14 @@ void EnemyBaseStatePreAttack::Enter(EnemyBase& owner)
 	owner.m_preAttackPos = owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
 }
 
-
 void EnemyBaseStatePreAttack::Update(EnemyBase& owner)
 {
 	m_time += Application::Instance().GetDeltaTime();
 	if (m_time > 0.5f)
 	{
 		owner.m_preAttackActive = false;
+		owner.m_preAttackAlpha -= Application::Instance().GetDeltaTime() * 2.0f;
+		owner.m_preAttackAlpha = std::max(owner.m_preAttackAlpha, 0.0f);
 		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStateAttack1>());
 	}
 }

@@ -160,7 +160,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	}
 
 	// 攻撃判定
-	if (t > 0.15f && t < 0.25f)
+	if (t > 15.0f && t < 25.0f)
 	{
 		owner.DoAttackHitCheck(0.8f);
 	}
@@ -206,7 +206,7 @@ void PlayerStateAttack2::Update(Player& owner)
 		owner.m_nowPos += f * 0.05f;
 	}
 
-	if (t > 0.15f && t < 0.25f)
+	if (t > 15.0f && t < 25.0f)
 	{
 		owner.DoAttackHitCheck(0.8f);
 	}
@@ -249,7 +249,7 @@ void PlayerStateAttack3::Update(Player& owner)
 		owner.m_nowPos += f * 0.05f;
 	}
 
-	if (t > 0.15f && t < 0.25f)
+	if (t > 15.0f && t < 25.0f)
 	{
 		owner.DoAttackHitCheck(0.8f);
 	}

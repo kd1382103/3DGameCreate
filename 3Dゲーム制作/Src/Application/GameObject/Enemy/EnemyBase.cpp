@@ -163,7 +163,7 @@ void EnemyBase::PostUpdate()
 }
 
 //==============================================================
-// DrawLit（プレイヤーと同じ）
+// Draw系
 //==============================================================
 void EnemyBase::DrawLit()
 {
@@ -171,30 +171,48 @@ void EnemyBase::DrawLit()
 	{
 		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 	}
-
-	// 攻撃予知テスト表示
-	if (m_preAttackActive && m_preAttackPoly)
-	{
-		// カメラは一旦無視
-		Math::Matrix billboardRot = Math::Matrix::Identity;
-
-		// 位置も一旦「敵の頭上固定」にする
-		Math::Vector3 pos = m_nowPos + Math::Vector3(0, 1.5f, 0);
-		Math::Matrix scale = Math::Matrix::CreateScale(1.0f);
-		Math::Matrix trans = Math::Matrix::CreateTranslation(pos);
-
-		Math::Matrix world = scale * billboardRot * trans;
-
-		auto mat = m_preAttackPoly->GetMaterial();
-		mat->m_baseColorRate = { 1, 1, 1, 1.0f }; // アルファ固定 1.0
-
-		KdShaderManager::Instance().ChangeBlendState(KdBlendState::Alpha);
-		KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_preAttackPoly, world);
-		KdShaderManager::Instance().UndoBlendState();
-	}
 }
 
+void EnemyBase::DrawUnLit()
+{
+	if (m_preAttackActive && m_preAttackPoly)
+	{
+		auto mat = m_preAttackPoly->GetMaterial();
 
+		mat->m_emissiveTex = nullptr;
+		mat->m_emissiveRate = { 0.0f, 0.0f, 0.0f };   // ← 発光ゼロ
+		mat->m_baseColorRate = { 1, 1, 1, m_preAttackAlpha };
+
+		Math::Vector3 pos = m_preAttackPos;
+
+		Math::Matrix billboardRot = Math::Matrix::Identity;
+		if (auto cam = m_wpCamera.lock())
+		{
+			billboardRot = cam->GetBillboardMatrix();
+		}
+
+		Math::Matrix scale = Math::Matrix::CreateScale(1.0f);
+		Math::Matrix trans = Math::Matrix::CreateTranslation(pos);
+		Math::Matrix world = scale * billboardRot * trans;
+
+		// ★UnLit に切り替え
+		KdShaderManager::Instance().m_StandardShader.BeginUnLit();
+
+		KdShaderManager::Instance().ChangeBlendState(KdBlendState::Alpha);
+
+		// ★emissive = Zero → 画像そのまま
+		KdShaderManager::Instance().m_StandardShader.DrawPolygon(
+			*m_preAttackPoly,
+			world,
+			Math::Color(1, 1, 1, 1),
+			Math::Vector3::Zero
+		);
+
+		KdShaderManager::Instance().UndoBlendState();
+
+		KdShaderManager::Instance().m_StandardShader.EndUnLit();
+	}
+}
 
 //==============================================================
 // Damage（プレイヤーと同じ構造）
