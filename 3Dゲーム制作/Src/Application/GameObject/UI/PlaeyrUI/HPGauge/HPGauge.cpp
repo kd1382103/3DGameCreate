@@ -46,20 +46,13 @@ void HPGauge::DrawSprite()
 	//===========================
 	if (m_showDamageEffect && m_damageBarWidth > 0.0f)
 	{
-		//===========================
-		// ① 一定時間そのまま表示
-		//===========================
 		if (m_damageDelayTimer < m_damageDelay)
 		{
-			m_damageDelayTimer += 0.016f; // 1フレーム
+			m_damageDelayTimer += 0.016f;
 		}
 		else
 		{
-			//===========================
-			// ② 遅延後にゆっくり縮む
-			//===========================
 			m_damageBarWidth -= m_damageShrinkSpeed * 0.016f;
-
 			if (m_damageBarWidth <= 0.0f)
 			{
 				m_damageBarWidth = 0.0f;
@@ -67,8 +60,15 @@ void HPGauge::DrawSprite()
 			}
 		}
 
-		Math::Color dmgColor = { 1, 0, 0, 1 };
+		// 赤バーが緑バーを超えないように制限
+		float fullWidth = 200.0f;
+		float nowWidth = fullWidth * (m_hp / m_hpMax);
+		if (m_damageBarWidth + nowWidth > fullWidth)
+		{
+			m_damageBarWidth = fullWidth - nowWidth;
+		}
 
+		Math::Color dmgColor = { 1, 0, 0, 1 };
 		sprite.DrawTex(
 			m_barTex.get(),
 			x + nowWidth,
@@ -80,5 +80,4 @@ void HPGauge::DrawSprite()
 			{ 0, 0 }
 		);
 	}
-
 }

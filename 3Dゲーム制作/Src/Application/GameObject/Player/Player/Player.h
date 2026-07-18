@@ -73,6 +73,7 @@ public:
 	bool IsAttackInput() const { return m_attackOnce; }
 	bool IsSkillInput() const { return m_skillOnce; }
 	bool IsDodgeInput() const { return m_dodgeing; }
+	bool IsFall()const { return m_falling; }
 
 public:
 	// モデル・アニメーション
@@ -103,6 +104,7 @@ public:
 	bool m_attackOnce = false;
 	bool m_skillOnce = false;
 	bool m_dodgeing = false;
+	bool m_falling = false;
 
 	// スキル関連
 	int   m_skillGaugeMax = 100;
@@ -113,6 +115,11 @@ public:
 	// HP
 	int   m_hpGaugeMax = 1000;
 	float m_hpGauge = 1000;
+
+	float m_pendingBeforeHP = -1.0f;   // 食らった瞬間のHP
+	float m_pendingAfterHP = -1.0f;   // 遅れて減らすHP
+	int   m_pendingDelay = 0;       // 遅延フレーム
+	float m_pendingDamage = 0.0f;    // ダメージ量
 
 	// 重力
 	float m_gravity = 0.0f;

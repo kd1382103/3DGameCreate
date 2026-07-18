@@ -46,7 +46,10 @@ void Player::Update()
 	if (GetAsyncKeyState('D') & 0x8000) m_dir += {1, 0, 0};
 
 	m_moving = (m_dir.LengthSquared() > 0.0001f);
-	m_running = (GetAsyncKeyState(VK_SHIFT) & 0x8000);
+	if (!IsFall())
+	{
+		m_running = (GetAsyncKeyState(VK_SHIFT) & 0x8000);
+	}
 	m_attackOnce = IsKeyPressedOnce(VK_LBUTTON);
 	m_skillOnce = IsKeyPressedOnce('E');
 	m_dodgeing = IsKeyPressedOnce(VK_RBUTTON);
@@ -87,10 +90,38 @@ void Player::Update()
 	{
 		ui->SetGauge(m_skillGauge, m_skillGaugeMax);
 	}
-	if (auto ui = GetUI<HPGauge>(UIType::HPGauge))
+	
+	//===============================
+	// 遅延ダメージ処理
+	//===============================
+	if (m_pendingDelay > 0)
 	{
-		ui->SetGauge(m_hpGauge, m_hpGaugeMax);
+		m_pendingDelay--;
+
+		if (m_pendingDelay == 0)
+		{
+			float before = m_pendingBeforeHP;
+			float after = before - m_pendingDamage;
+			if (after < 0) after = 0;
+
+			// 本当にHPを減らす
+			m_hpGauge = after;
+
+			// UIへ通知
+			if (auto hpUI = GetUI<HPGauge>(UIType::HPGauge))
+			{
+				hpUI->OnDamage(before, after);        // 赤バー幅決定
+				hpUI->SetGauge(after, m_hpGaugeMax);  // 緑バー更新
+			}
+
+			// リセット
+			m_pendingBeforeHP = -1.0f;
+			m_pendingAfterHP = -1.0f;
+			m_pendingDamage = 0.0f;
+		}
 	}
+
+
 
 	//================================================================================
 	// ステート更新（最重要）
@@ -175,6 +206,11 @@ void Player::PostUpdate()
 		{
 			m_nowPos.y = hitPos.y;
 			m_gravity = 0.0f;
+			m_falling = false;
+		}
+		else
+		{
+			m_falling = true;
 		}
 	}
 
@@ -252,23 +288,40 @@ void Player::GenerateDepthMapFromLight()
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
+//void Player::Damage(float dmg)
+//{
+//	// ダメージ前のHPを保存（before）
+//	float before = m_hpGauge;
+//
+//	// HPを減らす
+//	m_hpGauge -= dmg;
+//	if (m_hpGauge < 0) m_hpGauge = 0;
+//
+//	// ダメージ後のHP（after）
+//	float after = m_hpGauge;
+//
+//	// UIへ通知（HPゲージに反映）
+//	if (auto hpUI = GetUI<HPGauge>(UIType::HPGauge))
+//	{
+//		hpUI->OnDamage(before, after);
+//		hpUI->SetGauge(after, m_hpGaugeMax);
+//	}
+//}
+
 void Player::Damage(float dmg)
 {
-	// ダメージ前のHPを保存（before）
-	float before = m_hpGauge;
+	// 食らった瞬間のHPを保存
+	m_pendingBeforeHP = m_hpGauge;
 
-	// HPを減らす
-	m_hpGauge -= dmg;
-	if (m_hpGauge < 0) m_hpGauge = 0;
+	// 遅れて減らすHPを計算（まだ適用しない）
+	float after = m_hpGauge - dmg;
+	if (after < 0) after = 0;
 
-	// ダメージ後のHP（after）
-	float after = m_hpGauge;
+	m_pendingAfterHP = after;
+	m_pendingDamage = dmg;
 
-	// UIへ通知（HPゲージに反映）
-	if (auto hpUI = GetUI<HPGauge>(UIType::HPGauge))
-	{
-		hpUI->OnDamage(before, after);
-	}
+	// 遅延フレーム（例：10）
+	m_pendingDelay = 10;
 }
 
 bool Player::IsKeyPressedOnce(int vk)
