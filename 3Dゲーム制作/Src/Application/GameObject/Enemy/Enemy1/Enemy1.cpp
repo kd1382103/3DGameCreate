@@ -12,7 +12,7 @@ void Enemy1::Init()
 	m_hp = 50;
 	m_moveSpeed = 0.04f;
 	m_attackDist = 1.2f;
-	m_attackDamage = 5.0f;
+	m_attackDamage = 10.0f;
 	detectRange = 6.0f;
 
 	//アニメ番号

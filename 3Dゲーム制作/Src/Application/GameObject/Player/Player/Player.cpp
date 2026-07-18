@@ -254,8 +254,21 @@ void Player::GenerateDepthMapFromLight()
 
 void Player::Damage(float dmg)
 {
+	// ダメージ前のHPを保存（before）
+	float before = m_hpGauge;
+
+	// HPを減らす
 	m_hpGauge -= dmg;
 	if (m_hpGauge < 0) m_hpGauge = 0;
+
+	// ダメージ後のHP（after）
+	float after = m_hpGauge;
+
+	// UIへ通知（HPゲージに反映）
+	if (auto hpUI = GetUI<HPGauge>(UIType::HPGauge))
+	{
+		hpUI->OnDamage(before, after);
+	}
 }
 
 bool Player::IsKeyPressedOnce(int vk)

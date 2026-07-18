@@ -16,18 +16,20 @@ void HPGauge::SetGauge(float hp, float hpMax)
 void HPGauge::DrawSprite()
 {
 	float rate = m_hp / m_hpMax;
-	if (rate <= 0.0f) rate = 0.0f;
+	if (rate < 0.0f) rate = 0.0f;
 
 	float fullWidth = 200.0f;
 	float nowWidth = fullWidth * rate;
 
-	float x = -500.0f;   // ← 画面左上に固定
+	float x = -500.0f;
 	float y = 275.0f;
 
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;
-	Math::Color color = { 1, 1, 1, 1 };
 
-	// ゲージ本体
+	//===========================
+	// ① 通常のHPバー（緑）
+	//===========================
+	Math::Color color = { 0, 1, 0, 1 };
 	sprite.DrawTex(
 		m_barTex.get(),
 		x,
@@ -38,4 +40,45 @@ void HPGauge::DrawSprite()
 		&color,
 		{ 0, 0 }
 	);
+
+	//===========================
+	// ② 赤バー（滑らかに縮む）
+	//===========================
+	if (m_showDamageEffect && m_damageBarWidth > 0.0f)
+	{
+		//===========================
+		// ① 一定時間そのまま表示
+		//===========================
+		if (m_damageDelayTimer < m_damageDelay)
+		{
+			m_damageDelayTimer += 0.016f; // 1フレーム
+		}
+		else
+		{
+			//===========================
+			// ② 遅延後にゆっくり縮む
+			//===========================
+			m_damageBarWidth -= m_damageShrinkSpeed * 0.016f;
+
+			if (m_damageBarWidth <= 0.0f)
+			{
+				m_damageBarWidth = 0.0f;
+				m_showDamageEffect = false;
+			}
+		}
+
+		Math::Color dmgColor = { 1, 0, 0, 1 };
+
+		sprite.DrawTex(
+			m_barTex.get(),
+			x + nowWidth,
+			y,
+			m_damageBarWidth,
+			20,
+			nullptr,
+			&dmgColor,
+			{ 0, 0 }
+		);
+	}
+
 }
