@@ -27,6 +27,19 @@ void CameraBase::SetTarget(const std::shared_ptr<KdGameObject>& target)
 	m_wpTarget = target;
 }
 
+Math::Vector2 CameraBase::WorldToScreen(const Math::Vector3& worldPos) const
+{
+	Math::Vector3 result = Math::Vector3::Zero;
+
+	if (m_spCamera)
+	{
+		m_spCamera->ConvertWorldToScreenDetail(worldPos, result);
+	}
+
+	// result.x, result.y がスクリーン座標
+	return Math::Vector2(result.x, result.y);
+}
+
 
 void CameraBase::UpdateRotateByMouse()
 {

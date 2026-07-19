@@ -145,6 +145,7 @@ void PlayerStateAttack1::Enter(Player& owner)
 	owner.SetAnim(39, false);
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_canNextAttack = false;
+	owner.m_attackHitOnce = false;
 }
 
 void PlayerStateAttack1::Update(Player& owner)
@@ -162,7 +163,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	// 攻撃判定
 	if (t > 15.0f && t < 25.0f)
 	{
-		owner.DoAttackHitCheck(0.8f);
+		owner.DoAttackHitCheck(1.5f);
 	}
 
 	// Attack2 受付
@@ -193,6 +194,8 @@ void PlayerStateAttack2::Enter(Player& owner)
 	owner.SetAnim(40, false);
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_canNextAttack = false;
+	owner.m_attackHitOnce = false;
+
 }
 
 void PlayerStateAttack2::Update(Player& owner)
@@ -208,7 +211,7 @@ void PlayerStateAttack2::Update(Player& owner)
 
 	if (t > 15.0f && t < 25.0f)
 	{
-		owner.DoAttackHitCheck(0.8f);
+		owner.DoAttackHitCheck(1.5f);
 	}
 
 	if (t > 30 && t < 85)
@@ -236,6 +239,8 @@ void PlayerStateAttack3::Enter(Player& owner)
 {
 	owner.SetAnim(41, false);
 	owner.m_dir = Math::Vector3::Zero;
+	owner.m_attackHitOnce = false;
+
 }
 
 void PlayerStateAttack3::Update(Player& owner)
@@ -251,7 +256,7 @@ void PlayerStateAttack3::Update(Player& owner)
 
 	if (t > 15.0f && t < 25.0f)
 	{
-		owner.DoAttackHitCheck(0.8f);
+		owner.DoAttackHitCheck(1.5f);
 	}
 
 	if (owner.m_animator.IsAnimationEnd())
@@ -274,7 +279,7 @@ void PlayerStateSkill::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
-	if (t > 0.10f && t < 0.30f)
+	if (t > 10.0f && t < 30.0f)
 	{
 		owner.DoAttackHitCheck(1.2f);
 	}

@@ -109,9 +109,6 @@
     <Filter Include="Src\Application\GameObject\UI\PlayerUI\SkillGauge">
       <UniqueIdentifier>{bf9332a6-15cd-4078-a703-ad02a161d076}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Application\GameObject\UI\PlayerUI\HPGauge">
-      <UniqueIdentifier>{ac213dff-bc52-4f57-81e7-5d5d7c920699}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Src\Application\GameObject\Enemy">
       <UniqueIdentifier>{2063cb49-915c-4314-9ed8-87ab98a0e2a3}</UniqueIdentifier>
     </Filter>
@@ -132,6 +129,9 @@
     </Filter>
     <Filter Include="Src\Application\StateMachin">
       <UniqueIdentifier>{72b9f7b6-2da5-4bda-834d-7c7ea7fce4f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\HPGauge">
+      <UniqueIdentifier>{ac213dff-bc52-4f57-81e7-5d5d7c920699}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -327,9 +327,6 @@
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.h">
       <Filter>Src\Application\GameObject\UI\PlayerUI\SkillGauge</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\HPGauge\HPGauge.h">
-      <Filter>Src\Application\GameObject\UI\PlayerUI\HPGauge</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\GameObject\Enemy\EnemyBase.h">
       <Filter>Src\Application\GameObject\Enemy</Filter>
     </ClInclude>
@@ -350,6 +347,9 @@
     </ClInclude>
     <ClInclude Include="Src\Application\StateMachine\StateMachine.h">
       <Filter>Src\Application\StateMachin</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\HPGauge\HPGauge.h">
+      <Filter>Src\Application\GameObject\UI\HPGauge</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -515,9 +515,6 @@
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.cpp">
       <Filter>Src\Application\GameObject\UI\PlayerUI\SkillGauge</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\HPGauge\HPGauge.cpp">
-      <Filter>Src\Application\GameObject\UI\PlayerUI\HPGauge</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Enemy\EnemyBase.cpp">
       <Filter>Src\Application\GameObject\Enemy</Filter>
     </ClCompile>
@@ -535,6 +532,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameData\AnimationBank.cpp">
       <Filter>Src\Application\GameData</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\HPGauge\HPGauge.cpp">
+      <Filter>Src\Application\GameObject\UI\HPGauge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

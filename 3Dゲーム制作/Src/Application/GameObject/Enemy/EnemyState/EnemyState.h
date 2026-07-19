@@ -43,6 +43,7 @@ public:
 private:
 	float m_time;
 };
+
 // 攻撃1
 class EnemyBaseStateAttack1 : public StateBase<EnemyBase>
 {

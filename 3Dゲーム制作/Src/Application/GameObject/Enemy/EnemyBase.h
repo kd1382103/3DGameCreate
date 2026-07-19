@@ -3,7 +3,7 @@
 
 class Player;
 class CameraBase;
-
+class HPGauge;
 template <class T>
 class StateMachine;
 
@@ -18,6 +18,13 @@ public:
 	void PostUpdate() override;
 	void DrawLit() override;
 	void DrawUnLit() override;
+	void DrawSprite()override;
+
+	virtual Math::Vector3 GetHitCenter() const
+	{
+		return m_nowPos + Math::Vector3(0, 1.0f, 0); // 敵ごとに調整可能
+	}
+
 
 	void SetTarget(const std::shared_ptr<Player>& target) { m_wpPlayer = target; }
 	void SetPos(const Math::Vector3& pos) { m_nowPos = pos; }
@@ -66,12 +73,12 @@ public:
 	// プレイヤー
 	std::weak_ptr<Player> m_wpPlayer;
 
+	//HP
+	std::shared_ptr<HPGauge> m_hpGauge = nullptr;
+
 	// 回転
 	float m_angleY = 0.0f;
 	float m_rotationSpeedDeg = 5.0f;  
-
-
-	// 各敵が Init() で上書き
 	
 	// 移動
 	float m_moveSpeed ;         
@@ -84,7 +91,8 @@ public:
 	float detectRange ;
 
 	// HP
-	float m_hp ;            
+	float m_hp ;
+	int   m_hpGaugeMax = 1000;
 
 	// ステートマシン
 	std::shared_ptr<StateMachine<EnemyBase>> stateMachine;
@@ -92,7 +100,6 @@ public:
 	// 重力・地面判定・壁判定
 	float m_gravity = 0.0f;
 	bool  m_isGround = false;
-	
 
 	// ワールド行列
 	Math::Matrix m_mWorld;

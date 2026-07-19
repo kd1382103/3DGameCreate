@@ -3,7 +3,7 @@
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
-#include <Application/GameObject/UI/PlaeyrUI/HPGauge/HPGauge.h>
+#include <Application/GameObject/UI/HPGauge/HPGauge.h>
 
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
 #include <Application/Scene/SceneManager.h>
@@ -282,31 +282,20 @@ void Player::DrawLit()
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
+void Player::DrawSprite()
+{
+	if (auto ui = GetUI<SkillGauge>(UIType::SkillGauge))
+		ui->DrawSprite();
+
+	if (auto ui = GetUI<HPGauge>(UIType::HPGauge))
+		ui->DrawSprite();
+}
+
 void Player::GenerateDepthMapFromLight()
 {
 	if (!m_model) return;
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
-
-//void Player::Damage(float dmg)
-//{
-//	// ダメージ前のHPを保存（before）
-//	float before = m_hpGauge;
-//
-//	// HPを減らす
-//	m_hpGauge -= dmg;
-//	if (m_hpGauge < 0) m_hpGauge = 0;
-//
-//	// ダメージ後のHP（after）
-//	float after = m_hpGauge;
-//
-//	// UIへ通知（HPゲージに反映）
-//	if (auto hpUI = GetUI<HPGauge>(UIType::HPGauge))
-//	{
-//		hpUI->OnDamage(before, after);
-//		hpUI->SetGauge(after, m_hpGaugeMax);
-//	}
-//}
 
 void Player::Damage(float dmg)
 {
@@ -336,6 +325,8 @@ bool Player::IsKeyPressedOnce(int vk)
 
 void Player::DoAttackHitCheck(float range)
 {
+	if (m_attackHitOnce) return;
+
 	Math::Vector3 forward = GetForward();
 	forward.y = 0;
 	forward.Normalize();
@@ -347,18 +338,19 @@ void Player::DoAttackHitCheck(float range)
 		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
 		if (!enemy) continue;
 
-		Math::Vector3 toEnemy = enemy->GetPos() - m_nowPos;
+		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
 		float dist = toEnemy.Length();
 		if (dist > range) continue;
 
-		// 角度チェック（前方60度）
+		// 角度チェック
 		toEnemy.y = 0;
 		toEnemy.Normalize();
 		float dot = forward.Dot(toEnemy);
 		float angle = acos(dot);
-		if (angle > DirectX::XMConvertToRadians(60.0f)) continue;
+		if (angle > DirectX::XMConvertToRadians(90.0f)) continue;
 
 		// ヒット
 		enemy->Damage(20);
+		m_attackHitOnce = true;
 	}
 }

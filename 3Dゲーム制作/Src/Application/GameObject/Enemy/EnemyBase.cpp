@@ -1,6 +1,7 @@
 ﻿#include "EnemyBase.h"
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/Camera/CameraBase.h>
+#include <Application/GameObject/UI/HPGauge/HPGauge.h>
 
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Enemy/EnemyState/EnemyState.h>
@@ -18,9 +19,8 @@ void EnemyBase::Init()
 	m_preAttackPoly->Set2DObject(false);
 	m_preAttackPoly->SetScale(1.0f);
 
-	// ★テスト用：常に表示
-	m_preAttackActive = true;
-	m_preAttackAlpha = 1.0f;
+	m_hpGauge = std::make_shared<HPGauge>();
+	m_hpGauge->Init();
 
 	// ステートマシン生成
 	stateMachine = std::make_shared<StateMachine<EnemyBase>>();
@@ -28,7 +28,7 @@ void EnemyBase::Init()
 }
 
 //==============================================================
-// Update（プレイヤーと同じ構造）
+// Update
 //==============================================================
 void EnemyBase::Update()
 {
@@ -46,6 +46,15 @@ void EnemyBase::Update()
 	{
 		m_model->CalcNodeMatrices();
 	}
+
+	if (auto cam = m_wpCamera.lock())
+	{
+		m_hpGauge->SetCamera(cam);
+	}
+
+	m_hpGauge->SetGauge(m_hp, m_hpGaugeMax);
+	Math::Vector3 worldPos = m_mWorld.Translation();
+	m_hpGauge->SetWorldPos(worldPos + Math::Vector3(0, 2.0f, 0));
 }
 
 //==============================================================
@@ -214,18 +223,36 @@ void EnemyBase::DrawUnLit()
 	}
 }
 
+void EnemyBase::DrawSprite()
+{
+	if (m_hpGauge)
+		m_hpGauge->DrawSprite();
+}
+
+
 //==============================================================
 // Damage（プレイヤーと同じ構造）
 //==============================================================
 void EnemyBase::Damage(float dmg)
 {
-	m_hp -= dmg;
+	float before = m_hp;
+	float after = before - dmg;
+	if (after < 0) after = 0;
+
+	if (m_hpGauge)
+	{
+		m_hpGauge->OnDamage(before, after);
+		m_hpGauge->SetGauge(after, m_hpGaugeMax);
+	}
+
+	m_hp = after;
+
 	if (m_hp <= 0)
 	{
-		m_isExpired=true;
-		//stateMachine->ChangeState(std::make_unique<EnemyBaseStateDead>());
+		m_isExpired = true;
 	}
 }
+
 
 //==============================================================
 // 攻撃判定（プレイヤーと同じ構造）

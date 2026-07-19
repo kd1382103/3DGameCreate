@@ -7,11 +7,10 @@
 #include<Application/GameObject/Stages/Floor/Stage.h>
 
 #include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
-#include<Application/GameObject/UI/PlaeyrUI/HPGauge/HPGauge.h>
+#include<Application/GameObject/UI/HPGauge/HPGauge.h>
 
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
-#include<Application/GameObject/Camera/FPSCamera/FPSCamera.h>
 #include<Application/GameObject/Camera/CameraBase.h>
 
 void GameScene::Event()
@@ -26,29 +25,6 @@ void GameScene::Event()
 	}
 
 	auto& input = KdInputManager::Instance();
-	
-	// 視点の切り替え
-	/*if (input.IsPress("ChangeKey"))
-	{
-		if (m_camera == tpsCamera)
-		{
-			m_camera = fpsCamera;
-			tpsCamera->SetActive(false);
-			fpsCamera->SetActive(true);
-			fpsCamera->m_mouseFree = false;
-
-		}
-		else
-		{
-			m_camera = tpsCamera;
-			tpsCamera->SetActive(true);
-			fpsCamera->SetActive(false);
-			tpsCamera->m_mouseFree = false;
-
-		}
-	}*/
-
-	//player->SetCamera(m_camera);
 }
 
 void GameScene::Init()
@@ -83,21 +59,17 @@ void GameScene::Init()
 	enemy1->SetCamera(m_camera);
 	AddObject(enemy1);
 
-	//プレイヤーのUI系列
-	{
-		//スキルゲージ
-		skillGauge = std::make_shared<SkillGauge>();
-		skillGauge->Init();
-		skillGauge->SetGauge(100, 100);
-		AddObject(skillGauge);
+	//UI系列
 
-		//体力ゲージ
+	//スキルゲージ
+	skillGauge = std::make_shared<SkillGauge>();
+	skillGauge->Init();
+	skillGauge->SetGauge(100, 100);
 
-		hpGauge = std::make_shared<HPGauge>();
-		hpGauge->Init();
-		hpGauge->SetGauge(100, 100);
-		AddObject(hpGauge);
-	}
+	//体力ゲージ
+	hpGauge = std::make_shared<HPGauge>();
+	hpGauge->Init();
+	hpGauge->SetGauge(100, 100);
 
 	//各オブジェクトに必要な情報を格納
 	tpsCamera->SetTarget(player);

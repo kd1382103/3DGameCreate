@@ -9,10 +9,10 @@ void Enemy1::Init()
 	EnemyBase::Init();
 
 	// 個別設定
-	m_hp = 50;
+	m_hp = 100;
 	m_moveSpeed = 0.04f;
 	m_attackDist = 1.2f;
-	m_attackDamage = 10.0f;
+	m_attackDamage = 20.0f;
 	detectRange = 6.0f;
 
 	//アニメ番号

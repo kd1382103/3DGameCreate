@@ -2,7 +2,6 @@
 #include <Application/GameObject/BaseObject/BaseObject.h>
 
 class SkillGauge;
-class HPGauge;
 class CameraBase;
 
 // 前方宣言：ステートマシン
@@ -29,6 +28,7 @@ public:
 	void Update() override;
 	void PostUpdate() override;
 	void DrawLit() override;
+	void DrawSprite() override;
 	void GenerateDepthMapFromLight() override;
 
 	void Damage(float dmg) override;
@@ -106,6 +106,9 @@ public:
 	bool m_dodgeing = false;
 	bool m_falling = false;
 
+	bool m_attackHitOnce = false;
+
+
 	// スキル関連
 	int   m_skillGaugeMax = 100;
 	float m_skillGauge = 100;
@@ -123,7 +126,6 @@ public:
 
 	// 重力
 	float m_gravity = 0.0f;
-
 
 	// コンボ用
 	bool m_canNextAttack = false;

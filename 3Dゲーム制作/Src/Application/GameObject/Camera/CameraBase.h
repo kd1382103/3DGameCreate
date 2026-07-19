@@ -46,8 +46,6 @@ public:
 	void SetActive(bool active) { m_active = active; }
 	bool IsActive() const { return m_active; }
 
-	Math::Vector3 WorldToScreen(const Math::Vector3& worldPos) const;
-
 	Math::Matrix GetBillboardMatrix() const
 	{
 		auto cam = m_spCamera;
@@ -64,6 +62,9 @@ public:
 
 		return billboard;
 	}
+
+	Math::Vector2 WorldToScreen(const Math::Vector3& worldPos) const;
+
 
 protected:
 	// カメラ回転用角度

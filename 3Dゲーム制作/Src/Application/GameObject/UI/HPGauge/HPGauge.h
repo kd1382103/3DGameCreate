@@ -1,9 +1,16 @@
 ﻿#pragma once
 #include <Application/GameObject/BaseObject/BaseObject.h>
-
+class CameraBase;
 class HPGauge : public BaseObject
 {
 public:
+
+	enum class GaugeMode
+	{
+		Screen,   // プレイヤーUI
+		World     // 敵の頭上
+	};
+
 	void Init() override;
 	void DrawSprite() override;
 
@@ -25,16 +32,30 @@ public:
 		m_showDamageEffect = true;   // 赤バー表示開始
 	}
 
+	// 敵用：ワールド座標をセット
+	void SetWorldPos(const Math::Vector3& pos)
+	{
+		m_worldPos = pos;
+		m_mode = GaugeMode::World;
+	}
+
+	// カメラをセット（WorldToScreen 用）
+	void SetCamera(const std::shared_ptr<CameraBase>& cam)
+	{
+		m_wpCamera = cam;
+	}
+
 private:
-	std::shared_ptr<KdTexture> m_barTex;
-	std::shared_ptr<KdTexture> m_frameTex;
+	static std::shared_ptr<KdTexture> m_barTex;
+
+	GaugeMode m_mode = GaugeMode::Screen;
+	Math::Vector3 m_worldPos = Math::Vector3::Zero;
+	std::weak_ptr<CameraBase> m_wpCamera;
 
 	float m_hp = 0.0f;
 	float m_hpMax = 1.0f;
 
-	float m_damageAmount = 0.0f;
 	bool  m_showDamageEffect = false;
-	float m_damageTimer = 0.0f;
 
 	float m_damageBarWidth = 0.0;		// 赤バーの現在幅
 	float m_damageDelay = 1.0f;			// 表示しておく時間
