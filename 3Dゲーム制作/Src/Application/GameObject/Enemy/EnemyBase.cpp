@@ -52,7 +52,7 @@ void EnemyBase::Update()
 		m_hpGauge->SetCamera(cam);
 	}
 
-	m_hpGauge->SetGauge(m_hp, m_hpGaugeMax);
+	m_hpGauge->SetGauge(m_hp, m_hpMax);
 	Math::Vector3 worldPos = m_mWorld.Translation();
 	m_hpGauge->SetWorldPos(worldPos + Math::Vector3(0, 2.0f, 0));
 }
@@ -242,7 +242,7 @@ void EnemyBase::Damage(float dmg)
 	if (m_hpGauge)
 	{
 		m_hpGauge->OnDamage(before, after);
-		m_hpGauge->SetGauge(after, m_hpGaugeMax);
+		m_hpGauge->SetGauge(after, m_hpMax);
 	}
 
 	m_hp = after;

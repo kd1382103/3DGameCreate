@@ -18,12 +18,15 @@ void HPGauge::SetGauge(float hp, float hpMax)
 	m_hpMax = hpMax;
 }
 
+
 void HPGauge::DrawSprite()
 {
+	float fullWidth = 200.0f;
+
 	float rate = m_hp / m_hpMax;
 	if (rate < 0.0f) rate = 0.0f;
+	if (rate > 1.0f) rate = 1.0f;
 
-	float fullWidth = 200.0f;
 	float nowWidth = fullWidth * rate;
 
 	float x, y;
@@ -100,4 +103,10 @@ void HPGauge::DrawSprite()
 			{ 0, 0 }
 		);
 	}
+
+	KdDebugGUI::Instance().AddLog(
+		"mode=%d hp=%.1f max=%.1f rate=%.3f nowWidth=%.1f\n",
+		(int)m_mode, m_hp, m_hpMax, rate, nowWidth
+	);
+
 }

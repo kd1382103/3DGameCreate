@@ -92,7 +92,7 @@ public:
 
 	// HP
 	float m_hp ;
-	int   m_hpGaugeMax = 1000;
+	int   m_hpMax ;
 
 	// ステートマシン
 	std::shared_ptr<StateMachine<EnemyBase>> stateMachine;

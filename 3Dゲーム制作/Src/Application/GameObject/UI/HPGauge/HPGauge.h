@@ -23,10 +23,7 @@ public:
 		float beforeRate = before / m_hpMax;
 		float afterRate = after / m_hpMax;
 
-		float beforeWidth = fullWidth * beforeRate;
-		float afterWidth = fullWidth * afterRate;
-
-		m_damageBarWidth = beforeWidth - afterWidth;
+		m_damageBarWidth = fullWidth * (beforeRate - afterRate);
 
 		m_damageDelayTimer = 0.0f;   // 表示時間リセット
 		m_showDamageEffect = true;   // 赤バー表示開始
