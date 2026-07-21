@@ -7,6 +7,7 @@
 
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
 #include <Application/Scene/SceneManager.h>
+#include <Application/main.h>
 
 void Player::Init()
 {
@@ -17,6 +18,10 @@ void Player::Init()
 
 		m_pDebugWire = std::make_unique<KdDebugWireFrame>();
 		m_pCollider = std::make_unique<KdCollider>();
+
+		m_hpGauge = std::make_shared<HPGauge>();
+		m_hpGauge->Init();
+		m_hpGauge->SetMode(HPGauge::GaugeMode::Screen);
 	}
 
 	// ステートマシン初期化
@@ -33,6 +38,16 @@ void Player::Update()
 	if (!m_wpCamera.expired())
 	{
 		camRotMat = m_wpCamera.lock()->GetRotationYMatrix();
+	}
+
+	//============================
+	// ヒットストップ解除
+	//============================
+	if (m_hitStopTimer > 0.0f)
+	{
+		m_hitStopTimer -= 0.016f;  // 1フレーム分
+
+		return;  // ★ここで Update を完全停止
 	}
 
 	//================================================================================
@@ -90,6 +105,10 @@ void Player::Update()
 	{
 		ui->SetGauge(m_skillGauge, m_skillGaugeMax);
 	}
+	if (auto ui = GetUI<HPGauge>(UIType::HPGauge))
+	{
+		ui->SetGauge(m_nowHp, m_hpGaugeMax);
+	}
 	
 	//===============================
 	// 遅延ダメージ処理
@@ -105,7 +124,7 @@ void Player::Update()
 			if (after < 0) after = 0;
 
 			// 本当にHPを減らす
-			m_hpGauge = after;
+			m_nowHp = after;
 
 			// UIへ通知
 			if (auto hpUI = GetUI<HPGauge>(UIType::HPGauge))
@@ -300,10 +319,10 @@ void Player::GenerateDepthMapFromLight()
 void Player::Damage(float dmg)
 {
 	// 食らった瞬間のHPを保存
-	m_pendingBeforeHP = m_hpGauge;
+	m_pendingBeforeHP = m_nowHp;
 
 	// 遅れて減らすHPを計算（まだ適用しない）
-	float after = m_hpGauge - dmg;
+	float after = m_nowHp - dmg;
 	if (after < 0) after = 0;
 
 	m_pendingAfterHP = after;
@@ -352,5 +371,7 @@ void Player::DoAttackHitCheck(float range)
 		// ヒット
 		enemy->Damage(20);
 		m_attackHitOnce = true;
+
+		m_hitStopTimer = 0.45f;   // 0.05秒停止
 	}
 }

@@ -12,15 +12,18 @@
 void EnemyBase::Init()
 {
 	// モデルは各敵が設定する
-	// アニメーター初期化
 	m_animator = KdAnimator();
+
+	// 攻撃予知ポリゴン
 	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
 	m_preAttackPoly->SetMaterial("Asset/Textures/Effect/PreAttack.png");
 	m_preAttackPoly->Set2DObject(false);
 	m_preAttackPoly->SetScale(1.0f);
 
+	// HPゲージ
 	m_hpGauge = std::make_shared<HPGauge>();
 	m_hpGauge->Init();
+	m_hpGauge->SetMode(HPGauge::GaugeMode::World);
 
 	// ステートマシン生成
 	stateMachine = std::make_shared<StateMachine<EnemyBase>>();
@@ -32,21 +35,26 @@ void EnemyBase::Init()
 //==============================================================
 void EnemyBase::Update()
 {
-	// ステート更新
 	if (stateMachine)
 	{
 		stateMachine->Update(*this);
 	}
 
-	// アニメ更新（プレイヤーと同じ）
+	if (m_hitStopTimer > 0.0f)
+	{
+		m_hitStopTimer -= 0.016f;
+		return;
+	}
+
+	// アニメ更新
 	m_animator.AdvanceTime(m_model->WorkNodes(), 1.0f);
 
-	// ノード行列更新（プレイヤーと同じ）
 	if (m_model->NeedCalcNodeMatrices())
 	{
 		m_model->CalcNodeMatrices();
 	}
 
+	// HPゲージ
 	if (auto cam = m_wpCamera.lock())
 	{
 		m_hpGauge->SetCamera(cam);
@@ -58,7 +66,7 @@ void EnemyBase::Update()
 }
 
 //==============================================================
-// PostUpdate（プレイヤーと同じ地面判定・壁判定）
+// PostUpdate（地面判定・壁判定）
 //==============================================================
 void EnemyBase::PostUpdate()
 {
@@ -163,7 +171,7 @@ void EnemyBase::PostUpdate()
 	}
 
 	//========================
-	// ワールド行列更新（プレイヤーと同じ）
+	// ワールド行列更新
 	//========================
 	Math::Matrix rotMat = Math::Matrix::CreateRotationY(m_angleY);
 	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
@@ -188,8 +196,10 @@ void EnemyBase::DrawUnLit()
 	{
 		auto mat = m_preAttackPoly->GetMaterial();
 
-		mat->m_emissiveTex = nullptr;
-		mat->m_emissiveRate = { 0.0f, 0.0f, 0.0f };   // ← 発光ゼロ
+		// 発光（Pulse）
+		float pulse = (sin(m_preAttackTimer * 20.0f) + 1.0f) * 0.5f;
+		mat->m_emissiveRate = { 1.0f * pulse, 0.2f * pulse, 0.2f * pulse };
+
 		mat->m_baseColorRate = { 1, 1, 1, m_preAttackAlpha };
 
 		Math::Vector3 pos = m_preAttackPos;
@@ -200,16 +210,13 @@ void EnemyBase::DrawUnLit()
 			billboardRot = cam->GetBillboardMatrix();
 		}
 
-		Math::Matrix scale = Math::Matrix::CreateScale(1.0f);
+		Math::Matrix scale = Math::Matrix::CreateScale(m_preAttackScale);
 		Math::Matrix trans = Math::Matrix::CreateTranslation(pos);
 		Math::Matrix world = scale * billboardRot * trans;
 
-		// ★UnLit に切り替え
 		KdShaderManager::Instance().m_StandardShader.BeginUnLit();
-
 		KdShaderManager::Instance().ChangeBlendState(KdBlendState::Alpha);
 
-		// ★emissive = Zero → 画像そのまま
 		KdShaderManager::Instance().m_StandardShader.DrawPolygon(
 			*m_preAttackPoly,
 			world,
@@ -218,7 +225,6 @@ void EnemyBase::DrawUnLit()
 		);
 
 		KdShaderManager::Instance().UndoBlendState();
-
 		KdShaderManager::Instance().m_StandardShader.EndUnLit();
 	}
 }
@@ -229,9 +235,8 @@ void EnemyBase::DrawSprite()
 		m_hpGauge->DrawSprite();
 }
 
-
 //==============================================================
-// Damage（プレイヤーと同じ構造）
+// Damage
 //==============================================================
 void EnemyBase::Damage(float dmg)
 {
@@ -251,11 +256,20 @@ void EnemyBase::Damage(float dmg)
 	{
 		m_isExpired = true;
 	}
+
+	m_hitStopTimer = 0.35f;
+
+	// ノックバック
+	Math::Vector3 back = -m_mWorld.Forward();
+	back.y = 0;
+	back.Normalize();
+
+	m_nowPos += back * 0.65f;   // 距離は調整可能
+
 }
 
-
 //==============================================================
-// 攻撃判定（プレイヤーと同じ構造）
+// 攻撃判定
 //==============================================================
 void EnemyBase::DoAttackHitCheck(float range)
 {
@@ -264,13 +278,13 @@ void EnemyBase::DoAttackHitCheck(float range)
 
 	float dist = (player->GetPos() - m_nowPos).Length();
 	if (dist < range)
-	{    
+	{
 		player->Damage(m_attackDamage);
 	}
 }
 
 //==============================================================
-// アニメ再生（プレイヤーの SetAnim と同じ役割）
+// アニメ再生
 //==============================================================
 void EnemyBase::PlayAnimationAuto(const std::string& animName, int animIndex, bool loop)
 {

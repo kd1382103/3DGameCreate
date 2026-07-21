@@ -137,7 +137,8 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 void EnemyBaseStatePreAttack::Enter(EnemyBase& owner)
 {
 	owner.m_preAttackActive = true;
-	owner.m_preAttackAlpha = 1.0f; 
+	owner.m_preAttackAlpha = 1.0f;
+	owner.m_preAttackTimer = 0.0f;   
 	owner.m_preAttackPos = owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
 }
 
@@ -145,8 +146,11 @@ void EnemyBaseStatePreAttack::Update(EnemyBase& owner)
 {
 	float dt = Application::Instance().GetDeltaTime();
 
+	owner.m_preAttackTimer += dt; 
+
 	// 敵の頭上に追従
 	owner.m_preAttackPos = owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
+	owner.m_preAttackScale = 1.0f + (1.0f - owner.m_preAttackAlpha) * 0.5f;
 
 	// フェードアウト
 	owner.m_preAttackAlpha -= dt * 2.0f;
@@ -156,7 +160,7 @@ void EnemyBaseStatePreAttack::Update(EnemyBase& owner)
 	}
 
 	// ★フェードアウト完了で Attack1 へ
-	if (owner.m_preAttackAlpha <= 0.0f)
+	if (owner.m_preAttackTimer > 0.8f)
 	{
 		owner.m_preAttackActive = false;
 		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStateAttack1>());

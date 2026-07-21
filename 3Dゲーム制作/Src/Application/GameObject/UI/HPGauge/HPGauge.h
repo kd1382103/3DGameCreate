@@ -42,6 +42,11 @@ public:
 		m_wpCamera = cam;
 	}
 
+	void SetMode(GaugeMode mode)
+	{
+		m_mode = mode;
+	}
+
 private:
 	static std::shared_ptr<KdTexture> m_barTex;
 

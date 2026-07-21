@@ -1,9 +1,8 @@
 ﻿#pragma once
 #include <Application/GameObject/BaseObject/BaseObject.h>
 
-class SkillGauge;
 class CameraBase;
-
+class HPGauge;
 // 前方宣言：ステートマシン
 template <class T>
 class StateMachine;
@@ -80,6 +79,8 @@ public:
 	std::shared_ptr<KdModelWork> m_model;
 	KdAnimator m_animator;
 
+	std::shared_ptr<HPGauge> m_hpGauge = nullptr;
+
 	// カメラ
 	std::weak_ptr<CameraBase> m_wpCamera;
 
@@ -117,12 +118,14 @@ public:
 
 	// HP
 	int   m_hpGaugeMax = 1000;
-	float m_hpGauge = 1000;
+	float m_nowHp = 1000;
 
 	float m_pendingBeforeHP = -1.0f;   // 食らった瞬間のHP
 	float m_pendingAfterHP = -1.0f;   // 遅れて減らすHP
 	int   m_pendingDelay = 0;       // 遅延フレーム
 	float m_pendingDamage = 0.0f;    // ダメージ量
+
+	float m_hitStopTimer = 0.0f;
 
 	// 重力
 	float m_gravity = 0.0f;

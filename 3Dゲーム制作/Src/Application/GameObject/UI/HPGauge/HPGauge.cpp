@@ -104,9 +104,9 @@ void HPGauge::DrawSprite()
 		);
 	}
 
-	KdDebugGUI::Instance().AddLog(
-		"mode=%d hp=%.1f max=%.1f rate=%.3f nowWidth=%.1f\n",
-		(int)m_mode, m_hp, m_hpMax, rate, nowWidth
-	);
+	//KdDebugGUI::Instance().AddLog(
+	//	"mode=%d hp=%.1f max=%.1f rate=%.3f nowWidth=%.1f\n",
+	//	(int)m_mode, m_hp, m_hpMax, rate, nowWidth
+	//);
 
 }

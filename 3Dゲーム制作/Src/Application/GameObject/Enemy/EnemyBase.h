@@ -122,5 +122,11 @@ public:
 	std::shared_ptr<KdSquarePolygon> m_preAttackPoly;
 	float m_preAttackAlpha = 0.0f;
 	bool  m_preAttackActive = false;
+
 	Math::Vector3 m_preAttackPos = Math::Vector3::Zero;
+	float m_preAttackTimer = 0.0f;
+	float m_preAttackScale = 1.0f;
+	
+	float m_hitStopTimer = 0.0f;
+
 };
