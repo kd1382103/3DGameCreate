@@ -60,6 +60,25 @@ void EnemyBase::Update()
 		m_hpGauge->SetCamera(cam);
 	}
 
+	// 距離によるスケール計算
+	auto player = m_wpPlayer.lock();
+	float scale = 1.0f;
+
+	if (player)
+	{
+		float dist = (player->GetPos() - m_nowPos).Length();
+
+		float minDist = 3.0f;   // これ以下なら等倍
+		float maxDist = 15.0f;  // これ以上なら最小サイズ
+
+		float t = (dist - minDist) / (maxDist - minDist);
+		t = std::clamp(t, 0.0f, 1.0f);
+
+		scale = 1.0f - t * 0.6f;   // 1.0 → 0.4 まで縮む
+	}
+
+	m_hpGauge->SetScale(scale);
+
 	m_hpGauge->SetGauge(m_hp, m_hpMax);
 	Math::Vector3 worldPos = m_mWorld.Translation();
 	m_hpGauge->SetWorldPos(worldPos + Math::Vector3(0, 2.0f, 0));

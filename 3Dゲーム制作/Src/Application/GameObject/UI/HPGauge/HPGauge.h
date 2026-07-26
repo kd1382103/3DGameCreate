@@ -14,7 +14,11 @@ public:
 	void Init() override;
 	void DrawSprite() override;
 
-	void SetGauge(float hp, float hpMax);
+	void SetGauge(float hp, float hpMax)
+	{
+		m_hp = hp;
+		m_hpMax = hpMax;
+	}
 
 	void OnDamage(float before, float after)
 	{
@@ -42,6 +46,8 @@ public:
 		m_wpCamera = cam;
 	}
 
+	void SetScale(float s) { m_scale = s; }
+
 	void SetMode(GaugeMode mode)
 	{
 		m_mode = mode;
@@ -57,6 +63,7 @@ private:
 	float m_hp = 0.0f;
 	float m_hpMax = 1.0f;
 
+	float m_scale = 1.0f;
 	bool  m_showDamageEffect = false;
 
 	float m_damageBarWidth = 0.0;		// 赤バーの現在幅

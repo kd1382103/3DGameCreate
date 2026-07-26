@@ -10,12 +10,6 @@ void HPGauge::Init()
 	}
 }
 
-void HPGauge::SetGauge(float hp, float hpMax)
-{
-	m_hp = hp;
-	m_hpMax = hpMax;
-}
-
 void HPGauge::DrawSprite()
 {
 	float fullWidth = 200.0f;
@@ -24,10 +18,16 @@ void HPGauge::DrawSprite()
 	if (rate < 0.0f) rate = 0.0f;
 	if (rate > 1.0f) rate = 1.0f;
 
-	float nowWidth = fullWidth * rate;
+	float scale = 1.0f;
+	if (m_mode == GaugeMode::World)
+	{
+		scale = m_scale;
+	}
+
+	float nowWidth = fullWidth * rate * scale;
+	float barHeight = 20.0f * scale;
 
 	float x, y;
-
 
 	if (m_mode == GaugeMode::Screen)
 	{
@@ -44,8 +44,17 @@ void HPGauge::DrawSprite()
 
 		Math::Vector2 screen = cam->WorldToScreen(pos);
 
-		x = screen.x - fullWidth * 0.5f;
-		y = screen.y - 20.0f;
+		x = screen.x - (fullWidth * 0.5f);
+		y = screen.y;
+
+		// 描画サイズは scale を掛ける
+		float nowWidth = fullWidth * rate * scale;
+		float barHeight = 20.0f * scale;
+
+		// 縮んだ分だけ中央に寄せる補正
+		float offsetX = (fullWidth - nowWidth) * 0.5f;
+
+		x += offsetX;
 	}
 
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;
@@ -59,7 +68,7 @@ void HPGauge::DrawSprite()
 		x,
 		y,
 		nowWidth,
-		20,
+		barHeight,
 		nullptr,
 		&color,
 		{ 0, 0 }
@@ -96,7 +105,7 @@ void HPGauge::DrawSprite()
 			x + nowWidth,
 			y,
 			m_damageBarWidth,
-			20,
+			barHeight,
 			nullptr,
 			&dmgColor,
 			{ 0, 0 }
@@ -107,5 +116,4 @@ void HPGauge::DrawSprite()
 	//	"mode=%d hp=%.1f max=%.1f rate=%.3f nowWidth=%.1f\n",
 	//	(int)m_mode, m_hp, m_hpMax, rate, nowWidth
 	//);
-
 }
