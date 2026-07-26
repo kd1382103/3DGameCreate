@@ -1,14 +1,12 @@
 ﻿#include "HPGauge.h"
 #include <Application/GameObject/Camera/CameraBase.h>
-std::shared_ptr<KdTexture> HPGauge::m_barTex = nullptr;
 
 void HPGauge::Init()
 {
-
 	if (!m_barTex)
 	{
 		m_barTex = std::make_shared<KdTexture>();
-		m_barTex->Load("Asset/Textures/UI/Player/HP/HPGauge1.png");
+		m_barTex->Load("Asset/Textures/UI/Gauge/HP/HPGauge1.png");
 	}
 }
 
@@ -17,7 +15,6 @@ void HPGauge::SetGauge(float hp, float hpMax)
 	m_hp = hp;
 	m_hpMax = hpMax;
 }
-
 
 void HPGauge::DrawSprite()
 {
@@ -31,6 +28,7 @@ void HPGauge::DrawSprite()
 
 	float x, y;
 
+
 	if (m_mode == GaugeMode::Screen)
 	{
 		// プレイヤー用固定座標
@@ -39,14 +37,15 @@ void HPGauge::DrawSprite()
 	}
 	else
 	{
-		// 敵用：ワールド座標 → スクリーン座標
 		auto cam = m_wpCamera.lock();
 		if (!cam) return;
 
-		Math::Vector2 screen = cam->WorldToScreen(m_worldPos);
+		Math::Vector3 pos = m_worldPos;
+
+		Math::Vector2 screen = cam->WorldToScreen(pos);
 
 		x = screen.x - fullWidth * 0.5f;
-		y = screen.y - 60.0f;
+		y = screen.y - 20.0f;
 	}
 
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;

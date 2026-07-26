@@ -48,7 +48,7 @@ public:
 	}
 
 private:
-	static std::shared_ptr<KdTexture> m_barTex;
+	std::shared_ptr<KdTexture> m_barTex = nullptr;
 
 	GaugeMode m_mode = GaugeMode::Screen;
 	Math::Vector3 m_worldPos = Math::Vector3::Zero;

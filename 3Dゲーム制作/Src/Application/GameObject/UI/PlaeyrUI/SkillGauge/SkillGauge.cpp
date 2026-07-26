@@ -4,7 +4,7 @@ void SkillGauge::Init()
 {
 	// ゲージ本体
 	m_barTex = std::make_shared<KdTexture>();
-	m_barTex->Load("Asset/Textures/UI/Player/Skill/SkillGauge1.png");
+	m_barTex->Load("Asset/Textures/UI/Gauge/Skill/SkillGauge1.png");
 }
 
 void SkillGauge::SetGauge(float gauge, float gaugeMax)
