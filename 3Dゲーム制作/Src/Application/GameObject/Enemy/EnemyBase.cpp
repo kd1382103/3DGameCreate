@@ -250,8 +250,7 @@ void EnemyBase::DrawUnLit()
 
 void EnemyBase::DrawSprite()
 {
-	if (m_hpGauge)
-		m_hpGauge->DrawSprite();
+	if (m_hpGauge)m_hpGauge->DrawSprite();
 }
 
 //==============================================================

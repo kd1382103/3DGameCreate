@@ -63,6 +63,24 @@ public:
 		return billboard;
 	}
 
+	Math::Vector3 GetCameraDir() const
+	{
+		// カメラのワールド行列
+		Math::Matrix camMat = m_spCamera->GetCameraMatrix();
+
+		// 前方方向（Z軸の反転）
+		Math::Vector3 forward = -Math::Vector3(camMat.Forward());
+
+		forward.Normalize();
+		return forward;
+	}
+
+	Math::Vector3 GetCameraPos() const
+	{
+		return Math::Vector3(m_spCamera->GetCameraMatrix().Translation());
+	}
+
+
 	Math::Vector2 WorldToScreen(const Math::Vector3& worldPos) const;
 
 

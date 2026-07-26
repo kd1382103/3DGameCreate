@@ -12,6 +12,25 @@ void HPGauge::Init()
 
 void HPGauge::DrawSprite()
 {
+	if (m_mode == GaugeMode::World)
+	{
+		auto cam = m_wpCamera.lock();
+		if (!cam) return;
+
+		// カメラの前方ベクトルと敵方向ベクトルを比較
+		Math::Vector3 camForward = cam->GetCameraDir();
+		Math::Vector3 toEnemy = m_worldPos - cam->GetCameraPos();
+		toEnemy.Normalize();
+
+		float dot = camForward.Dot(toEnemy);
+
+		// 背面なら描画しない
+		if (dot < 0.0f)
+		{
+			return;
+		}
+	}
+
 	float fullWidth = 200.0f;
 
 	float rate = m_hp / m_hpMax;
