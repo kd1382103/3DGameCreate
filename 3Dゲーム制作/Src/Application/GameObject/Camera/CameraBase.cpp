@@ -27,6 +27,7 @@ void CameraBase::SetTarget(const std::shared_ptr<KdGameObject>& target)
 	m_wpTarget = target;
 }
 
+
 Math::Vector2 CameraBase::WorldToScreen(const Math::Vector3& worldPos) const
 {
 	Math::Vector3 result = Math::Vector3::Zero;

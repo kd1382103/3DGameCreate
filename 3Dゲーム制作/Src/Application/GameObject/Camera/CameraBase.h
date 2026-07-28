@@ -46,21 +46,19 @@ public:
 	void SetActive(bool active) { m_active = active; }
 	bool IsActive() const { return m_active; }
 
+
 	Math::Matrix GetBillboardMatrix() const
 	{
 		auto cam = m_spCamera;
 		if (!cam) return Math::Matrix::Identity;
 
-		// カメラのワールド行列を取得
 		Math::Matrix camWorld = cam->GetCameraMatrix();
 
-		// 平行移動を消す（回転だけ使う）
-		camWorld._41 = camWorld._42 = camWorld._43 = 0;
+		// 平行移動を消す（回転だけ残す）
+		camWorld.Translation(Math::Vector3::Zero);
 
-		// カメラの向きに合わせるために反転
-		Math::Matrix billboard = camWorld.Invert();
-
-		return billboard;
+		//  回転だけ反転
+		return camWorld.Invert();
 	}
 
 	Math::Vector3 GetCameraDir() const
@@ -82,7 +80,6 @@ public:
 
 
 	Math::Vector2 WorldToScreen(const Math::Vector3& worldPos) const;
-
 
 protected:
 	// カメラ回転用角度

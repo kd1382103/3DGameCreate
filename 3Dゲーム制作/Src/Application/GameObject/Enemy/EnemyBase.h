@@ -17,14 +17,12 @@ public:
 	void Update() override;
 	void PostUpdate() override;
 	void DrawLit() override;
-	void DrawUnLit() override;
 	void DrawSprite()override;
 
 	virtual Math::Vector3 GetHitCenter() const
 	{
 		return m_nowPos + Math::Vector3(0, 1.0f, 0); // 敵ごとに調整可能
 	}
-
 
 	void SetTarget(const std::shared_ptr<Player>& target) { m_wpPlayer = target; }
 	void SetPos(const Math::Vector3& pos) { m_nowPos = pos; }
@@ -55,6 +53,8 @@ public:
 	{
 		return m_animator.IsAnimationEnd();
 	}
+
+	bool IsAlive() const { return !m_isExpired; }
 
 
 public:
@@ -128,5 +128,11 @@ public:
 	float m_preAttackScale = 1.0f;
 	
 	float m_hitStopTimer = 0.0f;
+
+	// ロックオンアイコン
+	std::shared_ptr<KdSquarePolygon> m_lockOnIcon;
+	bool m_lockOnActive = false;
+	Math::Vector3 m_lockOnPos = Math::Vector3::Zero;
+	float m_lockOnScale = 1.0f;
 
 };

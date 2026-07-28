@@ -7,7 +7,6 @@
 
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
 #include <Application/Scene/SceneManager.h>
-#include <Application/main.h>
 
 void Player::Init()
 {
@@ -68,6 +67,63 @@ void Player::Update()
 	m_attackOnce = IsKeyPressedOnce(VK_LBUTTON);
 	m_skillOnce = IsKeyPressedOnce('E');
 	m_dodgeing = IsKeyPressedOnce(VK_RBUTTON);
+
+	// ① ロックオン切り替え
+	if (IsKeyPressedOnce('Q'))
+	{
+		m_lookOn = !m_lookOn;
+
+		if (m_lookOn)
+		{
+			EnemyBase* nearest = nullptr;
+			float nearestDist = FLT_MAX;
+
+			for (auto& obj : SceneManager::Instance().GetObjList())
+			{
+				EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
+				if (!enemy) continue;
+				if (!enemy->IsAlive()) continue;
+
+				float dist = (enemy->GetHitCenter() - m_nowPos).Length();
+				if (dist < nearestDist)
+				{
+					nearestDist = dist;
+					nearest = enemy;
+				}
+			}
+
+			m_lockOnTarget = nearest;
+
+			if (m_lockOnTarget)
+			{
+				m_lockOnTarget->m_lockOnActive = true; 
+			}
+		}
+		else
+		{
+			if (m_lockOnTarget)
+			{
+				m_lockOnTarget->m_lockOnActive = false;
+			}
+
+			m_lockOnTarget = nullptr;
+		}
+	}
+
+	// ② 死んだ敵を参照しない
+	if (m_lookOn)
+	{
+		if (!m_lockOnTarget || !m_lockOnTarget->IsAlive())
+		{
+			if (m_lockOnTarget)
+			{
+				m_lockOnTarget->m_lockOnActive = false;
+			}
+			m_lookOn = false;
+			m_lockOnTarget = nullptr;
+		}
+	}
+
 
 	//================================================================================
 	// カメラ方向へ変換

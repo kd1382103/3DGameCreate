@@ -28,6 +28,13 @@ void EnemyBase::Init()
 	// ステートマシン生成
 	stateMachine = std::make_shared<StateMachine<EnemyBase>>();
 	stateMachine->ChangeStateImmediate(std::make_unique<EnemyBaseStateIdle>(), *this);
+
+	// ロックオンアイコン
+	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
+	m_lockOnIcon->SetMaterial("Asset/Textures/Effect/LookOn.png"); 
+	m_lockOnIcon->Set2DObject(false);
+	m_lockOnIcon->SetScale(0.8f);
+
 }
 
 //==============================================================
@@ -35,6 +42,9 @@ void EnemyBase::Init()
 //==============================================================
 void EnemyBase::Update()
 {
+	m_gravity += 0.005f;
+	m_nowPos.y -= m_gravity;
+
 	if (stateMachine)
 	{
 		stateMachine->Update(*this);
@@ -196,6 +206,15 @@ void EnemyBase::PostUpdate()
 	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
 
 	m_mWorld = rotMat * transMat;
+
+	// モデルの原点（ワールド座標）
+	Math::Vector3 modelPos = m_mWorld.Translation();
+
+	// 攻撃予知の位置（モデルの頭上）
+	m_preAttackPos = modelPos + Math::Vector3(0, 1.8f, 0);
+
+	// ロックオンアイコンの位置（敵の前面）
+	m_lockOnPos = m_nowPos + Math::Vector3(0, 1.0f, 0);
 }
 
 //==============================================================
@@ -209,49 +228,100 @@ void EnemyBase::DrawLit()
 	}
 }
 
-void EnemyBase::DrawUnLit()
+void EnemyBase::DrawSprite()
 {
+	if (m_hpGauge) m_hpGauge->DrawSprite();
+
+	auto cam = m_wpCamera.lock();
+	if (!cam) return;
+
+	//攻撃予知
 	if (m_preAttackActive && m_preAttackPoly)
 	{
-		auto mat = m_preAttackPoly->GetMaterial();
+		// 背面判定（HPと同じ）
+		Math::Vector3 camForward = cam->GetCameraDir();
+		Math::Vector3 toEnemy = m_preAttackPos - cam->GetCameraPos();
+		toEnemy.Normalize();
 
-		// 発光（Pulse）
-		float pulse = (sin(m_preAttackTimer * 20.0f) + 1.0f) * 0.5f;
-		mat->m_emissiveRate = { 1.0f * pulse, 0.2f * pulse, 0.2f * pulse };
+		float dot = camForward.Dot(toEnemy);
+		if (dot < 0.0f) return;
 
-		mat->m_baseColorRate = { 1, 1, 1, m_preAttackAlpha };
+		// ワールド → スクリーン座標
+		Math::Vector2 screen = cam->WorldToScreen(m_preAttackPos);
 
-		Math::Vector3 pos = m_preAttackPos;
+		float scale = m_preAttackScale;
+		float w = 128.0f * scale;
+		float h = 128.0f * scale;
 
-		Math::Matrix billboardRot = Math::Matrix::Identity;
-		if (auto cam = m_wpCamera.lock())
+		float x = screen.x - w * 0.5f;
+		float y = screen.y - h * 0.5f;
+
+		auto& sprite = KdShaderManager::Instance().m_spriteShader;
+
+		Math::Color color = { 1, 1, 1, m_preAttackAlpha };
+
+		sprite.DrawTex(
+			m_preAttackPoly->GetMaterial()->m_baseColorTex.get(),
+			x,
+			y,
+			w,
+			h,
+			nullptr,
+			&color,
+			{ 0, 0 }
+		);
+	}
+
+	//ロックオン
+	if (m_lockOnActive && m_lockOnIcon)
+	{
+		//===========================
+		// ① 背面判定（HPGauge と同じ）
+		//===========================
+		Math::Vector3 camForward = cam->GetCameraDir();
+		Math::Vector3 toEnemy = m_lockOnPos - cam->GetCameraPos();
+		toEnemy.Normalize();
+
+		float dot = camForward.Dot(toEnemy);
+
+		if (dot < 0.0f)
 		{
-			billboardRot = cam->GetBillboardMatrix();
+			return; // 背面なら描画しない
 		}
 
-		Math::Matrix scale = Math::Matrix::CreateScale(m_preAttackScale);
-		Math::Matrix trans = Math::Matrix::CreateTranslation(pos);
-		Math::Matrix world = scale * billboardRot * trans;
+		//===========================
+		// ② ワールド → スクリーン座標変換
+		//===========================
+		Math::Vector2 screen = cam->WorldToScreen(m_lockOnPos);
 
-		KdShaderManager::Instance().m_StandardShader.BeginUnLit();
-		KdShaderManager::Instance().ChangeBlendState(KdBlendState::Alpha);
+		float scale = m_lockOnScale;
 
-		KdShaderManager::Instance().m_StandardShader.DrawPolygon(
-			*m_preAttackPoly,
-			world,
-			Math::Color(1, 1, 1, 1),
-			Math::Vector3::Zero
+		float iconWidth = 64.0f * scale;
+		float iconHeight = 64.0f * scale;
+
+		float x = screen.x - iconWidth * 0.5f;
+		float y = screen.y - iconHeight * 0.5f;
+
+		auto& sprite = KdShaderManager::Instance().m_spriteShader;
+
+		Math::Color color = { 1, 1, 1, 1 };
+
+		//===========================
+		// ③ HPGauge と同じ DrawTex 形式
+		//===========================
+		sprite.DrawTex(
+			m_lockOnIcon->GetMaterial()->m_baseColorTex.get(),
+			x,
+			y,
+			iconWidth,
+			iconHeight,
+			nullptr,
+			&color,
+			{ 0, 0 }
 		);
-
-		KdShaderManager::Instance().UndoBlendState();
-		KdShaderManager::Instance().m_StandardShader.EndUnLit();
 	}
 }
 
-void EnemyBase::DrawSprite()
-{
-	if (m_hpGauge)m_hpGauge->DrawSprite();
-}
 
 //==============================================================
 // Damage

@@ -3,6 +3,9 @@
 
 class CameraBase;
 class HPGauge;
+
+class EnemyBase;
+
 // 前方宣言：ステートマシン
 template <class T>
 class StateMachine;
@@ -108,6 +111,10 @@ public:
 	bool m_falling = false;
 
 	bool m_attackHitOnce = false;
+
+	//ロックオン
+	bool m_lookOn = false;
+	EnemyBase* m_lockOnTarget = nullptr;
 
 
 	// スキル関連

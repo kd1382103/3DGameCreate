@@ -1,5 +1,6 @@
 ﻿#include "TPSCamera.h"
-
+#include <Application/GameObject/Player/Player/Player.h>
+#include <Application/GameObject/Enemy/EnemyBase.h>
 void TPSCamera::Init()
 {
 	// 親クラスの初期化呼び出し
@@ -29,12 +30,32 @@ void TPSCamera::PostUpdate()
 	
 	// ターゲットの行列(有効な場合利用する)
 	Math::Matrix								_targetMat = Math::Matrix::Identity;
-	const std::shared_ptr<const KdGameObject>	_spTarget = m_wpTarget.lock();
+	 std::shared_ptr<KdGameObject>	_spTarget = m_wpTarget.lock();
 	if (_spTarget)
 	{
 		_targetMat = Math::Matrix::CreateTranslation(_spTarget->GetPos());
 	}
-	
+
+	auto player = std::dynamic_pointer_cast<Player>(_spTarget);
+	if (player && player->m_lookOn && player->m_lockOnTarget)
+	{
+		Math::Vector3 camPos = GetPos();
+		Math::Vector3 targetPos = player->m_lockOnTarget->GetHitCenter();
+
+		Math::Vector3 dir = targetPos - camPos;
+		dir.Normalize();
+
+		// yaw（左右）
+		float yaw = atan2(dir.x, dir.z);
+
+		// pitch（上下）
+		//float pitch = atan2(dir.y, sqrt(dir.x * dir.x + dir.z * dir.z));
+
+		// カメラ角度を補正（プレイヤーの向きは変えない）
+		m_DegAng.y = DirectX::XMConvertToDegrees(yaw);
+		//m_DegAng.x = DirectX::XMConvertToDegrees(pitch);
+	}
+
 	m_mRotation = GetRotationMatrix();
 	m_mWorld = m_mLocalPos * m_mRotation * _targetMat;
 
