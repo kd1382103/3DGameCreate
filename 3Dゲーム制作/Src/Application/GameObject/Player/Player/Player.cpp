@@ -397,6 +397,7 @@ bool Player::IsKeyPressedOnce(int vk)
 
 void Player::DoAttackHitCheck(float range)
 {
+	if (m_isInvincible) return;
 	if (m_attackHitOnce) return;
 
 	Math::Vector3 forward = GetForward();

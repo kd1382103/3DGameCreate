@@ -295,25 +295,34 @@ void PlayerStateSkill::Update(Player& owner)
 //==============================================================
 void PlayerStateDedge::Enter(Player& owner)
 {
-	owner.SetAnim(20, false);
-	owner.m_dir = Math::Vector3::Zero;
+	owner.SetAnim(36, false);
 
 	owner.m_isInvincible = true;
 
-	owner.m_dodgeDir = owner.GetForward();
-	owner.m_dodgeDir.Normalize();
+	Math::Vector3 dodgeDir = owner.m_dir;   
+
+	if (dodgeDir.LengthSquared() < 0.0001f)
+	{
+		dodgeDir = owner.GetForward();
+	}
+
+	dodgeDir.Normalize();
+	owner.m_dodgeDir = dodgeDir;
+
+	owner.m_dir = Math::Vector3::Zero;
+
 }
 
 void PlayerStateDedge::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
-	if (t > 0.05f && t < 0.25f)
+	if (t > 0.0f && t < 40.0f)
 	{
-		owner.m_nowPos += owner.m_dodgeDir * 0.20f;
+		owner.m_nowPos += owner.m_dodgeDir * 0.1f;
 	}
 
-	owner.m_isInvincible = (t < 0.30f);
+	owner.m_isInvincible = (t < 40.0f);
 
 	if (owner.m_animator.IsAnimationEnd())
 	{

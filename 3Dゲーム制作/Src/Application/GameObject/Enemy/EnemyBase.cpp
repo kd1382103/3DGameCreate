@@ -363,6 +363,7 @@ void EnemyBase::DoAttackHitCheck(float range)
 {
 	auto player = m_wpPlayer.lock();
 	if (!player) return;
+	if (player->m_isInvincible) return;
 
 	float dist = (player->GetPos() - m_nowPos).Length();
 	if (dist < range)
