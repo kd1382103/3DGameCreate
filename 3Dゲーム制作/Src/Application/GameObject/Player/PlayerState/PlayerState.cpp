@@ -1,6 +1,7 @@
 ﻿#include "PlayerState.h"
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/Scene/SceneManager.h>
+#include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 
 //==============================================================
 // Idle
@@ -301,7 +302,13 @@ void PlayerStateDedge::Enter(Player& owner)
 	owner.m_slowTimer = 20;   
 	owner.m_isInvincible = true;
 
-	Math::Vector3 dodgeDir = owner.m_dir;   
+
+	if (auto cam = std::dynamic_pointer_cast<TPSCamera>(owner.m_wpCamera.lock()))
+	{
+		cam->StartDodgeCamera();
+	}
+
+	Math::Vector3 dodgeDir = owner.m_dir;
 
 	if (dodgeDir.LengthSquared() < 0.0001f)
 	{
@@ -321,7 +328,6 @@ void PlayerStateDedge::Update(Player& owner)
 
 	if (t > 0.0f && t < 40.0f)
 	{
-		//owner.m_nowPos += owner.m_dodgeDir * 0.1f;
 		owner.m_nowPos += owner.m_dodgeDir * 0.1f * SceneManager::Instance().GetTimeScale();
 	}
 
@@ -330,6 +336,7 @@ void PlayerStateDedge::Update(Player& owner)
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.m_isInvincible = false;
+
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
 	}
 }

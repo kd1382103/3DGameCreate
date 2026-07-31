@@ -209,6 +209,10 @@ void Player::Update()
 		if (m_slowTimer <= 0)
 		{
 			SceneManager::Instance().SetTimeScale(1.0f);
+			if (auto cam = std::dynamic_pointer_cast<TPSCamera>(m_wpCamera.lock()))
+			{
+				cam->EndDodgeCamera();
+			}
 		}
 	}
 

@@ -8,6 +8,10 @@ void TPSCamera::Init()
 
 	// 注視点
 	m_mLocalPos = Math::Matrix::CreateTranslation(0, 1.5f, -4.0f);
+	m_nowFov = 60.0f;
+	m_targetFov = 60.0f;
+
+	m_spCamera->SetProjectionMatrix(m_nowFov);
 
 	SetCursorPos(m_FixMousePos.x, m_FixMousePos.y);
 }
@@ -26,6 +30,11 @@ void TPSCamera::PostUpdate()
 
 	// カメラの回転
 	if (!m_mouseFree) { UpdateRotateByMouse(); }
+
+	m_nowFov += (m_targetFov - m_nowFov) * 0.15f;
+
+	m_spCamera->SetProjectionMatrix(m_nowFov);
+
 	//////////////////////////////////////////////////////////////
 	
 	// ターゲットの行列(有効な場合利用する)
