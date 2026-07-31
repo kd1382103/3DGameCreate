@@ -4,7 +4,7 @@
 #include <Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
-
+#include <Application/main.h>
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
 #include <Application/Scene/SceneManager.h>
 
@@ -30,6 +30,9 @@ void Player::Init()
 
 void Player::Update()
 {
+	//ゲーム全体の速度を取得
+	float dt = SceneManager::Instance().GetTimeScale();
+
 	//================================================================================
 	// カメラの回転行列
 	//================================================================================
@@ -137,7 +140,7 @@ void Player::Update()
 	//================================================================================
 	// アニメ進行（速度固定）
 	//================================================================================
-	m_animator.AdvanceTime(m_model->WorkNodes(), 1.0f);
+	m_animator.AdvanceTime(m_model->WorkNodes(), dt);
 
 	if (m_model->NeedCalcNodeMatrices())
 	{
@@ -147,13 +150,13 @@ void Player::Update()
 	//================================================================================
 	// 重力
 	//================================================================================
-	m_gravity += 0.005f;
-	m_nowPos.y -= m_gravity;
+	m_gravity += 0.005f * dt;
+	m_nowPos.y -= m_gravity * dt;
 
 	//================================================================================
 	// スキルゲージ回復
 	//================================================================================
-	m_skillGauge += m_skillRegen;
+	m_skillGauge += m_skillRegen * dt;
 	if (m_skillGauge > m_skillGaugeMax) m_skillGauge = m_skillGaugeMax;
 
 	// UI 更新
@@ -179,7 +182,7 @@ void Player::Update()
 			float after = before - m_pendingDamage;
 			if (after < 0) after = 0;
 
-			// 本当にHPを減らす
+			// HPを減らす
 			m_nowHp = after;
 
 			// UIへ通知
@@ -195,6 +198,20 @@ void Player::Update()
 			m_pendingDamage = 0.0f;
 		}
 	}
+
+	//===============================
+	// 回避スロー処理
+	//===============================
+	if (m_slowTimer > 0)
+	{
+		m_slowTimer -= Application::Instance().GetDeltaTime();
+
+		if (m_slowTimer <= 0)
+		{
+			SceneManager::Instance().SetTimeScale(1.0f);
+		}
+	}
+
 	//================================================================================
 	// ステート更新（最重要）
 	//================================================================================

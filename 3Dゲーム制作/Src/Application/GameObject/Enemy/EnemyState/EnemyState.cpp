@@ -1,6 +1,7 @@
 ﻿#include"EnemyState.h"
 #include <Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/Player/Player/Player.h>
+#include <Application/Scene/SceneManager.h>
 #include <Application/main.h>
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -32,6 +33,8 @@ void EnemyBaseStateIdle::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void EnemyBaseStateMove::Update(EnemyBase& owner)
 {
+	float dt = SceneManager::Instance().GetTimeScale();
+
 	auto player = owner.m_wpPlayer.lock();
 	if (!player) return;
 
@@ -51,14 +54,14 @@ void EnemyBaseStateMove::Update(EnemyBase& owner)
 		Math::Vector3 cross = nowDir.Cross(dir);
 		if (cross.y < 0) angle = -angle;
 
-		float rotSpeed = DirectX::XMConvertToRadians(owner.m_rotationSpeedDeg);
+		float rotSpeed = DirectX::XMConvertToRadians(owner.m_rotationSpeedDeg) * dt;
 		angle = std::clamp(angle, -rotSpeed, rotSpeed);
 
 		owner.m_angleY += angle;
 	}
 
 	// 移動
-	owner.m_nowPos += dir * owner.m_moveSpeed;
+	owner.m_nowPos += dir * owner.m_moveSpeed * dt;
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -144,8 +147,7 @@ void EnemyBaseStatePreAttack::Enter(EnemyBase& owner)
 
 void EnemyBaseStatePreAttack::Update(EnemyBase& owner)
 {
-	float dt = Application::Instance().GetDeltaTime();
-
+	float dt =Application::Instance().GetDeltaTime() * SceneManager::Instance().GetTimeScale();
 	owner.m_preAttackTimer += dt; 
 
 	// 敵の頭上に追従

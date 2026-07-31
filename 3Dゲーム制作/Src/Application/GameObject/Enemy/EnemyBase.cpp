@@ -42,8 +42,10 @@ void EnemyBase::Init()
 //==============================================================
 void EnemyBase::Update()
 {
-	m_gravity += 0.005f;
-	m_nowPos.y -= m_gravity;
+	float dt = SceneManager::Instance().GetTimeScale();
+
+	m_gravity += 0.005f * dt;
+	m_nowPos.y -= m_gravity * dt;
 
 	if (stateMachine)
 	{
@@ -57,7 +59,7 @@ void EnemyBase::Update()
 	}
 
 	// アニメ更新
-	m_animator.AdvanceTime(m_model->WorkNodes(), 1.0f);
+	m_animator.AdvanceTime(m_model->WorkNodes(), dt);
 
 	if (m_model->NeedCalcNodeMatrices())
 	{

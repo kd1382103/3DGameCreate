@@ -34,6 +34,10 @@ public :
 	// 現在のシーンにオブジェクトを追加
 	void AddObject(const std::shared_ptr<KdGameObject>& _obj);
 
+	//ゲーム全体の速度
+	void SetTimeScale(float scale) { m_timeScale = std::clamp(scale, 0.0f, 1.0f); }
+	float GetTimeScale() const { return m_timeScale; }
+
 private :
 
 	// マネージャーの初期化
@@ -55,6 +59,8 @@ private :
 	
 	// 次のシーンの種類を保持している変数
 	SceneType m_nextSceneType = m_currentSceneType;
+
+	float m_timeScale = 1.0f;
 
 private:
 

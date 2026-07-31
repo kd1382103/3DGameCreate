@@ -91,7 +91,7 @@ public:
 	Math::Vector3 m_dir = Math::Vector3::Zero;
 	Math::Vector3 m_nowPos = Math::Vector3::Zero;
 
-	// Dodge 用
+	// 回避用
 	Math::Vector3 m_dodgeDir = Math::Vector3::Zero;
 	bool m_isInvincible = false;
 
@@ -132,7 +132,11 @@ public:
 	int   m_pendingDelay = 0;       // 遅延フレーム
 	float m_pendingDamage = 0.0f;    // ダメージ量
 
+	//ヒットストップ
 	float m_hitStopTimer = 0.0f;
+
+	// 回避スロー
+	int m_slowTimer = 0;
 
 	// 重力
 	float m_gravity = 0.0f;

@@ -1,5 +1,6 @@
 ﻿#include "PlayerState.h"
 #include <Application/GameObject/Player/Player/Player.h>
+#include <Application/Scene/SceneManager.h>
 
 //==============================================================
 // Idle
@@ -95,7 +96,7 @@ void PlayerStateMove::Update(Player& owner)
 
 	// 移動
 	float moveSpeed = owner.m_running ? 0.15f : 0.05f;
-	owner.m_nowPos += owner.m_dir * moveSpeed;
+	owner.m_nowPos += owner.m_dir * moveSpeed * SceneManager::Instance().GetTimeScale();
 }
 
 //==============================================================
@@ -157,7 +158,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	{
 		Math::Vector3 f = owner.GetForward();
 		f.Normalize();
-		owner.m_nowPos += f * 0.05f;
+		owner.m_nowPos += f * 0.05f * SceneManager::Instance().GetTimeScale();
 	}
 
 	// 攻撃判定
@@ -206,7 +207,7 @@ void PlayerStateAttack2::Update(Player& owner)
 	{
 		Math::Vector3 f = owner.GetForward();
 		f.Normalize();
-		owner.m_nowPos += f * 0.05f;
+		owner.m_nowPos += f * 0.05f * SceneManager::Instance().GetTimeScale();
 	}
 
 	if (t > 35.0f && t < 45.0f)
@@ -251,7 +252,7 @@ void PlayerStateAttack3::Update(Player& owner)
 	{
 		Math::Vector3 f = owner.GetForward();
 		f.Normalize();
-		owner.m_nowPos += f * 0.05f;
+		owner.m_nowPos += f * 0.05f * SceneManager::Instance().GetTimeScale();
 	}
 
 	if (t > 35.0f && t < 45.0f)
@@ -296,7 +297,8 @@ void PlayerStateSkill::Update(Player& owner)
 void PlayerStateDedge::Enter(Player& owner)
 {
 	owner.SetAnim(36, false);
-
+	SceneManager::Instance().SetTimeScale(0.2f);
+	owner.m_slowTimer = 20;   
 	owner.m_isInvincible = true;
 
 	Math::Vector3 dodgeDir = owner.m_dir;   
@@ -319,7 +321,8 @@ void PlayerStateDedge::Update(Player& owner)
 
 	if (t > 0.0f && t < 40.0f)
 	{
-		owner.m_nowPos += owner.m_dodgeDir * 0.1f;
+		//owner.m_nowPos += owner.m_dodgeDir * 0.1f;
+		owner.m_nowPos += owner.m_dodgeDir * 0.1f * SceneManager::Instance().GetTimeScale();
 	}
 
 	owner.m_isInvincible = (t < 40.0f);
