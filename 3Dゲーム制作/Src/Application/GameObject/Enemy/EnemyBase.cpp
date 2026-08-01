@@ -4,6 +4,7 @@
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
 
 #include <Application/Scene/SceneManager.h>
+#include <Application/main.h>
 #include <Application/GameObject/Enemy/EnemyState/EnemyState.h>
 
 //==============================================================
@@ -43,6 +44,18 @@ void EnemyBase::Init()
 void EnemyBase::Update()
 {
 	float dt = SceneManager::Instance().GetTimeScale();
+
+	if (m_isSlow)
+	{
+		dt *= m_slowRate;
+
+		m_slowTimer -= Application::Instance().GetDeltaTime();
+
+		if (m_slowTimer <= 0)
+		{
+			m_isSlow = false;
+		}
+	}
 
 	m_gravity += 0.005f * dt;
 	m_nowPos.y -= m_gravity * dt;

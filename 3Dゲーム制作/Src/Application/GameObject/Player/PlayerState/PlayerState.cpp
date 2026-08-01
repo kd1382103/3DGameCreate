@@ -96,7 +96,7 @@ void PlayerStateMove::Update(Player& owner)
 	}
 
 	// 移動
-	float moveSpeed = owner.m_running ? 0.15f : 0.05f;
+	float moveSpeed = owner.m_running ? owner.m_runSpeed : owner.m_walkSpeed;
 	owner.m_nowPos += owner.m_dir * moveSpeed * SceneManager::Instance().GetTimeScale();
 }
 
@@ -297,7 +297,7 @@ void PlayerStateSkill::Update(Player& owner)
 //==============================================================
 void PlayerStateDedge::Enter(Player& owner)
 {
-	owner.SetAnim(36, false);
+	owner.SetAnim(27, false);
 	SceneManager::Instance().SetTimeScale(0.2f);
 	owner.m_slowTimer = 20;   
 	owner.m_isInvincible = true;

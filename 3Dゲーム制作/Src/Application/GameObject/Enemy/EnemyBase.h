@@ -56,6 +56,11 @@ public:
 
 	bool IsAlive() const { return !m_isExpired; }
 
+	void StartSlow(float time)
+	{
+		m_isSlow = true;
+		m_slowTimer = time;
+	}
 
 public:
 
@@ -135,4 +140,8 @@ public:
 	Math::Vector3 m_lockOnPos = Math::Vector3::Zero;
 	float m_lockOnScale = 1.0f;
 
+	//回避成功された後のスロー
+	bool m_isSlow = false;
+	float m_slowTimer = 0.0f;
+	float m_slowRate = 0.2f;
 };

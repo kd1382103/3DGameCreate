@@ -75,7 +75,6 @@ public:
 	bool IsAttackInput() const { return m_attackOnce; }
 	bool IsSkillInput() const { return m_skillOnce; }
 	bool IsDodgeInput() const { return m_dodgeing; }
-	bool IsFall()const { return m_falling; }
 
 public:
 	// モデル・アニメーション
@@ -96,8 +95,13 @@ public:
 	bool m_isInvincible = false;
 
 	// 回転
-	float m_angleY = DirectX::XMConvertToRadians(180.0f);
-	float m_rotationSpeedDeg = 20.0f;
+	float	m_angleY = DirectX::XMConvertToRadians(180.0f);
+	float	m_rotationSpeedDeg = 20.0f;
+	bool	m_canDodge = false;
+
+	// 回避スロー
+	int m_slowTimer = 0;
+	bool m_justDodgeSuccess = false;
 
 	// アニメ
 	int m_nowAnimIndex = -1;
@@ -108,14 +112,15 @@ public:
 	bool m_attackOnce = false;
 	bool m_skillOnce = false;
 	bool m_dodgeing = false;
-	bool m_falling = false;
-
 	bool m_attackHitOnce = false;
 
 	//ロックオン
 	bool m_lookOn = false;
 	EnemyBase* m_lockOnTarget = nullptr;
 
+	//歩行速度
+	float m_walkSpeed = 0.05f;
+	float m_runSpeed = 0.10f;
 
 	// スキル関連
 	int   m_skillGaugeMax = 100;
@@ -134,9 +139,6 @@ public:
 
 	//ヒットストップ
 	float m_hitStopTimer = 0.0f;
-
-	// 回避スロー
-	int m_slowTimer = 0;
 
 	// 重力
 	float m_gravity = 0.0f;

@@ -143,6 +143,12 @@ void EnemyBaseStatePreAttack::Enter(EnemyBase& owner)
 	owner.m_preAttackAlpha = 1.0f;
 	owner.m_preAttackTimer = 0.0f;   
 	owner.m_preAttackPos = owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
+
+	auto player = owner.m_wpPlayer.lock();
+	if (player)
+	{
+		player->m_canDodge = true;
+	}
 }
 
 void EnemyBaseStatePreAttack::Update(EnemyBase& owner)
@@ -161,9 +167,21 @@ void EnemyBaseStatePreAttack::Update(EnemyBase& owner)
 		owner.m_preAttackAlpha = 0.0f;
 	}
 
-	// ★フェードアウト完了で Attack1 へ
+
+	// フェードアウト完了で Attack1 へ
 	if (owner.m_preAttackTimer > 0.8f)
 	{
+		auto player = owner.m_wpPlayer.lock();
+		if (player)
+		{
+			if (player->m_justDodgeSuccess)
+			{
+				owner.StartSlow(2.0f);
+				player->m_justDodgeSuccess = false;
+			}
+			player->m_canDodge = false;
+		}
+
 		owner.m_preAttackActive = false;
 		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStateAttack1>());
 		return;
