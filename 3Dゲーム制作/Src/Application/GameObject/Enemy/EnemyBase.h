@@ -90,7 +90,7 @@ public:
 
 	// 攻撃
 	float m_attackDist ;      
-	float m_attackDamage;    
+	float m_attackDamage;   
 
 	//　索敵距離
 	float detectRange ;
@@ -122,6 +122,7 @@ public:
 	int animDashIndex = -1;
 	int animAttack1Index = -1;
 	int animSkillIndex = -1;
+	int animHitIndex = -1;
 
 	// 攻撃予知（ビルボード）
 	std::shared_ptr<KdSquarePolygon> m_preAttackPoly;

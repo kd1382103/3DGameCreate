@@ -426,7 +426,6 @@ bool Player::IsKeyPressedOnce(int vk)
 void Player::DoAttackHitCheck(float range)
 {
 	if (m_isInvincible) return;
-	if (m_attackHitOnce) return;
 
 	Math::Vector3 forward = GetForward();
 	forward.y = 0;
@@ -434,20 +433,21 @@ void Player::DoAttackHitCheck(float range)
 
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
-		if (obj.get() == this) continue;
-
 		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
 		if (!enemy) continue;
 
 		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
+		toEnemy.y = 0;
+		
 		float dist = toEnemy.Length();
 		if (dist > range) continue;
+		if (dist < 0.0001f) continue;
 
 		// 角度チェック
-		toEnemy.y = 0;
 		toEnemy.Normalize();
-		float dot = forward.Dot(toEnemy);
-		float angle = acos(dot);
+
+		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
+		float angle = acos(dot);		
 		if (angle > DirectX::XMConvertToRadians(90.0f)) continue;
 
 		// ヒット

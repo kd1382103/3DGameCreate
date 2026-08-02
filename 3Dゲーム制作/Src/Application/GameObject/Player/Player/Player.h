@@ -114,6 +114,9 @@ public:
 	bool m_dodgeing = false;
 	bool m_attackHitOnce = false;
 
+	//攻撃
+	float m_attackDist = 1.25f;
+
 	//ロックオン
 	bool m_lookOn = false;
 	EnemyBase* m_lockOnTarget = nullptr;

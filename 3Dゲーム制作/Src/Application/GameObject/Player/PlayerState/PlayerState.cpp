@@ -165,7 +165,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	// 攻撃判定
 	if (t > 35.0f && t < 45.0f)
 	{
-		owner.DoAttackHitCheck(1.5f);
+		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
 	// Attack2 受付
@@ -213,7 +213,7 @@ void PlayerStateAttack2::Update(Player& owner)
 
 	if (t > 35.0f && t < 45.0f)
 	{
-		owner.DoAttackHitCheck(1.5f);
+		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
 	if (t > 30 && t < 85)
@@ -258,7 +258,7 @@ void PlayerStateAttack3::Update(Player& owner)
 
 	if (t > 35.0f && t < 45.0f)
 	{
-		owner.DoAttackHitCheck(1.5f);
+		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
 	if (owner.m_animator.IsAnimationEnd())

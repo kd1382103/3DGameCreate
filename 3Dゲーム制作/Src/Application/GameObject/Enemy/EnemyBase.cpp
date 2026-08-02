@@ -344,8 +344,7 @@ void EnemyBase::DrawSprite()
 void EnemyBase::Damage(float dmg)
 {
 	float before = m_hp;
-	float after = before - dmg;
-	if (after < 0) after = 0;
+	float after = std::max(0.0f, before - dmg);	
 
 	if (m_hpGauge)
 	{
@@ -358,17 +357,34 @@ void EnemyBase::Damage(float dmg)
 	if (m_hp <= 0)
 	{
 		m_isExpired = true;
+		return;
 	}
 
+	//ヒットストップ
 	m_hitStopTimer = 0.35f;
 
-	// ノックバック
-	Math::Vector3 back = -m_mWorld.Forward();
-	back.y = 0;
-	back.Normalize();
+	//攻撃予知解除
+	m_preAttackActive = false;
+	m_preAttackAlpha = 0.0f;
+	m_preAttackTimer = 0.0f;
 
-	m_nowPos += back * 0.65f;   // 距離は調整可能
+	// プレイヤーのジャスト回避受付も終了
+	if (auto player = m_wpPlayer.lock())
+	{
+		player->m_canDodge = false;
 
+		//=========================
+		// ノックバック
+		//=========================
+		Math::Vector3 knockDir = m_nowPos - player->GetPos();
+		knockDir.y = 0.0f;
+
+		if (knockDir.LengthSquared() > 0.00001f)
+		{
+			knockDir.Normalize();
+			m_nowPos += knockDir * 0.65f;
+		}
+	}
 }
 
 //==============================================================
@@ -380,11 +396,28 @@ void EnemyBase::DoAttackHitCheck(float range)
 	if (!player) return;
 	if (player->m_isInvincible) return;
 
-	float dist = (player->GetPos() - m_nowPos).Length();
-	if (dist < range)
-	{
-		player->Damage(m_attackDamage);
-	}
+	Math::Vector3 toPlayer = player->GetPos() - m_nowPos;
+	toPlayer.y = 0;
+
+	float dist = toPlayer.Length();
+	if (dist > range) return;
+	if (dist < 0.0001f) return;
+	toPlayer.Normalize();
+
+	//敵の正面ベクトル
+	Math::Vector3 forward = GetForward();
+	forward.y = 0;
+	if (dist < 0.0001f)return;
+	forward.Normalize();
+
+	//正面判定
+	float dot = std::clamp(forward.Dot(toPlayer), -1.0f, 1.0f);
+	float angle =acos(dot);
+
+	//正面からの攻撃ならヒット
+	if (angle > DirectX::XMConvertToRadians(90.0f))return;
+	player->Damage(m_attackDamage);
+	
 }
 
 //==============================================================
