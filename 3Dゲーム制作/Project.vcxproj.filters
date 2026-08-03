@@ -133,6 +133,9 @@
     <Filter Include="Src\Application\GameObject\UI\HPGauge">
       <UniqueIdentifier>{ac213dff-bc52-4f57-81e7-5d5d7c920699}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\UI\FlyText">
+      <UniqueIdentifier>{0b237cd9-980a-4257-8df1-0a878fa3ff56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -351,6 +354,9 @@
     <ClInclude Include="Src\Application\GameObject\UI\HPGauge\HPGauge.h">
       <Filter>Src\Application\GameObject\UI\HPGauge</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\FlyText\FlyText.h">
+      <Filter>Src\Application\GameObject\UI\FlyText</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -535,6 +541,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\HPGauge\HPGauge.cpp">
       <Filter>Src\Application\GameObject\UI\HPGauge</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\FlyText\FlyText.cpp">
+      <Filter>Src\Application\GameObject\UI\FlyText</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

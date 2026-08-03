@@ -2,6 +2,7 @@
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/Camera/CameraBase.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
+#include <Application/GameObject/UI/FlyText/FlyText.h>
 
 #include <Application/Scene/SceneManager.h>
 #include <Application/main.h>
@@ -337,12 +338,17 @@ void EnemyBase::DrawSprite()
 	}
 }
 
-
 //==============================================================
 // Damage
 //==============================================================
 void EnemyBase::Damage(float dmg)
 {
+	auto fly = std::make_shared<FlyText>();
+	fly->Init(m_nowPos + Math::Vector3(0, 2.0f, 0), (int)dmg);
+	fly->SetCamera(m_wpCamera.lock());
+
+	SceneManager::Instance().AddObject(fly);
+
 	float before = m_hp;
 	float after = std::max(0.0f, before - dmg);	
 

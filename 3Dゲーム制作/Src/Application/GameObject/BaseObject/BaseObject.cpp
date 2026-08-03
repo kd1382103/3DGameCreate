@@ -1,4 +1,5 @@
 ﻿#include "BaseObject.h"
+
 void BaseObject::Init()
 {}
 
@@ -16,3 +17,4 @@ void BaseObject::GenerateDepthMapFromLight()
 
 void BaseObject::DrawSprite()
 {}
+

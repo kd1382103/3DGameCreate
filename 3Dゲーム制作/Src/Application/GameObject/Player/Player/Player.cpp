@@ -4,6 +4,7 @@
 #include <Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
+#include <Application/GameObject/UI/FlyText/FlyText.h>
 #include <Application/main.h>
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
 #include <Application/Scene/SceneManager.h>
@@ -399,6 +400,12 @@ void Player::GenerateDepthMapFromLight()
 
 void Player::Damage(float dmg)
 {
+	auto fly = std::make_shared<FlyText>();
+	fly->Init(m_nowPos + Math::Vector3(0, 2.0f, 0), (int)dmg);
+	fly->SetCamera(m_wpCamera.lock());
+
+	SceneManager::Instance().AddObject(fly);
+
 	// 食らった瞬間のHPを保存
 	m_pendingBeforeHP = m_nowHp;
 
