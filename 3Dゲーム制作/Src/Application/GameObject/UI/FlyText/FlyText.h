@@ -14,6 +14,17 @@ public:
 		m_wpCamera = cam;
 	}
 
+public:
+
+	//FlyTextの表示時間
+	static constexpr float LifeTime = 3.0f;
+
+	//拡大縮小にかける時間
+	static constexpr float ScaleTime = 0.5f;
+
+	//「constexpr」はコンパイル時に定数を定義する
+	// プログラムの実行時ではなくコンパイル時に値が決まる
+
 private:
 	std::weak_ptr<CameraBase> m_wpCamera;
 
@@ -21,7 +32,11 @@ private:
 
 	int m_value = 0;
 
-	float m_life = 1.0f;          // 残り時間(秒)
+	float m_life = 0.0f;          // 残り時間(秒)
 	float m_offsetY = 0.0f;       // 上昇量
+	float m_offsetX = 0.0f;      
+	float m_velocityX = 0.0f;
 	float m_alpha = 255.0f;       // 透明度
+	float m_scale = 0.0f;
+	float m_maxScale = 1.0f;
 };

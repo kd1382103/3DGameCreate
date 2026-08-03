@@ -15,6 +15,18 @@ public:
 		Math::Vector2 UV;
 	};
 
+	struct FontParam
+	{
+		Math::Vector2 pos = {};				//座標
+		Math::Color color = kWhiteColor;	//色
+
+		float scale = 1.0f;					//拡大率
+		float angle = 0.0f;					//回転角
+
+		Math::Vector2 pivot = { 0.5f, 0.5f };	//基準点
+		float spacing = 0.0f;					//文字間隔
+	};
+
 	//===========================================
 	// 初期化・解放
 	//===========================================
@@ -134,10 +146,16 @@ public:
 
 	// フォント描画
 	void DrawFont(const Math::Vector2& Pos, const Math::Color* color, const char* format, ...);
+	
+	//フォント描画（拡張版）
+	void DrawFontEx(const FontParam& param,const char* format,...);
 
 private:
 	// フォント描画
 	void DrawFont(std::shared_ptr<KdFontSprite>& fontSprite, const Math::Vector2& Pos, const Math::Color* color, const int antiAliasingFlag);
+	
+	//フォント描画（拡張版）
+	void DrawFontEx(std::shared_ptr<KdFontSprite>& fontSprite, const FontParam& param, const int antiAliasingFlag);
 
 	ID3D11VertexShader*		m_VS = nullptr;				// 頂点シェーダー
 	ID3D11InputLayout*		m_VLayout = nullptr;		// 頂点レイアウト

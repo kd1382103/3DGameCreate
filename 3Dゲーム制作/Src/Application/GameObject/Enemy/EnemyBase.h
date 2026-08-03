@@ -145,4 +145,7 @@ public:
 	bool m_isSlow = false;
 	float m_slowTimer = 0.0f;
 	float m_slowRate = 0.2f;
+
+	//ノックバックの強さ
+	float m_knockBackPower = 0.75f;
 };

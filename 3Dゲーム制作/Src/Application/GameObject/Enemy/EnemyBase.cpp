@@ -388,7 +388,7 @@ void EnemyBase::Damage(float dmg)
 		if (knockDir.LengthSquared() > 0.00001f)
 		{
 			knockDir.Normalize();
-			m_nowPos += knockDir * 0.65f;
+			m_nowPos += knockDir * m_knockBackPower;
 		}
 	}
 }

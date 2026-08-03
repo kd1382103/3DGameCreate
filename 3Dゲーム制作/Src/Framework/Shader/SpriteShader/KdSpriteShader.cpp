@@ -487,6 +487,105 @@ void KdSpriteShader::DrawFont(std::shared_ptr<KdFontSprite>& fontSprite, const M
 	if (!bBgn)End();
 }
 
+void KdSpriteShader::DrawFontEx(std::shared_ptr<KdFontSprite>& fontSprite,const FontParam& param,const int antiAliasingFlag)
+{
+	if (fontSprite == nullptr) return;
+	if (fontSprite->GetTexList().empty()) return;
+
+	bool bBgn = m_isBegin;
+	if (!bBgn) Begin();
+
+	// 色
+	m_cb0.Work().Color = param.color;
+	m_cb0.Write();
+
+	float lineHeight =
+		fontSprite->GetTexList()[0]->FontTex->GetInfo().Height * param.scale;
+
+	Math::Vector2 pos = param.pos;
+	float moveX = 0.0f;
+
+	for (auto& data : fontSprite->GetTexList())
+	{
+		if (data->Code == '\n')
+		{
+			pos.x -= moveX;
+			pos.y -= lineHeight;
+			moveX = 0.0f;
+			continue;
+		}
+
+		auto tex = data->FontTex;
+
+		KdDirect3D::Instance().WorkDevContext()->PSSetShaderResources(
+			0,
+			1,
+			tex->WorkSRViewAddress());
+
+		float w = tex->GetInfo().Width * param.scale;
+		float h = tex->GetInfo().Height * param.scale;
+
+		float px = pos.x - w * param.pivot.x;
+		float py = pos.y - h * param.pivot.y;
+
+		Math::Vector2 center =
+		{
+			px + w * param.pivot.x,
+			py + h * param.pivot.y
+		};
+
+		Math::Vector2 local[4] =
+		{
+			{0,0},
+			{0,h},
+			{w,0},
+			{w,h}
+		};
+
+		float rad = DirectX::XMConvertToRadians(param.angle);
+
+		float c = cosf(rad);
+		float s = sinf(rad);
+
+		Vertex vertex[4];
+
+		for (int i = 0; i < 4; i++)
+		{
+			float lx = local[i].x - w * param.pivot.x;
+			float ly = local[i].y - h * param.pivot.y;
+
+			float rx = lx * c - ly * s;
+			float ry = lx * s + ly * c;
+
+			vertex[i].Pos =
+			{
+				center.x + rx,
+				center.y + ry,
+				0
+			};
+		}
+
+		vertex[0].UV = { 0,1 };
+		vertex[1].UV = { 0,0 };
+		vertex[2].UV = { 1,1 };
+		vertex[3].UV = { 1,0 };
+
+		KdDirect3D::Instance().DrawVertices(
+			D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
+			4,
+			vertex,
+			sizeof(Vertex));
+
+		pos.x += w + param.spacing;
+		moveX += w + param.spacing;
+	}
+
+	ID3D11ShaderResourceView* srv = nullptr;
+	KdDirect3D::Instance().WorkDevContext()->PSSetShaderResources(0, 1, &srv);
+
+	if (!bBgn) End();
+}
+
 void KdSpriteShader::DrawFont(const Math::Vector2& Pos, const Math::Color* color, const char* format, ...)
 {
 	char tmpStr[128]{};
@@ -497,4 +596,19 @@ void KdSpriteShader::DrawFont(const Math::Vector2& Pos, const Math::Color* color
 	std::shared_ptr<KdFontSprite> fontSprite = KdFontManager::Instance().CreateFontTexture(0, tmpStr, false);
 
 	DrawFont(fontSprite, Pos, color, 0);
+}
+
+void KdSpriteShader::DrawFontEx(const FontParam& param, const char* format, ...)
+{
+	char tmpStr[128]{};
+
+	va_list argptr;
+	va_start(argptr, format);
+	vsprintf_s(tmpStr, format, argptr);
+	va_end(argptr);
+
+	auto fontSprite =
+		KdFontManager::Instance().CreateFontTexture(0, tmpStr, false);
+
+	DrawFontEx(fontSprite, param, 0);
 }
