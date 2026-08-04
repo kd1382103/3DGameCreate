@@ -18,6 +18,9 @@ public :
 	GameScene()  { Init(); }
 	~GameScene() {}
 
+	void AddKillCount() { m_killCount++; }
+	int GetKillCount() const { return m_killCount; }
+
 private:
 
 	void Event() override;
@@ -36,4 +39,8 @@ private:
 	//UI
 	std::shared_ptr<SkillGauge>skillGauge;
 	std::shared_ptr<HPGauge>hpGauge;
+
+	//キルカウント
+	int m_killCount = 0;
+	static const int m_clearKillCount = 2;
 };

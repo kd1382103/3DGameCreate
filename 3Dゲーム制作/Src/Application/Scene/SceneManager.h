@@ -38,6 +38,10 @@ public :
 	void SetTimeScale(float scale) { m_timeScale = std::clamp(scale, 0.0f, 1.0f); }
 	float GetTimeScale() const { return m_timeScale; }
 
+	std::shared_ptr<BaseScene> GetCurrentScene() const
+	{
+		return m_currentScene;
+	}
 private :
 
 	// マネージャーの初期化
@@ -61,6 +65,7 @@ private :
 	SceneType m_nextSceneType = m_currentSceneType;
 
 	float m_timeScale = 1.0f;
+
 
 private:
 

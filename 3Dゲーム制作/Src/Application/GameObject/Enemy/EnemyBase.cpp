@@ -7,7 +7,7 @@
 #include <Application/Scene/SceneManager.h>
 #include <Application/main.h>
 #include <Application/GameObject/Enemy/EnemyState/EnemyState.h>
-
+#include <Application/Scene/GameScene/GameScene.h>
 //==============================================================
 // Init
 //==============================================================
@@ -362,7 +362,9 @@ void EnemyBase::Damage(float dmg)
 
 	if (m_hp <= 0)
 	{
+		m_pGameScene->AddKillCount();
 		m_isExpired = true;
+		
 		return;
 	}
 

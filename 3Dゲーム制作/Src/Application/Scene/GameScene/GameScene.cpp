@@ -26,6 +26,11 @@ void GameScene::Event()
 	}
 
 	auto& input = KdInputManager::Instance();
+
+	if(m_killCount >= m_clearKillCount)
+	{
+		SceneManager::Instance().SetNextScene(SceneManager::SceneType::Title);
+	}
 }
 
 void GameScene::Init()
@@ -58,6 +63,7 @@ void GameScene::Init()
 	enemy1->SetPos({ 5, 0, 5 });
 	enemy1->SetTarget(player);
 	enemy1->SetCamera(m_camera);
+	enemy1->SetGameScene(this);
 	AddObject(enemy1);
 
 	enemy2 = std::make_shared<Enemy2>();
@@ -65,6 +71,7 @@ void GameScene::Init()
 	enemy2->SetPos({ -5, 0, -5 });
 	enemy2->SetTarget(player);
 	enemy2->SetCamera(m_camera);
+	enemy2->SetGameScene(this);
 	AddObject(enemy2);
 
 	//UI系列

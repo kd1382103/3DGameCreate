@@ -5,8 +5,8 @@ class Player;
 class CameraBase;
 class HPGauge;
 template <class T>
-class StateMachine;
-
+class StateMachine;class GameScene;
+class GameScene;
 class EnemyBase : public BaseObject
 {
 public:
@@ -62,6 +62,11 @@ public:
 		m_slowTimer = time;
 	}
 
+	void SetGameScene(GameScene* scene)
+	{
+		m_pGameScene = scene;
+	}
+
 public:
 
 	// モデル・アニメーション
@@ -74,6 +79,9 @@ public:
 
 	// カメラ
 	std::weak_ptr<CameraBase> m_wpCamera;
+
+	//ゲームシーン
+	GameScene* m_pGameScene = nullptr;
 
 	// プレイヤー
 	std::weak_ptr<Player> m_wpPlayer;
