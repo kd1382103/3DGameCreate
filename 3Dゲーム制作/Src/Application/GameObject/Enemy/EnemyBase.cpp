@@ -398,6 +398,8 @@ void EnemyBase::Damage(float dmg)
 //==============================================================
 void EnemyBase::DoAttackHitCheck(float range)
 {
+	if (m_attackHitOnce) return;
+
 	auto player = m_wpPlayer.lock();
 	if (!player) return;
 	if (player->m_isInvincible) return;
@@ -423,7 +425,7 @@ void EnemyBase::DoAttackHitCheck(float range)
 	//正面からの攻撃ならヒット
 	if (angle > DirectX::XMConvertToRadians(90.0f))return;
 	player->Damage(m_attackDamage);
-	
+	m_attackHitOnce = true;
 }
 
 //==============================================================

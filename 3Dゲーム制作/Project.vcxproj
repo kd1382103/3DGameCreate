@@ -279,6 +279,7 @@
     <ClInclude Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.h" />
     <ClInclude Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.h" />
     <ClInclude Include="Src\Application\GameObject\Enemy\Enemy1\Enemy1.h" />
+    <ClInclude Include="Src\Application\GameObject\Enemy\Enemy2\Enemy2.h" />
     <ClInclude Include="Src\Application\GameObject\Enemy\EnemyBase.h" />
     <ClInclude Include="Src\Application\GameObject\Enemy\EnemyState\EnemyState.h" />
     <ClInclude Include="Src\Application\GameObject\Player\PlayerState\PlayerState.h" />
@@ -347,6 +348,7 @@
     <ClCompile Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.cpp" />
     <ClCompile Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.cpp" />
     <ClCompile Include="Src\Application\GameObject\Enemy\Enemy1\Enemy1.cpp" />
+    <ClCompile Include="Src\Application\GameObject\Enemy\Enemy2\Enemy2.cpp" />
     <ClCompile Include="Src\Application\GameObject\Enemy\EnemyBase.cpp" />
     <ClCompile Include="Src\Application\GameObject\Enemy\EnemyState\EnemyState.cpp" />
     <ClCompile Include="Src\Application\GameObject\Player\PlayerState\PlayerState.cpp" />

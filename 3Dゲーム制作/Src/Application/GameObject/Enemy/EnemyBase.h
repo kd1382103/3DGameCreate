@@ -148,4 +148,6 @@ public:
 
 	//ノックバックの強さ
 	float m_knockBackPower = 0.75f;
+
+	bool m_attackHitOnce = false;
 };

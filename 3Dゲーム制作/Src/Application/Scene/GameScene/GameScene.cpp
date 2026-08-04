@@ -3,6 +3,7 @@
 
 #include<Application/GameObject/Player/Player/Player.h>
 #include<Application/GameObject/Enemy/Enemy1/Enemy1.h>
+#include<Application/GameObject/Enemy/Enemy2/Enemy2.h>
 
 #include<Application/GameObject/Stages/Floor/Stage.h>
 
@@ -58,6 +59,13 @@ void GameScene::Init()
 	enemy1->SetTarget(player);
 	enemy1->SetCamera(m_camera);
 	AddObject(enemy1);
+
+	enemy2 = std::make_shared<Enemy2>();
+	enemy2->Init();
+	enemy2->SetPos({ -5, 0, -5 });
+	enemy2->SetTarget(player);
+	enemy2->SetCamera(m_camera);
+	AddObject(enemy2);
 
 	//UI系列
 
