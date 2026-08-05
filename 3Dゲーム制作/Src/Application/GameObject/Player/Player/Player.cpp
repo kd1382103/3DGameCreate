@@ -431,41 +431,41 @@ bool Player::IsKeyPressedOnce(int vk)
 }
 
 //単体判定用
-void Player::DoAttackHitCheck(float range, int damage)
-{
-	if (m_attackHitOnce) return;
-	if (m_isInvincible) return;
-
-	Math::Vector3 forward = GetForward();
-	forward.y = 0;
-	forward.Normalize();
-
-	for (auto& obj : SceneManager::Instance().GetObjList())
-	{
-		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
-		if (!enemy) continue;
-
-		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
-		toEnemy.y = 0;
-		
-		float dist = toEnemy.Length();
-		if (dist > range) continue;
-		if (dist < 0.0001f) continue;
-
-		// 角度チェック
-		toEnemy.Normalize();
-
-		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
-		float angle = acos(dot);		
-		if (angle > DirectX::XMConvertToRadians(90.0f)) continue;
-
-		// ヒット
-		enemy->Damage(damage);
-		m_attackHitOnce = true;
-		m_hitStopTimer = 0.45f;   // 0.05秒停止
-		return;
-	}
-}
+//void Player::DoAttackHitCheck(float range, int damage)
+//{
+//	if (m_attackHitOnce) return;
+//	if (m_isInvincible) return;
+//
+//	Math::Vector3 forward = GetForward();
+//	forward.y = 0;
+//	forward.Normalize();
+//
+//	for (auto& obj : SceneManager::Instance().GetObjList())
+//	{
+//		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
+//		if (!enemy) continue;
+//
+//		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
+//		toEnemy.y = 0;
+//		
+//		float dist = toEnemy.Length();
+//		if (dist > range) continue;
+//		if (dist < 0.0001f) continue;
+//
+//		// 角度チェック
+//		toEnemy.Normalize();
+//
+//		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
+//		float angle = acos(dot);		
+//		if (angle > DirectX::XMConvertToRadians(90.0f)) continue;
+//
+//		// ヒット
+//		enemy->Damage(damage);
+//		m_attackHitOnce = true;
+//		m_hitStopTimer = 0.45f;   // 0.05秒停止
+//		return;
+//	}
+//}
 
 //複数判定用
 void Player::DoAttackHitCheckMulti(float range, float width, int damage)
