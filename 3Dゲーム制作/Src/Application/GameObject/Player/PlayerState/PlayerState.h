@@ -64,7 +64,7 @@ public:
 };
 
 //回避
-class PlayerStateDedge : public StateBase<Player>
+class PlayerStateDodge : public StateBase<Player>
 {
 public:
 	void Enter(Player& owner)override;

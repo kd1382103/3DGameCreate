@@ -27,7 +27,7 @@ void PlayerStateIdle::Update(Player& owner)
 
 	if (owner.IsDodgeInput())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateDedge>());
+		owner.stateMachine->ChangeState(std::make_unique<PlayerStateDodge>());
 		return;
 	}
 
@@ -71,7 +71,7 @@ void PlayerStateMove::Update(Player& owner)
 	// 回避
 	if (owner.IsDodgeInput())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateDedge>());
+		owner.stateMachine->ChangeState(std::make_unique<PlayerStateDodge>());
 		return;
 	}
 
@@ -165,7 +165,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	// 攻撃判定
 	if (t > 35.0f && t < 45.0f)
 	{
-		owner.DoAttackHitCheck(owner.m_attackDist);
+		owner.DoAttackHitCheck(owner.m_attackDist,15);
 	}
 
 	// Attack2 受付
@@ -213,7 +213,7 @@ void PlayerStateAttack2::Update(Player& owner)
 
 	if (t > 35.0f && t < 45.0f)
 	{
-		owner.DoAttackHitCheck(owner.m_attackDist);
+		owner.DoAttackHitCheck(owner.m_attackDist,20);
 	}
 
 	if (t > 30 && t < 85)
@@ -242,7 +242,6 @@ void PlayerStateAttack3::Enter(Player& owner)
 	owner.SetAnim(41, false);
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_attackHitOnce = false;
-
 }
 
 void PlayerStateAttack3::Update(Player& owner)
@@ -258,7 +257,7 @@ void PlayerStateAttack3::Update(Player& owner)
 
 	if (t > 35.0f && t < 45.0f)
 	{
-		owner.DoAttackHitCheck(owner.m_attackDist);
+		owner.DoAttackHitCheck(owner.m_attackDist,30);
 	}
 
 	if (owner.m_animator.IsAnimationEnd())
@@ -275,15 +274,18 @@ void PlayerStateSkill::Enter(Player& owner)
 	owner.SetAnim(20, false);
 	owner.m_skillGauge -= owner.m_skillCost;
 	owner.m_dir = Math::Vector3::Zero;
+	owner.m_attackHitOnce = false;
+
 }
 
 void PlayerStateSkill::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
-	if (t > 10.0f && t < 30.0f)
+	//個々の数値は変更予定
+	if (t > 3.0f && t < 8.0f)
 	{
-		owner.DoAttackHitCheck(1.2f);
+		owner.DoAttackHitCheckMulti(1.2f, 120.0f, 40);
 	}
 
 	if (owner.m_animator.IsAnimationEnd())
@@ -295,7 +297,7 @@ void PlayerStateSkill::Update(Player& owner)
 //==============================================================
 // Dodge
 //==============================================================
-void PlayerStateDedge::Enter(Player& owner)
+void PlayerStateDodge::Enter(Player& owner)
 {
 	owner.SetAnim(27, false);
 	SceneManager::Instance().SetTimeScale(0.2f);
@@ -322,7 +324,7 @@ void PlayerStateDedge::Enter(Player& owner)
 
 }
 
-void PlayerStateDedge::Update(Player& owner)
+void PlayerStateDodge::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 

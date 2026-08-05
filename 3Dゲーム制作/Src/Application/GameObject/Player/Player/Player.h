@@ -68,7 +68,8 @@ public:
 
 
 	// 攻撃判定
-	void DoAttackHitCheck(float range);
+	void DoAttackHitCheck(float range,int damage);	//単体
+	void DoAttackHitCheckMulti(float range, float width, int damage);	//範囲
 
 	// ステート方式で使う補助関数
 	bool IsMoveInput() const { return m_moving; }
