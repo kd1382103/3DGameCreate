@@ -148,6 +148,8 @@ void PlayerStateAttack1::Enter(Player& owner)
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_canNextAttack = false;
 	owner.m_attackHitOnce = false;
+	owner.m_attackContact = false;
+	owner.m_canGainUltimate = true;
 }
 
 void PlayerStateAttack1::Update(Player& owner)
@@ -167,6 +169,10 @@ void PlayerStateAttack1::Update(Player& owner)
 	{
 		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 15);
 	}
+	else
+	{
+		owner.m_attackContact = false;
+	}
 
 	// Attack2 受付
 	if (t > 30 && t < 85)
@@ -180,6 +186,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	{
 		if (owner.m_canNextAttack)
 		{
+			owner.m_canGainUltimate = false;
 			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack2>());
 			return;
 		}
@@ -197,7 +204,8 @@ void PlayerStateAttack2::Enter(Player& owner)
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_canNextAttack = false;
 	owner.m_attackHitOnce = false;
-
+	owner.m_attackContact = false;
+	owner.m_canGainUltimate = true;
 }
 
 void PlayerStateAttack2::Update(Player& owner)
@@ -215,6 +223,10 @@ void PlayerStateAttack2::Update(Player& owner)
 	{
 		owner.DoAttackHitCheckMulti(owner.m_attackDist,90.0f,20);
 	}
+	else
+	{
+		owner.m_attackContact = false;
+	}
 
 	if (t > 30 && t < 85)
 	{
@@ -226,6 +238,7 @@ void PlayerStateAttack2::Update(Player& owner)
 	{
 		if (owner.m_canNextAttack)
 		{
+			owner.m_canGainUltimate = false;
 			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack3>());
 			return;
 		}
@@ -242,6 +255,8 @@ void PlayerStateAttack3::Enter(Player& owner)
 	owner.SetAnim(41, false);
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_attackHitOnce = false;
+	owner.m_attackContact = false;
+	owner.m_canGainUltimate = true;
 }
 
 void PlayerStateAttack3::Update(Player& owner)
@@ -259,9 +274,14 @@ void PlayerStateAttack3::Update(Player& owner)
 	{
 		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 30);
 	}
+	else
+	{
+		owner.m_attackContact = false;
+	}
 
 	if (owner.m_animator.IsAnimationEnd())
 	{
+		owner.m_canGainUltimate = false;
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
 	}
 }
@@ -275,7 +295,8 @@ void PlayerStateSkill::Enter(Player& owner)
 	owner.m_skillGauge -= owner.m_skillCost;
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_attackHitOnce = false;
-
+	owner.m_attackContact = false;
+	owner.m_canGainUltimate = true;
 }
 
 void PlayerStateSkill::Update(Player& owner)
@@ -287,9 +308,14 @@ void PlayerStateSkill::Update(Player& owner)
 	{
 		owner.DoAttackHitCheckMulti(1.2f, 120.0f, 40);
 	}
+	else
+	{
+		owner.m_attackContact = false;
+	}
 
 	if (owner.m_animator.IsAnimationEnd())
 	{
+		owner.m_canGainUltimate = false;
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
 	}
 }

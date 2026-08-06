@@ -43,6 +43,14 @@ void Player::Update()
 		camRotMat = m_wpCamera.lock()->GetRotationYMatrix();
 	}
 
+	//=====================================
+	// 必殺技ポイント加算
+	//=====================================
+	if (m_canGainUltimate && m_attackContact)
+	{
+		AddUltimateEnergy(1.0f);
+	}
+
 	//============================
 	// ヒットストップ解除
 	//============================
@@ -50,7 +58,7 @@ void Player::Update()
 	{
 		m_hitStopTimer -= 0.016f;  // 1フレーム分
 
-		return;  // ★ここで Update を完全停止
+		return;  // Update停止
 	}
 
 	//================================================================================
@@ -390,6 +398,29 @@ void Player::DrawSprite()
 
 	if (auto ui = GetUI<HPGauge>(UIType::HPGauge))
 		ui->DrawSprite();
+
+	// 必殺技ポイント表示
+	KdSpriteShader::FontParam param;
+	param.pos = { -500,180 };
+	param.scale = 2.0f;
+	param.pivot = { 0,0 };
+	param.angle = 0;
+	param.spacing = 0;
+
+	if (m_ultimateEnergy >= m_ultimateEnergyMax)
+	{
+		param.color = { 1.0f,0.85f,0.0f,1.0f }; // 金色
+	}
+	else
+	{
+		param.color = { 0,0,0,1 };
+	}
+
+	KdShaderManager::Instance().m_spriteShader.DrawFontEx(
+		param,
+		"%d",
+		(int)m_ultimateEnergy
+	);
 }
 
 void Player::GenerateDepthMapFromLight()
@@ -499,6 +530,10 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 
 		// 全員にダメージ
 		enemy->Damage(damage);
+		if(m_canGainUltimate)
+		{
+			m_attackContact = true;
+		}
 		hit = true;
 	}
 
@@ -510,3 +545,40 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 	}
 
 }
+
+//void Player::CheckAttackContact(float range, float width)
+//{
+//
+//	Math::Vector3 forward = GetForward();
+//	forward.y = 0;
+//	forward.Normalize();
+//	bool contact = false;
+//
+//	for (auto& obj : SceneManager::Instance().GetObjList())
+//	{
+//		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
+//		if (!enemy) continue;
+//
+//		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
+//		toEnemy.y = 0;
+//
+//		float dist = toEnemy.Length();
+//
+//		if (dist > range) continue;
+//		if (dist < 0.0001f) continue;
+//
+//		toEnemy.Normalize();
+//
+//		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
+//		float angle = acos(dot);
+//
+//		if (angle > DirectX::XMConvertToRadians(width))continue;
+//		
+//		contact = true;
+//		break;
+//	}
+//	if(contact)
+//	{
+//		AddUltimateEnergy(1.0f);
+//	}
+//}

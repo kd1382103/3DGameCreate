@@ -9,8 +9,8 @@ void Enemy2::Init()
 	EnemyBase::Init();
 
 	// 個別設定
-	m_hp = 100;
-	m_hpMax = 100;
+	m_hp = 500;
+	m_hpMax = 500;
 	m_moveSpeed = 0.04f;
 	m_attackDist = 1.2f;
 	m_attackDamage = 75.0f;

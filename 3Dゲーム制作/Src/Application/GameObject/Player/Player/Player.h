@@ -66,10 +66,20 @@ public:
 		return rot.Right();
 	}
 
+	void AddUltimateEnergy(float value)
+	{
+		m_ultimateEnergy += value;
+
+		KdDebugGUI::Instance().AddLog("Ultimate : %f\n", m_ultimateEnergy);
+		if (m_ultimateEnergy > m_ultimateEnergyMax)
+			m_ultimateEnergy = m_ultimateEnergyMax;
+	}
 
 	// 攻撃判定
 	//void DoAttackHitCheck(float range,int damage);	//単体
 	void DoAttackHitCheckMulti(float range, float width, int damage);	//範囲
+
+	//void CheckAttackContact(float range, float width);
 
 	// ステート方式で使う補助関数
 	bool IsMoveInput() const { return m_moving; }
@@ -131,6 +141,12 @@ public:
 	float m_skillGauge = 100;
 	float m_skillRegen = 0.25f;
 	const int m_skillCost = 50;
+
+	// 必殺技関連
+	float m_ultimateEnergyMax = 500;
+	float m_ultimateEnergy = 0;
+	bool m_attackContact = false;	// 攻撃が当たったかどうか
+	bool m_canGainUltimate = false;	// 必殺技の次の攻撃が可能かどうか
 
 	// HP
 	int   m_hpGaugeMax = 1000;
