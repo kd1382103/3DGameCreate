@@ -13,7 +13,7 @@ public:
 	void GenerateDepthMapFromLight()	override;
 	void DrawSprite()					override;
 
-	virtual void Damage(float dmg) {}
+	virtual void Damage(float dmg, bool isUltimate = false, bool finalHit = false) {}
 private:
 
 };

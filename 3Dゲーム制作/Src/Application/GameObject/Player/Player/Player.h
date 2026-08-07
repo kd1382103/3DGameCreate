@@ -33,7 +33,7 @@ public:
 	void DrawSprite() override;
 	void GenerateDepthMapFromLight() override;
 
-	void Damage(float dmg) override;
+	void Damage(float dmg, bool isUltimate = false, bool finalHit = false) override;
 
 	void SetCamera(std::shared_ptr<CameraBase> camera) { m_wpCamera = camera; }
 	void RegisterUI(UIType type, const std::shared_ptr<BaseObject>& ui) { m_uiMap[type] = ui; }
@@ -78,6 +78,9 @@ public:
 	// 攻撃判定
 	//void DoAttackHitCheck(float range,int damage);	//単体
 	void DoAttackHitCheckMulti(float range, float width, int damage);	//範囲
+	
+	//必殺技用
+	void DoUltimateHitCheck(float range, float width, int damage);
 
 	//void CheckAttackContact(float range, float width);
 
@@ -86,6 +89,7 @@ public:
 	bool IsAttackInput() const { return m_attackOnce; }
 	bool IsSkillInput() const { return m_skillOnce; }
 	bool IsDodgeInput() const { return m_dodgeing; }
+	bool IsUltimateInput() const { return m_ultimateOnce; }
 
 public:
 	// モデル・アニメーション
@@ -124,6 +128,7 @@ public:
 	bool m_skillOnce = false;
 	bool m_dodgeing = false;
 	bool m_attackHitOnce = false;
+	bool m_ultimateOnce = false;
 
 	//攻撃
 	float m_attackDist = 1.25f;
@@ -147,6 +152,9 @@ public:
 	float m_ultimateEnergy = 0;
 	bool m_attackContact = false;	// 攻撃が当たったかどうか
 	bool m_canGainUltimate = false;	// 必殺技の次の攻撃が可能かどうか
+	float m_ultimateHitTimer = 0.0f;	// 必殺技の攻撃判定の時間
+	const float m_ultimateHitInterval = 5; 
+	int m_ultimateHitCount = 0;	// 必殺技の攻撃回数
 
 	// HP
 	int   m_hpGaugeMax = 1000;

@@ -69,11 +69,6 @@ void HPGauge::DrawSprite()
 		// 描画サイズは scale を掛ける
 		float nowWidth = fullWidth * rate * scale;
 		float barHeight = 20.0f * scale;
-
-		// 縮んだ分だけ中央に寄せる補正
-		float offsetX = (fullWidth - nowWidth) * 0.5f;
-
-		x += offsetX;
 	}
 
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;

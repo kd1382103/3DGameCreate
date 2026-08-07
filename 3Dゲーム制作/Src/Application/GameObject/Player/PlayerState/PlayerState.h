@@ -70,3 +70,11 @@ public:
 	void Enter(Player& owner)override;
 	void Update(Player& owner)override;
 };
+
+//必殺技
+class PlayerUltimate : public StateBase<Player>
+{
+public:
+	void Enter(Player& owner)override;
+	void Update(Player& owner)override;
+};

@@ -341,7 +341,7 @@ void EnemyBase::DrawSprite()
 //==============================================================
 // Damage
 //==============================================================
-void EnemyBase::Damage(float dmg)
+void EnemyBase::Damage(float dmg, bool isUltimate = false, bool finalHit = false)
 {
 	auto fly = std::make_shared<FlyText>();
 	fly->Init(m_nowPos + Math::Vector3(0, 2.0f, 0), (int)dmg);
@@ -390,7 +390,25 @@ void EnemyBase::Damage(float dmg)
 		if (knockDir.LengthSquared() > 0.00001f)
 		{
 			knockDir.Normalize();
-			m_nowPos += knockDir * m_knockBackPower;
+
+			if (isUltimate)
+			{
+				if (finalHit)
+				{
+					// 最後の一撃だけ大きく吹き飛ばす
+					m_nowPos += knockDir * m_knockBackPower;
+				}
+				else
+				{
+					// 多段中はほとんど動かさない
+					m_nowPos += knockDir * (m_knockBackPower * 0.2f);
+				}
+			}
+			else
+			{
+				// 通常攻撃
+				m_nowPos += knockDir * m_knockBackPower;
+			}
 		}
 	}
 }

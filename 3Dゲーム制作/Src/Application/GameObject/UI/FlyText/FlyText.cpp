@@ -10,8 +10,8 @@ void FlyText::Init(const Math::Vector3& worldPos, int value)
 
 	m_life = LifeTime;
 	m_offsetY = 0.0f;
-	m_offsetX = 0.0f;
-	m_velocityX = ((rand() % 100) / 100.0f - 0.5f) * 0.03f;
+	m_offsetX = ((rand() % 100) / 100.0f - 0.5f) * 0.5f;
+	m_velocityX = ((rand() % 100) / 100.0f - 0.5f) * 0.15f;
 	m_alpha = 255.0f;
 	m_scale = 0.0f;
 
@@ -22,21 +22,11 @@ void FlyText::Update()
 {
 	float dt = Application::Instance().GetDeltaTime();
 	m_life -= dt;
-	m_offsetY += 0.25f * dt;
-	// 左右へ少しはじける
-	m_offsetX += m_velocityX * dt;
-
-	// 徐々に減速
-	m_velocityX *= 0.96f;
+	m_offsetY += 0.25f * dt;			//上昇
+	m_offsetX += m_velocityX * dt;		//左右に散らばり
+	m_velocityX *= 0.96f;				//減衰
 
 	float elapsed = LifeTime - m_life;
-
-	if (elapsed > 0.05f)
-	{
-		m_offsetX += m_velocityX * dt;
-		m_velocityX *= 0.96f;
-	}
-
 	const float shrinkStart = LifeTime - ScaleTime;
 
 	//---------------------------------------

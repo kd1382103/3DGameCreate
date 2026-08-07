@@ -91,9 +91,10 @@ void Player::Update()
 
 	m_attackOnce = IsKeyPressedOnce(VK_LBUTTON);
 	m_skillOnce = IsKeyPressedOnce('E');
+	m_ultimateOnce = IsKeyPressedOnce('Q');
 
 	// ① ロックオン切り替え
-	if (IsKeyPressedOnce('Q'))
+	if (IsKeyPressedOnce(VK_MBUTTON))
 	{
 		m_lookOn = !m_lookOn;
 
@@ -275,8 +276,8 @@ void Player::Update()
 	//	デバックキー一覧
 	//===============================================================================
 	
-	//if (GetAsyncKeyState('P') & 0x8000) { m_hpGauge--; }	//体力ゲージの減少確認
-
+	//if (GetAsyncKeyState('1') & 0x8000) { m_hpGauge--; }	//体力ゲージの減少確認
+	if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	
 }
 
 void Player::PostUpdate()
@@ -429,7 +430,7 @@ void Player::GenerateDepthMapFromLight()
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
-void Player::Damage(float dmg)
+void Player::Damage(float dmg, bool isUltimate, bool finalHit)
 {
 	auto fly = std::make_shared<FlyText>();
 	fly->Init(m_nowPos + Math::Vector3(0, 2.0f, 0), (int)dmg);
@@ -449,6 +450,10 @@ void Player::Damage(float dmg)
 
 	// 遅延フレーム（例：10）
 	m_pendingDelay = 10;
+
+	//今は敵に必殺技やスキル等はないため、引数を使わないようにする（追加した時は変更）
+	(void)isUltimate;
+	(void)finalHit;
 }
 
 bool Player::IsKeyPressedOnce(int vk)
@@ -529,7 +534,7 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 		if (angle > DirectX::XMConvertToRadians(width)) continue;
 
 		// 全員にダメージ
-		enemy->Damage(damage);
+		enemy->Damage(damage, false, false);
 		if(m_canGainUltimate)
 		{
 			m_attackContact = true;
@@ -544,6 +549,39 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 		m_hitStopTimer = 0.45f;
 	}
 
+}
+
+void Player::DoUltimateHitCheck(float range, float width, int damage)
+{
+	if (m_isInvincible) return;
+
+	Math::Vector3 forward = GetForward();
+	forward.y = 0;
+	forward.Normalize();
+
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
+		if (!enemy) continue;
+
+		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
+		toEnemy.y = 0;
+
+		float dist = toEnemy.Length();
+		if (dist > range) continue;
+		if (dist < 0.0001f) continue;
+
+		toEnemy.Normalize();
+
+		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
+		float angle = acos(dot);
+
+		if (angle > DirectX::XMConvertToRadians(width)) continue;
+
+		// ダメージのみ
+		bool finalHit = (m_ultimateHitCount >= 5);
+		enemy->Damage(damage, true, finalHit);
+	}
 }
 
 //void Player::CheckAttackContact(float range, float width)

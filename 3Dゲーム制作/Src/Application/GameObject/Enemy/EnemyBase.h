@@ -28,7 +28,7 @@ public:
 	void SetPos(const Math::Vector3& pos) { m_nowPos = pos; }
 	void SetCamera(std::shared_ptr<CameraBase> cam) { m_wpCamera = cam; }
 
-	virtual void Damage(float dmg);
+	void Damage(float dmg,bool isUltimate,bool finalHit)override;
 
 	// 攻撃判定（ステート側が呼ぶ）
 	void DoAttackHitCheck(float range);

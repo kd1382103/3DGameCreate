@@ -19,6 +19,12 @@ void PlayerStateIdle::Update(Player& owner)
 		return;
 	}
 
+	if (owner.IsUltimateInput() && owner.m_ultimateEnergy >= owner.m_ultimateEnergyMax)
+	{
+		owner.stateMachine->ChangeState(std::make_unique<PlayerUltimate>());
+		return;
+	}
+
 	if (owner.IsAttackInput())
 	{
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack1>());
@@ -53,11 +59,17 @@ void PlayerStateMove::Update(Player& owner)
 		return;
 	}
 
-
-	// スキル割り込み
+	// スキル
 	if (owner.IsSkillInput() && owner.m_skillGauge >= owner.m_skillCost)
 	{
 		owner.stateMachine->ChangeStateImmediate(std::make_unique<PlayerStateSkill>(), owner);
+		return;
+	}
+
+	// 必殺技
+	if (owner.IsUltimateInput() && owner.m_ultimateEnergy >= owner.m_ultimateEnergyMax)
+	{
+		owner.stateMachine->ChangeState(std::make_unique<PlayerUltimate>());
 		return;
 	}
 
@@ -366,5 +378,44 @@ void PlayerStateDodge::Update(Player& owner)
 		owner.m_isInvincible = false;
 
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
+	}
+}
+
+void PlayerUltimate::Enter(Player& owner)
+{
+	//※現状、必殺技アニメ-ションはないため攻撃一段目のアニメーションを流す（変更予定）
+	owner.SetAnim(39, false);
+
+	owner.m_dir = Math::Vector3::Zero;
+	owner.m_attackHitOnce = false;
+	owner.m_attackContact = false;
+
+	owner.m_canGainUltimate = false;
+
+	// ゲージ消費
+	owner.m_ultimateEnergy = 0;
+	owner.m_ultimateHitTimer = 0;
+	owner.m_ultimateHitCount = 0;
+}
+
+void PlayerUltimate::Update(Player& owner)
+{
+	float t = owner.m_animator.GetAnimeCurrentTime();
+
+	if (t > 30 && t < 60)
+	{
+		owner.m_ultimateHitTimer++;
+		if (owner.m_ultimateHitTimer >= owner.m_ultimateHitInterval)
+		{
+			owner.m_ultimateHitTimer = 0;
+			owner.m_ultimateHitCount++;
+			owner.DoUltimateHitCheck(2.5f, 100.0f, 40);
+		}
+	}
+
+	if (owner.m_animator.IsAnimationEnd())
+	{
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>());
 	}
 }
