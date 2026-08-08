@@ -177,7 +177,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	}
 
 	// 攻撃判定
-	if (t > 35.0f && t < 45.0f)
+	if (t > 35.0f && t < 40.0f)
 	{
 		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 15);
 	}
@@ -187,21 +187,25 @@ void PlayerStateAttack1::Update(Player& owner)
 	}
 
 	// Attack2 受付
-	if (t > 30 && t < 85)
+	if (t > 40 && t < 85)
 	{
 		if (owner.IsAttackInput())
-			owner.m_canNextAttack = true;
+			{
+			owner.m_canGainUltimate = false;
+			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack2>());
+			return;
+		}
 	}
 
 	// 終了
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		if (owner.m_canNextAttack)
+		/*if (owner.m_canNextAttack)
 		{
 			owner.m_canGainUltimate = false;
 			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack2>());
 			return;
-		}
+		}*/
 
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
 	}
@@ -231,7 +235,7 @@ void PlayerStateAttack2::Update(Player& owner)
 		owner.m_nowPos += f * 0.05f * SceneManager::Instance().GetTimeScale();
 	}
 
-	if (t > 35.0f && t < 45.0f)
+	if (t > 35.0f && t < 40.0f)
 	{
 		owner.DoAttackHitCheckMulti(owner.m_attackDist,90.0f,20);
 	}
@@ -240,20 +244,24 @@ void PlayerStateAttack2::Update(Player& owner)
 		owner.m_attackContact = false;
 	}
 
-	if (t > 30 && t < 85)
+	if (t > 40 && t < 85)
 	{
 		if (owner.IsAttackInput())
-			owner.m_canNextAttack = true;
-	}
-
-	if (owner.m_animator.IsAnimationEnd())
-	{
-		if (owner.m_canNextAttack)
 		{
 			owner.m_canGainUltimate = false;
 			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack3>());
 			return;
 		}
+	}
+
+	if (owner.m_animator.IsAnimationEnd())
+	{
+		/*if (owner.m_canNextAttack)
+		{
+			owner.m_canGainUltimate = false;
+			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack3>());
+			return;
+		}*/
 
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
 	}
@@ -282,13 +290,23 @@ void PlayerStateAttack3::Update(Player& owner)
 		owner.m_nowPos += f * 0.05f * SceneManager::Instance().GetTimeScale();
 	}
 
-	if (t > 35.0f && t < 45.0f)
+	if (t > 35.0f && t < 40.0f)
 	{
 		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 30);
 	}
 	else
 	{
 		owner.m_attackContact = false;
+	}
+
+	if (t > 40 && t < 85)
+	{
+		if (owner.IsAttackInput())
+		{
+			owner.m_canGainUltimate = false;
+			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack1>());
+			return;
+		}
 	}
 
 	if (owner.m_animator.IsAnimationEnd())
