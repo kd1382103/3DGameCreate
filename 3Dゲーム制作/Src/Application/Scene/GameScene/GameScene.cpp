@@ -9,7 +9,7 @@
 
 #include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include<Application/GameObject/UI/HPGauge/HPGauge.h>
-
+#include <Application/GameObject/UI/FlyText/FlyText.h>
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/Camera/CameraBase.h>
@@ -27,9 +27,30 @@ void GameScene::Event()
 
 	auto& input = KdInputManager::Instance();
 
-	if(m_killCount >= m_clearKillCount)
+	//---------------------------------------
+	// 敵全滅
+	//---------------------------------------
+	if (!m_isGameClear && m_killCount >= m_clearKillCount)
 	{
-		SceneManager::Instance().SetNextScene(SceneManager::SceneType::Title);
+		m_isGameClear = true;
+
+		// GAME CLEAR表示
+		auto clearText = std::make_shared<FlyText>();
+		clearText->InitMessage("GAME CLEAR");
+		AddObject(clearText);
+	}
+
+	//---------------------------------------
+	// クリア後
+	//---------------------------------------
+	if (m_isGameClear)
+	{
+		if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+		{
+			SceneManager::Instance().SetNextScene(
+				SceneManager::SceneType::Title
+			);
+		}
 	}
 }
 
@@ -75,7 +96,6 @@ void GameScene::Init()
 	AddObject(enemy2);
 
 	//UI系列
-
 	//スキルゲージ
 	skillGauge = std::make_shared<SkillGauge>();
 	skillGauge->Init();

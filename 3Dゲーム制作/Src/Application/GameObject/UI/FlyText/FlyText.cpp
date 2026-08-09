@@ -2,7 +2,7 @@
 #include <Application/main.h>
 #include <Application/GameObject/Camera/CameraBase.h>
 
-
+//3D空間上の座標と表示する数値を受け取り、FlyTextを初期化する関数
 void FlyText::Init(const Math::Vector3& worldPos, int value)
 {
 	m_worldPos = worldPos;
@@ -18,13 +18,48 @@ void FlyText::Init(const Math::Vector3& worldPos, int value)
 	m_drawType = eDrawTypeUI;
 }
 
+// 文字列のみを受け取り、FlyTextを初期化する関数
+void FlyText::InitMessage(const std::string& text)
+{
+	m_text = text;
+	m_isMessage = true;
+
+	m_life = LifeTime;
+
+	m_offsetY = 0.0f;
+	m_offsetX = 0.0f;
+	m_velocityX = 0.0f;
+
+	m_alpha = 255.0f;
+	m_scale = 0.0f;
+
+	m_drawType = eDrawTypeUI;
+}
+
 void FlyText::Update()
 {
 	float dt = Application::Instance().GetDeltaTime();
+
+	//==================================================
+	// GAME CLEARなどのメッセージ
+	//==================================================
+	if (m_isMessage)
+	{
+		// 消えないようにする
+		m_alpha = 255.0f;
+		m_scale = m_maxScale;
+
+		return;
+	}
+
+	//==================================================
+	// ダメージ数字
+	//==================================================
 	m_life -= dt;
-	m_offsetY += 0.25f * dt;			//上昇
-	m_offsetX += m_velocityX * dt;		//左右に散らばり
-	m_velocityX *= 0.96f;				//減衰
+
+	m_offsetY += 0.25f * dt;
+	m_offsetX += m_velocityX * dt;
+	m_velocityX *= 0.96f;
 
 	float elapsed = LifeTime - m_life;
 	const float shrinkStart = LifeTime - ScaleTime;
@@ -38,14 +73,14 @@ void FlyText::Update()
 	}
 	else if (elapsed < shrinkStart)
 	{
-		// 等倍維持
 		m_scale = m_maxScale;
 	}
 	else
 	{
 		float t = (elapsed - shrinkStart) / ScaleTime;
 		t = std::clamp(t, 0.0f, 1.0f);
-		m_scale = m_maxScale * (1.0f - t);		
+
+		m_scale = m_maxScale * (1.0f - t);
 	}
 
 	//---------------------------------------
@@ -70,6 +105,49 @@ void FlyText::Update()
 
 void FlyText::DrawSprite()
 {
+
+	auto& sprite = KdShaderManager::Instance().m_spriteShader;
+
+	Math::Color color = { 1,1,1,m_alpha / 255.0f };
+
+	KdSpriteShader::FontParam param;
+
+	param.color = color;
+	param.scale = m_scale;
+	param.pivot = { 0.5f, 0.5f };
+
+	//---------------------------------------
+	// GAME CLEARなどのメッセージ
+	//---------------------------------------
+	if (m_isMessage)
+	{
+		// 画面中央
+		param.pos = { 0.0f,0.0f };
+		param.scale = 2.0f;
+		param.color = { 1.0f,1.0f,1.0f,1.0f };
+		param.pivot = { 0.5f,0.5f };
+
+		const char* text = m_text.c_str();
+		float spacing = 40.0f;
+		float startX = -((strlen(text) - 1) * spacing) * 0.5f;
+
+		for (int i = 0; text[i] != '\0'; i++)
+		{
+			param.pos.x = startX + i * spacing;
+
+			sprite.DrawFontEx(
+				param,
+				"%c",
+				text[i]
+			);
+		}
+
+		return;
+	}
+
+	//---------------------------------------
+	// ダメージ数字
+	//---------------------------------------
 	auto cam = m_wpCamera.lock();
 	if (!cam) return;
 	Math::Vector3 camForward = cam->GetCameraDir();
@@ -87,15 +165,8 @@ void FlyText::DrawSprite()
 
 	Math::Vector2 screen = cam->WorldToScreen(pos);
 
-	auto& sprite = KdShaderManager::Instance().m_spriteShader;
 
-	Math::Color color = { 1, 1, 1, m_alpha / 255.0f };
-
-	KdSpriteShader::FontParam param;
 	param.pos = screen;
-	param.color = color;
-	param.scale = m_scale;
-	param.pivot = { 0.5f, 0.5f };
 
 	sprite.DrawFontEx(
 		param,

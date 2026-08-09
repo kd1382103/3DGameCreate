@@ -43,4 +43,6 @@ private:
 	//キルカウント
 	int m_killCount = 0;
 	static const int m_clearKillCount = 2;
+
+	bool m_isGameClear = false;
 };

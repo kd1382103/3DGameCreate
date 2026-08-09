@@ -6,7 +6,8 @@ public:
 	FlyText() {}
 	~FlyText() override {}
 
-	void Init(const Math::Vector3& worldPos, int value);	
+	void Init(const Math::Vector3& worldPos, int value);
+	void InitMessage(const std::string& text);
 	void Update() override;
 	void DrawSprite() override;
 	void SetCamera(const std::shared_ptr<CameraBase>& cam)
@@ -27,16 +28,18 @@ public:
 
 private:
 	std::weak_ptr<CameraBase> m_wpCamera;
-
+	std::string m_text;
 	Math::Vector3 m_worldPos;
 
 	int m_value = 0;
 
 	float m_life = 0.0f;          // 残り時間(秒)
 	float m_offsetY = 0.0f;       // 上昇量
-	float m_offsetX = 0.0f;      
+	float m_offsetX = 0.0f;       // 左右のずれ
 	float m_velocityX = 0.0f;
 	float m_alpha = 255.0f;       // 透明度
 	float m_scale = 0.0f;
 	float m_maxScale = 1.0f;
+
+	bool m_isMessage = false;
 };
