@@ -106,8 +106,8 @@ void EnemyBase::Update()
 	m_hpGauge->SetScale(scale);
 
 	m_hpGauge->SetGauge(m_hp, m_hpMax);
-	Math::Vector3 worldPos = m_mWorld.Translation();
-	m_hpGauge->SetWorldPos(worldPos + Math::Vector3(0, 2.0f, 0));
+	//Math::Vector3 worldPos = m_mWorld.Translation();
+	//m_hpGauge->SetWorldPos(worldPos + Math::Vector3(0, 2.0f, 0));
 }
 
 //==============================================================
@@ -231,6 +231,13 @@ void EnemyBase::PostUpdate()
 
 	// ロックオンアイコンの位置（敵の前面）
 	m_lockOnPos = m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+	// HPゲージ位置
+	if (m_hpGauge)
+	{
+		Math::Vector3 worldPos = m_mWorld.Translation();
+		m_hpGauge->SetWorldPos(worldPos + Math::Vector3(0, 2.0f, 0));
+	}
 }
 
 //==============================================================
