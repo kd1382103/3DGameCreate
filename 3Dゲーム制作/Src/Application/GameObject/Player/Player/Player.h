@@ -91,6 +91,8 @@ public:
 	bool IsDodgeInput() const { return m_dodgeing; }
 	bool IsUltimateInput() const { return m_ultimateOnce; }
 
+	void SetGameClear(bool clear) { m_isGameClear = clear; }
+
 public:
 	// モデル・アニメーション
 	std::shared_ptr<KdModelWork> m_model;
@@ -176,6 +178,8 @@ public:
 
 	// ステートマシン
 	std::shared_ptr<StateMachine<Player>> stateMachine;
+
+	bool m_isGameClear = false;
 
 private:
 

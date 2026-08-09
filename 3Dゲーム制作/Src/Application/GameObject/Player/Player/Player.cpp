@@ -31,6 +31,11 @@ void Player::Init()
 
 void Player::Update()
 {
+	if (m_isGameClear)
+	{
+		return;
+	}
+
 	//ゲーム全体の速度を取得
 	float dt = SceneManager::Instance().GetTimeScale();
 
@@ -277,7 +282,7 @@ void Player::Update()
 	//===============================================================================
 	
 	//if (GetAsyncKeyState('1') & 0x8000) { m_hpGauge--; }	//体力ゲージの減少確認
-	if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	
+	//if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	
 }
 
 void Player::PostUpdate()

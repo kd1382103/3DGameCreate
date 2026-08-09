@@ -34,6 +34,16 @@ void GameScene::Event()
 	{
 		m_isGameClear = true;
 
+		//プレイヤーの操作停止
+		player->SetGameClear(true);
+		
+		//カメラの操作停止
+		tpsCamera->m_mouseFree = true;
+
+		//マウス解放
+		ShowCursor(TRUE);
+		ClipCursor(nullptr);
+
 		// GAME CLEAR表示
 		auto clearText = std::make_shared<FlyText>();
 		clearText->InitMessage("GAME CLEAR");
@@ -112,5 +122,4 @@ void GameScene::Init()
 	player->SetCamera(m_camera);
 	player->RegisterUI(Player::UIType::SkillGauge, skillGauge);
 	player->RegisterUI(Player::UIType::HPGauge, hpGauge);
-
 }
