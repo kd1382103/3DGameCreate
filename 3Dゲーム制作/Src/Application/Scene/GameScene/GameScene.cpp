@@ -10,6 +10,7 @@
 #include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include<Application/GameObject/UI/HPGauge/HPGauge.h>
 #include <Application/GameObject/UI/FlyText/FlyText.h>
+#include <Application/GameObject/UI/GameClearBotton/GameClearButton.h>
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/Camera/CameraBase.h>
@@ -48,6 +49,9 @@ void GameScene::Event()
 		auto clearText = std::make_shared<FlyText>();
 		clearText->InitMessage("GAME CLEAR");
 		AddObject(clearText);
+
+		// タイトルに戻るボタン表示
+		m_gameClearButton->SetVisible(true);
 	}
 
 	//---------------------------------------
@@ -55,12 +59,21 @@ void GameScene::Event()
 	//---------------------------------------
 	if (m_isGameClear)
 	{
-		if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+		// ボタンがクリックされた
+		if (m_gameClearButton->IsClicked())
 		{
 			SceneManager::Instance().SetNextScene(
 				SceneManager::SceneType::Title
 			);
 		}
+
+		//// Enterキーでも戻れる
+		//if (GetAsyncKeyState(VK_RETURN) & 0x8000)
+		//{
+		//	SceneManager::Instance().SetNextScene(
+		//		SceneManager::SceneType::Title
+		//	);
+		//}
 	}
 }
 
@@ -115,6 +128,12 @@ void GameScene::Init()
 	hpGauge = std::make_shared<HPGauge>();
 	hpGauge->Init();
 	hpGauge->SetGauge(100, 100);
+
+	//ゲームクリアボタン
+	m_gameClearButton = std::make_shared<GameClearButton>();
+	m_gameClearButton->Init();
+	m_gameClearButton->SetVisible(false);
+	AddObject(m_gameClearButton);
 
 	//各オブジェクトに必要な情報を格納
 	tpsCamera->SetTarget(player);

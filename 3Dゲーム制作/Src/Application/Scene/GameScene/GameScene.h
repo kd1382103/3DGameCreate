@@ -10,6 +10,7 @@ class Enemy1;
 class Enemy2;
 class SkillGauge;
 class HPGauge;
+class GameClearButton;
 
 class GameScene : public BaseScene
 {
@@ -39,6 +40,7 @@ private:
 	//UI
 	std::shared_ptr<SkillGauge>skillGauge;
 	std::shared_ptr<HPGauge>hpGauge;
+	std::shared_ptr<GameClearButton> m_gameClearButton;
 
 	//キルカウント
 	int m_killCount = 0;
