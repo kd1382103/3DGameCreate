@@ -9,8 +9,8 @@ void Enemy1::Init()
 	EnemyBase::Init();
 
 	// 個別設定
-	m_hp = 1;
-	m_hpMax = 1000;
+	m_hpMax = 250;
+	m_hp = m_hpMax;
 	m_moveSpeed = 0.04f;
 	m_attackDist = 1.2f;
 	m_attackDamage = 50.0f;
@@ -20,7 +20,7 @@ void Enemy1::Init()
 	animIdleIndex = 9;
 	animWalkIndex = 36;
 	animDashIndex = 36;
-	animAttack1Index = 39;
+	animAttackIndex = 39;
 	animSkillIndex = 11;   // 予備動作
 
 	//コライダー

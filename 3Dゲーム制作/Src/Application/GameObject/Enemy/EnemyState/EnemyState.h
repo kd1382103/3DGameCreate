@@ -51,3 +51,19 @@ public:
 	void Enter(EnemyBase& owner) override;
 	void Update(EnemyBase& owner) override;
 };
+
+// 攻撃2
+class EnemyBaseStateAttack2 : public StateBase<EnemyBase>
+{
+public:
+	void Enter(EnemyBase& owner) override;
+	void Update(EnemyBase& owner) override;
+};
+
+// 攻撃3
+class EnemyBaseStateAttack3 : public StateBase<EnemyBase>
+{
+public:
+	void Enter(EnemyBase& owner) override;
+	void Update(EnemyBase& owner) override;
+};

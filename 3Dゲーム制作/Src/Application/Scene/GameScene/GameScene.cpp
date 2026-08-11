@@ -4,6 +4,7 @@
 #include<Application/GameObject/Player/Player/Player.h>
 #include<Application/GameObject/Enemy/Enemy1/Enemy1.h>
 #include<Application/GameObject/Enemy/Enemy2/Enemy2.h>
+#include<Application/GameObject/Boss/Boss/Boss.h>
 
 #include<Application/GameObject/Stages/Floor/Stage.h>
 
@@ -29,9 +30,31 @@ void GameScene::Event()
 	auto& input = KdInputManager::Instance();
 
 	//---------------------------------------
-	// 敵全滅
+	// 一定数の敵を倒したらBoss出現
 	//---------------------------------------
-	if (!m_isGameClear && m_killCount >= m_clearKillCount)
+	if (!m_isBossSpawned &&
+		m_killCount >= m_bossSpawnKillCount)
+	{
+		m_isBossSpawned = true;
+
+		boss = std::make_shared<Boss>();
+		boss->Init();
+
+		// Bossの出現位置
+		boss->SetPos({ 0, 0, 0 });
+
+		// 必要な情報を設定
+		boss->SetTarget(player);
+		boss->SetCamera(m_camera);
+		boss->SetGameScene(this);
+
+		AddObject(boss);
+	}
+
+	//---------------------------------------
+	// Boss撃破
+	//---------------------------------------
+	if (!m_isGameClear && m_isBossSpawned && boss && !boss->IsAlive())
 	{
 		m_isGameClear = true;
 

@@ -11,6 +11,7 @@ class Enemy2;
 class SkillGauge;
 class HPGauge;
 class GameClearButton;
+class Boss;
 
 class GameScene : public BaseScene
 {
@@ -36,7 +37,8 @@ private:
 	std::shared_ptr<Player>player;
 	std::shared_ptr<Enemy1>enemy1;
 	std::shared_ptr<Enemy2>enemy2;
-	
+	std::shared_ptr<Boss>boss;
+
 	//UI
 	std::shared_ptr<SkillGauge>skillGauge;
 	std::shared_ptr<HPGauge>hpGauge;
@@ -44,7 +46,11 @@ private:
 
 	//キルカウント
 	int m_killCount = 0;
-	static const int m_clearKillCount = 2;
+	static const int m_bossSpawnKillCount = 2;
 
+	//ボス出現
+	bool m_isBossSpawned = false;
+
+	//ゲームクリア
 	bool m_isGameClear = false;
 };

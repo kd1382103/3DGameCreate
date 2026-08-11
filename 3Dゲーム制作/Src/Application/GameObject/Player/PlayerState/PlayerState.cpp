@@ -427,7 +427,7 @@ void PlayerUltimate::Update(Player& owner)
 		{
 			owner.m_ultimateHitTimer = 0;
 			owner.m_ultimateHitCount++;
-			owner.DoUltimateHitCheck(2.5f, 100.0f, 40);
+			owner.DoUltimateHitCheck(2.5f, 50.0f, 40);
 		}
 	}
 

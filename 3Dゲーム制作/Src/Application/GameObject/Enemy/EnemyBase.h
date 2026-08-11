@@ -122,13 +122,13 @@ public:
 	std::string animIdleName;
 	std::string animWalkName;
 	std::string animDashName;
-	std::string animAttack1Name;
+	std::string animAttackName;
 	std::string animSkillName;
 
 	int animIdleIndex = -1;
 	int animWalkIndex = -1;
 	int animDashIndex = -1;
-	int animAttack1Index = -1;
+	int animAttackIndex = -1;
 	int animSkillIndex = -1;
 	int animHitIndex = -1;
 

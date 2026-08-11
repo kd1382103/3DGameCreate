@@ -108,7 +108,7 @@ void EnemyBaseStateDash::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void EnemyBaseStateAttack1::Enter(EnemyBase& owner)
 {
-	owner.PlayAnimationAuto("", owner.animAttack1Index, false);
+	owner.PlayAnimationAuto("", owner.animAttackIndex, false);
 	owner.m_attackHitOnce = false;
 }
 

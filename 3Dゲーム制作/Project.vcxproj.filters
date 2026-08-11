@@ -142,6 +142,15 @@
     <Filter Include="Src\Application\GameObject\UI\GameClearBotton">
       <UniqueIdentifier>{6c0616f0-71e8-429b-88df-9b885781bb87}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Boss">
+      <UniqueIdentifier>{02a29566-582f-476c-8eb3-b1d33cbab3d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Boss\BossState">
+      <UniqueIdentifier>{cb8f4288-45c7-4726-9e96-3f5d03fbb585}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Boss\Boss">
+      <UniqueIdentifier>{bdd4d82b-e12c-4f02-83f1-2dbfda397139}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -369,6 +378,15 @@
     <ClInclude Include="Src\Application\GameObject\UI\GameClearBotton\GameClearButton.h">
       <Filter>Src\Application\GameObject\UI\GameClearBotton</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Boss\BossState\BossState.h">
+      <Filter>Src\Application\GameObject\Boss\BossState</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Boss\Boss\Boss.h">
+      <Filter>Src\Application\GameObject\Boss\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Boss\BossBase.h">
+      <Filter>Src\Application\GameObject\Boss</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -562,6 +580,15 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\GameClearBotton\GameClearButton.cpp">
       <Filter>Src\Application\GameObject\UI\GameClearBotton</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Boss\BossState\BossState.cpp">
+      <Filter>Src\Application\GameObject\Boss\BossState</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Boss\Boss\Boss.cpp">
+      <Filter>Src\Application\GameObject\Boss\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Boss\BossBase.cpp">
+      <Filter>Src\Application\GameObject\Boss</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,7 @@
 
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/GameObject/Enemy/EnemyBase.h>
+#include <Application/GameObject/Boss/BossBase.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
 #include <Application/GameObject/UI/FlyText/FlyText.h>
@@ -522,24 +523,53 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
+		//通常敵
 		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
-		if (!enemy) continue;
+		
+		//Boss
+		BossBase* boss = dynamic_cast<BossBase*>(obj.get());
 
-		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
-		toEnemy.y = 0;
+		// どちらでもなければ対象外
+		if (!enemy && !boss) continue;
 
-		float dist = toEnemy.Length();
+		// 生存チェック
+		if (enemy && !enemy->IsAlive()) continue;
+		if (boss && !boss->IsAlive()) continue;
+
+		Math::Vector3 targetPos= Math::Vector3::Zero;
+		if (enemy)
+		{
+			targetPos = enemy->GetHitCenter();
+		}
+		else if (boss)
+		{
+			targetPos = boss->GetHitCenter();
+		}
+
+		Math::Vector3 toTarget = targetPos - m_nowPos;
+		toTarget.y = 0;
+
+		float dist = toTarget.Length();
 		if (dist > range) continue;
 		if (dist < 0.0001f) continue;
 
-		toEnemy.Normalize();
+		toTarget.Normalize();
 
-		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
+		float dot = std::clamp(forward.Dot(toTarget), -1.0f, 1.0f);
 		float angle = acos(dot);
 		if (angle > DirectX::XMConvertToRadians(width)) continue;
 
-		// 全員にダメージ
-		enemy->Damage(damage, false, false);
+		// ダメージ
+		if (enemy)
+		{
+			enemy->Damage(damage, false, false);
+		}
+		else if (boss)
+		{
+			boss->Damage(damage, false, false);
+		}
+
+		// 必殺技ポイント加算
 		if(m_canGainUltimate)
 		{
 			m_attackContact = true;
@@ -566,62 +596,56 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
+		// 通常敵
 		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
-		if (!enemy) continue;
 
-		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
-		toEnemy.y = 0;
+		// ボス
+		BossBase* boss = dynamic_cast<BossBase*>(obj.get());
 
-		float dist = toEnemy.Length();
+		// どちらでもなければ対象外
+		if (!enemy && !boss) continue;
+
+		// 生存チェック
+		if (enemy && !enemy->IsAlive()) continue;
+		if (boss && !boss->IsAlive()) continue;
+
+		// 攻撃対象の座標
+		Math::Vector3 targetPos = Math::Vector3::Zero;
+
+		if (enemy)
+		{
+			targetPos = enemy->GetHitCenter();
+		}
+		else if (boss)
+		{
+			targetPos = boss->GetHitCenter();
+		}
+
+		Math::Vector3 toTarget = targetPos - m_nowPos;
+		toTarget.y = 0;
+
+		float dist = toTarget.Length();
 		if (dist > range) continue;
 		if (dist < 0.0001f) continue;
 
-		toEnemy.Normalize();
+		toTarget.Normalize();
 
-		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
+		float dot = std::clamp(forward.Dot(toTarget), -1.0f, 1.0f);
 		float angle = acos(dot);
 
 		if (angle > DirectX::XMConvertToRadians(width)) continue;
 
-		// ダメージのみ
+		// 5回目のヒットならフィニッシュ判定
 		bool finalHit = (m_ultimateHitCount >= 5);
-		enemy->Damage(damage, true, finalHit);
+
+		// ダメージ
+		if (enemy)
+		{
+			enemy->Damage(damage, true, finalHit);
+		}
+		else if (boss)
+		{
+			boss->Damage(damage, true, finalHit);
+		}
 	}
 }
-
-//void Player::CheckAttackContact(float range, float width)
-//{
-//
-//	Math::Vector3 forward = GetForward();
-//	forward.y = 0;
-//	forward.Normalize();
-//	bool contact = false;
-//
-//	for (auto& obj : SceneManager::Instance().GetObjList())
-//	{
-//		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
-//		if (!enemy) continue;
-//
-//		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
-//		toEnemy.y = 0;
-//
-//		float dist = toEnemy.Length();
-//
-//		if (dist > range) continue;
-//		if (dist < 0.0001f) continue;
-//
-//		toEnemy.Normalize();
-//
-//		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
-//		float angle = acos(dot);
-//
-//		if (angle > DirectX::XMConvertToRadians(width))continue;
-//		
-//		contact = true;
-//		break;
-//	}
-//	if(contact)
-//	{
-//		AddUltimateEnergy(1.0f);
-//	}
-//}
