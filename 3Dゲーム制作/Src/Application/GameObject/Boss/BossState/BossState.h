@@ -18,6 +18,13 @@ public:
 	void Update(BossBase& owner) override;
 };
 
+//攻撃
+class BossStateAttackBase : public StateBase<BossBase>
+{
+protected:
+	void GoNextAttack(BossBase& owner);
+};
+
 // 歩き
 class BossStateWalk : public BossStateMove
 {
@@ -46,7 +53,7 @@ private:
 };
 
 // 攻撃1
-class BossStateAttack1 : public StateBase<BossBase>
+class BossStateAttack1 : public BossStateAttackBase
 {
 public:
 	void Enter(BossBase& owner) override;
@@ -54,7 +61,7 @@ public:
 };
 
 // 攻撃2
-class BossStateAttack2 : public StateBase<BossBase>
+class BossStateAttack2 : public BossStateAttackBase
 {
 public:
 	void Enter(BossBase& owner) override;
@@ -62,7 +69,7 @@ public:
 };
 
 // 攻撃3
-class BossStateAttack3 : public StateBase<BossBase>
+class BossStateAttack3 : public BossStateAttackBase
 {
 public:
 	void Enter(BossBase& owner) override;

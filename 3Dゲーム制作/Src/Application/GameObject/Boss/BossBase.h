@@ -159,6 +159,18 @@ public:
 	float m_attackDist = 2.0f;
 	float m_attackDamage = 20.0f;
 
+	enum class BossAttackType
+	{
+		Attack1,
+		Attack2,
+		Attack3
+	};
+
+	std::vector<BossAttackType> m_attackPattern;
+
+	int m_attackPatternIndex = 0;
+
+	bool m_isComboStarted = false;
 
 	//==============================================================
 	// 索敵距離
