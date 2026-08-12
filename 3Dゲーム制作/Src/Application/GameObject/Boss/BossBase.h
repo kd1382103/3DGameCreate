@@ -91,6 +91,11 @@ public:
 		m_pGameScene = scene;
 	}
 
+	void SetGameEnd(bool end)
+	{
+		m_isGameEnd = end;
+	}
+
 public:
 
 	//==============================================================
@@ -289,4 +294,7 @@ public:
 	//==============================================================
 
 	bool m_attackHitOnce = false;
+
+	bool m_isGameEnd = false;
+
 };

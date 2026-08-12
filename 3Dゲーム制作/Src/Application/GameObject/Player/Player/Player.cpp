@@ -5,7 +5,7 @@
 #include <Application/GameObject/Boss/BossBase.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
-#include <Application/GameObject/UI/FlyText/FlyText.h>
+#include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/main.h>
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
 #include <Application/Scene/SceneManager.h>
@@ -32,7 +32,7 @@ void Player::Init()
 
 void Player::Update()
 {
-	if (m_isGameClear)
+	if (m_isGameEnd)
 	{
 		return;
 	}
@@ -283,7 +283,8 @@ void Player::Update()
 	//===============================================================================
 	
 	//if (GetAsyncKeyState('1') & 0x8000) { m_hpGauge--; }	//体力ゲージの減少確認
-	if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	
+	//if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	//必殺技確認用
+	//if(GetAsyncKeyState('3') & 0x8000) { m_nowHp = 1; }	//ゲームオーバー確認用
 }
 
 void Player::PostUpdate()
@@ -438,7 +439,7 @@ void Player::GenerateDepthMapFromLight()
 
 void Player::Damage(float dmg, bool isUltimate, bool finalHit)
 {
-	auto fly = std::make_shared<FlyText>();
+	auto fly = std::make_shared<FontText>();
 	fly->Init(m_nowPos + Math::Vector3(0, 2.0f, 0), (int)dmg);
 	fly->SetCamera(m_wpCamera.lock());
 

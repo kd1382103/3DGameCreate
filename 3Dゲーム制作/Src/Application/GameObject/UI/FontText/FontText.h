@@ -1,10 +1,10 @@
 ﻿#pragma once
 class CameraBase;
-class FlyText : public KdGameObject
+class FontText : public KdGameObject
 {
 public:
-	FlyText() {}
-	~FlyText() override {}
+	FontText() {}
+	~FontText() override {}
 
 	void Init(const Math::Vector3& worldPos, int value);
 	void InitMessage(const std::string& text);

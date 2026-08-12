@@ -51,6 +51,8 @@ private:
 	//ボス出現
 	bool m_isBossSpawned = false;
 
-	//ゲームクリア
+	//ゲームクリア or ゲームオーバー
 	bool m_isGameClear = false;
+	bool m_isGameOver = false;
+
 };

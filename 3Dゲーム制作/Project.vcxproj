@@ -288,7 +288,7 @@
     <ClInclude Include="Src\Application\GameObject\Player\PlayerState\PlayerState.h" />
     <ClInclude Include="Src\Application\GameObject\Player\Player\Player.h" />
     <ClInclude Include="Src\Application\GameObject\Stages\Floor\Stage.h" />
-    <ClInclude Include="Src\Application\GameObject\UI\FlyText\FlyText.h" />
+    <ClInclude Include="Src\Application\GameObject\UI\FontText\FontText.h" />
     <ClInclude Include="Src\Application\GameObject\UI\GameClearBotton\GameClearButton.h" />
     <ClInclude Include="Src\Application\GameObject\UI\HPGauge\HPGauge.h" />
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.h" />
@@ -361,7 +361,7 @@
     <ClCompile Include="Src\Application\GameObject\Player\PlayerState\PlayerState.cpp" />
     <ClCompile Include="Src\Application\GameObject\Player\Player\Player.cpp" />
     <ClCompile Include="Src\Application\GameObject\Stages\Floor\Stage.cpp" />
-    <ClCompile Include="Src\Application\GameObject\UI\FlyText\FlyText.cpp" />
+    <ClCompile Include="Src\Application\GameObject\UI\FontText\FontText.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\GameClearBotton\GameClearButton.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\HPGauge\HPGauge.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.cpp" />

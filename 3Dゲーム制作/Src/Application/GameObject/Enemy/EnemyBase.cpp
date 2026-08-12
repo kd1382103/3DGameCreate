@@ -2,7 +2,7 @@
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/Camera/CameraBase.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
-#include <Application/GameObject/UI/FlyText/FlyText.h>
+#include <Application/GameObject/UI/FontText/FontText.h>
 
 #include <Application/Scene/SceneManager.h>
 #include <Application/main.h>
@@ -44,6 +44,8 @@ void EnemyBase::Init()
 //==============================================================
 void EnemyBase::Update()
 {
+	if(m_isGameEnd) return;
+
 	float dt = SceneManager::Instance().GetTimeScale();
 
 	if (m_isSlow)
@@ -350,7 +352,7 @@ void EnemyBase::DrawSprite()
 //==============================================================
 void EnemyBase::Damage(float dmg, bool isUltimate = false, bool finalHit = false)
 {
-	auto fly = std::make_shared<FlyText>();
+	auto fly = std::make_shared<FontText>();
 	fly->Init(m_nowPos + Math::Vector3(0, 2.0f, 0), (int)dmg);
 	fly->SetCamera(m_wpCamera.lock());
 

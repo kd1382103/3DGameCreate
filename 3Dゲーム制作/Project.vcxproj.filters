@@ -133,9 +133,6 @@
     <Filter Include="Src\Application\GameObject\UI\HPGauge">
       <UniqueIdentifier>{ac213dff-bc52-4f57-81e7-5d5d7c920699}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Application\GameObject\UI\FlyText">
-      <UniqueIdentifier>{0b237cd9-980a-4257-8df1-0a878fa3ff56}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Src\Application\GameObject\Enemy\Enemy2">
       <UniqueIdentifier>{d254a9c7-e7ef-4a2f-859c-748bacc833a0}</UniqueIdentifier>
     </Filter>
@@ -150,6 +147,9 @@
     </Filter>
     <Filter Include="Src\Application\GameObject\Boss\Boss">
       <UniqueIdentifier>{bdd4d82b-e12c-4f02-83f1-2dbfda397139}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\FontText">
+      <UniqueIdentifier>{0b237cd9-980a-4257-8df1-0a878fa3ff56}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -369,9 +369,6 @@
     <ClInclude Include="Src\Application\GameObject\UI\HPGauge\HPGauge.h">
       <Filter>Src\Application\GameObject\UI\HPGauge</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\UI\FlyText\FlyText.h">
-      <Filter>Src\Application\GameObject\UI\FlyText</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\GameObject\Enemy\Enemy2\Enemy2.h">
       <Filter>Src\Application\GameObject\Enemy\Enemy2</Filter>
     </ClInclude>
@@ -386,6 +383,9 @@
     </ClInclude>
     <ClInclude Include="Src\Application\GameObject\Boss\BossBase.h">
       <Filter>Src\Application\GameObject\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\FontText\FontText.h">
+      <Filter>Src\Application\GameObject\UI\FontText</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -572,9 +572,6 @@
     <ClCompile Include="Src\Application\GameObject\UI\HPGauge\HPGauge.cpp">
       <Filter>Src\Application\GameObject\UI\HPGauge</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\UI\FlyText\FlyText.cpp">
-      <Filter>Src\Application\GameObject\UI\FlyText</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Enemy\Enemy2\Enemy2.cpp">
       <Filter>Src\Application\GameObject\Enemy\Enemy2</Filter>
     </ClCompile>
@@ -589,6 +586,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Boss\BossBase.cpp">
       <Filter>Src\Application\GameObject\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\FontText\FontText.cpp">
+      <Filter>Src\Application\GameObject\UI\FontText</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

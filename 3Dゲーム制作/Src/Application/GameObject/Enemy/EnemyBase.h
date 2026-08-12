@@ -67,6 +67,11 @@ public:
 		m_pGameScene = scene;
 	}
 
+	void SetGameEnd(bool end)
+	{
+		m_isGameEnd = end;
+	}
+
 public:
 
 	// モデル・アニメーション
@@ -158,4 +163,6 @@ public:
 	float m_knockBackPower = 0.75f;
 
 	bool m_attackHitOnce = false;
+
+	bool m_isGameEnd = false;
 };

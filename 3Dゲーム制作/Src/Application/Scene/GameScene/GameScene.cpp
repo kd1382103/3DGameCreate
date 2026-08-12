@@ -10,7 +10,7 @@
 
 #include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include<Application/GameObject/UI/HPGauge/HPGauge.h>
-#include <Application/GameObject/UI/FlyText/FlyText.h>
+#include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/GameObject/UI/GameClearBotton/GameClearButton.h>
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
@@ -54,12 +54,19 @@ void GameScene::Event()
 	//---------------------------------------
 	// Boss撃破
 	//---------------------------------------
-	if (!m_isGameClear && m_isBossSpawned && boss && !boss->IsAlive())
+	if (!m_isGameClear && !m_isGameOver && m_isBossSpawned && boss && !boss->IsAlive())
 	{
 		m_isGameClear = true;
 
-		//プレイヤーの操作停止
-		player->SetGameClear(true);
+		//プレイヤーの操作停止 & 敵、ボスの行動停止
+		player->SetGameEnd(true);
+		enemy1->SetGameEnd(true);
+		enemy2->SetGameEnd(true);
+
+		if (boss)
+		{
+			boss->SetGameEnd(true);
+		}
 		
 		//カメラの操作停止
 		tpsCamera->m_mouseFree = true;
@@ -69,7 +76,7 @@ void GameScene::Event()
 		ClipCursor(nullptr);
 
 		// GAME CLEAR表示
-		auto clearText = std::make_shared<FlyText>();
+		auto clearText = std::make_shared<FontText>();
 		clearText->InitMessage("GAME CLEAR");
 		AddObject(clearText);
 
@@ -78,9 +85,41 @@ void GameScene::Event()
 	}
 
 	//---------------------------------------
-	// クリア後
+	// Player死亡
 	//---------------------------------------
-	if (m_isGameClear)
+	if (!m_isGameClear && !m_isGameOver && player && !player->IsAlive())
+	{
+		m_isGameOver = true;
+
+		//プレイヤーの操作停止 & 敵、ボスの行動停止
+		player->SetGameEnd(true);
+		enemy1->SetGameEnd(true);
+		enemy2->SetGameEnd(true);
+
+		if (boss)
+		{
+			boss->SetGameEnd(true);
+		}
+
+		// カメラの操作停止
+		tpsCamera->m_mouseFree = true;
+
+		// マウス解放
+		ShowCursor(TRUE);
+		ClipCursor(nullptr);
+
+		// GAME OVER表示
+		auto overText = std::make_shared<FontText>();
+		overText->InitMessage("GAME OVER");
+		AddObject(overText);
+
+		// タイトルに戻るボタン表示
+		m_gameClearButton->SetVisible(true);
+	}
+	//---------------------------------------
+	// クリア・ゲームオーバー後の処理
+	//---------------------------------------
+	if (m_isGameClear || m_isGameOver)
 	{
 		// ボタンがクリックされた
 		if (m_gameClearButton->IsClicked())
@@ -89,14 +128,6 @@ void GameScene::Event()
 				SceneManager::SceneType::Title
 			);
 		}
-
-		//// Enterキーでも戻れる
-		//if (GetAsyncKeyState(VK_RETURN) & 0x8000)
-		//{
-		//	SceneManager::Instance().SetNextScene(
-		//		SceneManager::SceneType::Title
-		//	);
-		//}
 	}
 }
 

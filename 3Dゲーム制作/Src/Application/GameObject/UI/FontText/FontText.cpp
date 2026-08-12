@@ -1,9 +1,9 @@
-﻿#include "FlyText.h"
+﻿#include "FontText.h"
 #include <Application/main.h>
 #include <Application/GameObject/Camera/CameraBase.h>
 
-//3D空間上の座標と表示する数値を受け取り、FlyTextを初期化する関数
-void FlyText::Init(const Math::Vector3& worldPos, int value)
+//3D空間上の座標と表示する数値を受け取り、FontTextを初期化する関数
+void FontText::Init(const Math::Vector3& worldPos, int value)
 {
 	m_worldPos = worldPos;
 	m_value = value;
@@ -18,8 +18,8 @@ void FlyText::Init(const Math::Vector3& worldPos, int value)
 	m_drawType = eDrawTypeUI;
 }
 
-// 文字列のみを受け取り、FlyTextを初期化する関数
-void FlyText::InitMessage(const std::string& text)
+// 文字列のみを受け取り、FontTextを初期化する関数
+void FontText::InitMessage(const std::string& text)
 {
 	m_text = text;
 	m_isMessage = true;
@@ -36,7 +36,7 @@ void FlyText::InitMessage(const std::string& text)
 	m_drawType = eDrawTypeUI;
 }
 
-void FlyText::Update()
+void FontText::Update()
 {
 	float dt = Application::Instance().GetDeltaTime();
 
@@ -103,7 +103,7 @@ void FlyText::Update()
 	}
 }
 
-void FlyText::DrawSprite()
+void FontText::DrawSprite()
 {
 
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;

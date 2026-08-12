@@ -3,7 +3,7 @@
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/Camera/CameraBase.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
-#include <Application/GameObject/UI/FlyText/FlyText.h>
+#include <Application/GameObject/UI/FontText/FontText.h>
 
 #include <Application/Scene/SceneManager.h>
 #include <Application/main.h>
@@ -51,6 +51,8 @@ void BossBase::Init()
 //==============================================================
 void BossBase::Update()
 {
+	if(m_isGameEnd) return;
+
 	float dt = SceneManager::Instance().GetTimeScale();
 
 	//==========================================================
@@ -505,7 +507,7 @@ void BossBase::Damage(float dmg, bool isUltimate, bool finalHit)
 	// ダメージ表示
 	//==========================================================
 	auto fly =
-		std::make_shared<FlyText>();
+		std::make_shared<FontText>();
 
 	fly->Init(
 		m_nowPos +
