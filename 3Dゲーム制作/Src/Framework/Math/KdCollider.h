@@ -201,6 +201,7 @@ public:
 	void RegisterCollisionShape(std::string_view name, KdModelWork* model, UINT type);
 	void RegisterCollisionShape(std::string_view name, const std::shared_ptr<KdPolygon> polygon, UINT type);
 	void RegisterCollisionShape(std::string_view name, KdPolygon* polygon, UINT type);
+	void RegisterCollisionShape(std::string_view name, const Math::Vector3& start, const Math::Vector3& end, float radius, UINT type);
 
 	// 当たり判定実行
 	bool Intersects(const SphereInfo& targetShape, const Math::Matrix& ownerMatrix, std::list<KdCollider::CollisionResult>* pResults) const;
@@ -320,6 +321,18 @@ public:
 private:
 	DirectX::BoundingBox			m_Abox;
 	DirectX::BoundingOrientedBox	m_Obox;
+
+private:
+
+	void ClosestPointSegmentBox(
+		const Math::Vector3&		segStart,
+		const Math::Vector3&		segEnd,
+		const Math::Vector3&		boxCenter,
+		const Math::Vector3&		boxExtents,
+		const DirectX::XMFLOAT4&	boxRotation,
+		bool						isOriented,
+		Math::Vector3& 				outSegPoint,
+		Math::Vector3& 				outBoxPoint);
 
 	bool							m_IsOriented;
 };
