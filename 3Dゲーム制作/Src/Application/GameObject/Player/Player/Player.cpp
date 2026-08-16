@@ -384,6 +384,9 @@ void Player::PostUpdate()
 		}
 	}
 
+	// 敵との接触判定
+	ResolveEnemyContact();
+	
 	//================================================================================
 	// ワールド行列更新
 	//================================================================================
@@ -647,6 +650,65 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 		else if (boss)
 		{
 			boss->Damage(damage, true, finalHit);
+		}
+	}
+}
+
+void Player::ResolveEnemyContact()
+{
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		auto enemy = std::dynamic_pointer_cast<EnemyBase>(obj);
+
+		if (!enemy) continue;
+		if (!enemy->IsAlive()) continue;
+
+		// Playerの当たり判定中心
+		Math::Vector3 playerCenter =
+			m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+		// Enemyの当たり判定中心
+		Math::Vector3 enemyCenter =
+			enemy->GetPos() + Math::Vector3(0, 1.0f, 0);
+
+		// Enemy → Player の方向
+		Math::Vector3 diff = playerCenter - enemyCenter;
+
+		// 当たり判定用Sphereを表示
+		m_pDebugWire->AddDebugSphere(
+			playerCenter,
+			m_collisionRadius
+		);
+		// 当たり判定用Sphereを表示
+		m_pDebugWire->AddDebugSphere(
+			enemyCenter,
+			m_collisionRadius
+		);
+
+		// 横方向だけで押し戻す
+		diff.y = 0.0f;
+
+		float distance = diff.Length();
+
+		float radius =
+			m_collisionRadius +
+			enemy->GetCollisionRadius();
+
+		if (distance < radius)
+		{
+			float penetration = radius - distance;
+
+			if (distance <= 0.0001f)
+			{
+				diff = Math::Vector3(1.0f, 0.0f, 0.0f);
+			}
+			else
+			{
+				diff.Normalize();
+			}
+
+			// Playerを押し戻す
+			m_nowPos += diff * penetration;
 		}
 	}
 }

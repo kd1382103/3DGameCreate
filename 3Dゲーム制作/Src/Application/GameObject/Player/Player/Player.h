@@ -97,6 +97,14 @@ public:
 	{
 		return m_nowHp > 0;
 	}
+
+	void ResolveEnemyContact();
+
+	float GetCollisionRadius() const
+	{
+		return m_collisionRadius;
+	}
+
 public:
 	// モデル・アニメーション
 	std::shared_ptr<KdModelWork> m_model;
@@ -183,6 +191,7 @@ public:
 	// ステートマシン
 	std::shared_ptr<StateMachine<Player>> stateMachine;
 
+	//ゲームが終了したかどうか
 	bool m_isGameEnd = false;
 
 private:
@@ -190,4 +199,8 @@ private:
 	// キー管理
 	bool IsKeyPressedOnce(int vk);
 	std::unordered_map<int, bool> m_prevKeyState;
+
+	//当たり判定
+	float m_collisionRadius = 0.5f;
+
 };
