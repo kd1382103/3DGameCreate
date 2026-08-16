@@ -1,6 +1,7 @@
 ﻿#include "TPSCamera.h"
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/Enemy/EnemyBase.h>
+#include <Application/GameObject/Boss/BossBase.h>
 void TPSCamera::Init()
 {
 	// 親クラスの初期化呼び出し
@@ -49,20 +50,37 @@ void TPSCamera::PostUpdate()
 	if (player && player->m_lookOn && player->m_lockOnTarget)
 	{
 		Math::Vector3 camPos = GetPos();
-		Math::Vector3 targetPos = player->m_lockOnTarget->GetHitCenter();
+		Math::Vector3 targetPos;
+
+		// 通常敵の場合
+		if (auto enemy =
+			dynamic_cast<EnemyBase*>(player->m_lockOnTarget))
+		{
+			targetPos = enemy->GetHitCenter();
+		}
+		// ボスの場合
+		else if (auto boss =
+			dynamic_cast<BossBase*>(player->m_lockOnTarget))
+		{
+			targetPos = boss->GetHitCenter();
+		}
+		else
+		{
+			targetPos = player->m_lockOnTarget->GetPos();
+		}
 
 		Math::Vector3 dir = targetPos - camPos;
-		dir.Normalize();
 
-		// yaw（左右）
-		float yaw = atan2(dir.x, dir.z);
+		if (dir.LengthSquared() > 0.0001f)
+		{
+			dir.Normalize();
 
-		// pitch（上下）
-		//float pitch = atan2(dir.y, sqrt(dir.x * dir.x + dir.z * dir.z));
+			// yaw（左右）
+			float yaw = atan2(dir.x, dir.z);
 
-		// カメラ角度を補正（プレイヤーの向きは変えない）
-		m_DegAng.y = DirectX::XMConvertToDegrees(yaw);
-		//m_DegAng.x = DirectX::XMConvertToDegrees(pitch);
+			// カメラ角度を補正
+			m_DegAng.y = DirectX::XMConvertToDegrees(yaw);
+		}
 	}
 
 	m_mRotation = GetRotationMatrix();

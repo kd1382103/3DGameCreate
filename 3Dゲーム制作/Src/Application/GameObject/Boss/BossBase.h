@@ -31,11 +31,6 @@ public:
 		m_wpPlayer = target;
 	}
 
-	void SetPos(const Math::Vector3& pos)
-	{
-		m_nowPos = pos;
-	}
-
 	void SetCamera(std::shared_ptr<CameraBase> cam)
 	{
 		m_wpCamera = cam;
@@ -94,6 +89,26 @@ public:
 	void SetGameEnd(bool end)
 	{
 		m_isGameEnd = end;
+	}
+
+	float GetCollisionRadius() const
+	{
+		return m_collisionRadius;
+	}
+
+	float GetCollisionHeight() const
+	{
+		return m_collisionHeight;
+	}
+
+	void SetPos(const Math::Vector3& pos) override
+	{
+		m_nowPos = pos;
+	}
+
+	Math::Vector3 GetPos() const override
+	{
+		return m_nowPos;
 	}
 
 public:
@@ -296,5 +311,9 @@ public:
 	bool m_attackHitOnce = false;
 
 	bool m_isGameEnd = false;
+
+	// Playerとの接触判定用
+	float m_collisionRadius = 0.7f;
+	float m_collisionHeight = 1.0f;
 
 };

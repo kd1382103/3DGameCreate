@@ -106,55 +106,105 @@ void Player::Update()
 
 		if (m_lookOn)
 		{
-			EnemyBase* nearest = nullptr;
+			KdGameObject* nearest = nullptr;
 			float nearestDist = FLT_MAX;
 
 			for (auto& obj : SceneManager::Instance().GetObjList())
 			{
-				EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
-				if (!enemy) continue;
-				if (!enemy->IsAlive()) continue;
+				// 通常敵
+				EnemyBase* enemy =
+					dynamic_cast<EnemyBase*>(obj.get());
 
-				float dist = (enemy->GetHitCenter() - m_nowPos).Length();
+				// ボス
+				BossBase* boss =
+					dynamic_cast<BossBase*>(obj.get());
+
+				// どちらでもない
+				if (!enemy && !boss) continue;
+
+				// 死んでいる場合
+				if (enemy && !enemy->IsAlive()) continue;
+				if (boss && !boss->IsAlive()) continue;
+
+				// 判定用座標
+				Math::Vector3 targetPos;
+
+				if (enemy)
+				{
+					targetPos = enemy->GetHitCenter();
+				}
+				else
+				{
+					targetPos = boss->GetHitCenter();
+				}
+
+				float dist =
+					(targetPos - m_nowPos).Length();
+
 				if (dist < nearestDist)
 				{
 					nearestDist = dist;
-					nearest = enemy;
+					nearest = obj.get();
 				}
 			}
 
 			m_lockOnTarget = nearest;
 
-			if (m_lockOnTarget)
+			// ロックオン表示ON
+			if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
 			{
-				m_lockOnTarget->m_lockOnActive = true; 
+				enemy->m_lockOnActive = true;
+			}
+			else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+			{
+				boss->m_lockOnActive = true;
 			}
 		}
 		else
 		{
-			if (m_lockOnTarget)
+			// ロックオン表示OFF
+			if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
 			{
-				m_lockOnTarget->m_lockOnActive = false;
+				enemy->m_lockOnActive = false;
+			}
+			else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+			{
+				boss->m_lockOnActive = false;
 			}
 
 			m_lockOnTarget = nullptr;
 		}
 	}
 
-	// ② 死んだ敵を参照しない
+	// ② 死んだ敵・ボスを参照しない
 	if (m_lookOn)
 	{
-		if (!m_lockOnTarget || !m_lockOnTarget->IsAlive())
+		bool targetAlive = false;
+
+		if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
 		{
-			if (m_lockOnTarget)
+			targetAlive = enemy->IsAlive();
+		}
+		else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+		{
+			targetAlive = boss->IsAlive();
+		}
+
+		if (!targetAlive)
+		{
+			if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
 			{
-				m_lockOnTarget->m_lockOnActive = false;
+				enemy->m_lockOnActive = false;
 			}
+			else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+			{
+				boss->m_lockOnActive = false;
+			}
+
 			m_lookOn = false;
 			m_lockOnTarget = nullptr;
 		}
 	}
-
 
 	//================================================================================
 	// カメラ方向へ変換
@@ -283,7 +333,7 @@ void Player::Update()
 	//===============================================================================
 	
 	//if (GetAsyncKeyState('1') & 0x8000) { m_hpGauge--; }	//体力ゲージの減少確認
-	//if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	//必殺技確認用
+	if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	//必殺技確認用
 	//if(GetAsyncKeyState('3') & 0x8000) { m_nowHp = 1; }	//ゲームオーバー確認用
 }
 
@@ -385,7 +435,7 @@ void Player::PostUpdate()
 	}
 
 	// 敵との接触判定
-	ResolveEnemyContact();
+	ResolveContact();
 	
 	//================================================================================
 	// ワールド行列更新
@@ -654,60 +704,82 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 	}
 }
 
-void Player::ResolveEnemyContact()
+void Player::ResolveContact()
 {
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
-		auto enemy = std::dynamic_pointer_cast<EnemyBase>(obj);
+		// 通常敵
+		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
 
-		if (!enemy) continue;
-		if (!enemy->IsAlive()) continue;
+		// ボス
+		BossBase* boss = dynamic_cast<BossBase*>(obj.get());
 
+		// どちらでもなければ無視
+		if (!enemy && !boss) continue;
+
+		// 死んでいたら無視
+		if (enemy && !enemy->IsAlive()) continue;
+		if (boss && !boss->IsAlive()) continue;
+
+		//==============================
 		// Playerの当たり判定中心
-		Math::Vector3 playerCenter =
-			m_nowPos + Math::Vector3(0, 1.0f, 0);
+		//==============================
+		Math::Vector3 playerCenter = m_nowPos + Math::Vector3(0, m_collisionHeight, 0);
 
-		// Enemyの当たり判定中心
-		Math::Vector3 enemyCenter =
-			enemy->GetPos() + Math::Vector3(0, 1.0f, 0);
+		//==============================
+		// Enemy / Boss の中心座標
+		//==============================
+		Math::Vector3 targetCenter;
 
-		// Enemy → Player の方向
-		Math::Vector3 diff = playerCenter - enemyCenter;
+		float targetRadius = 0.0f;
 
-		// 当たり判定用Sphereを表示
-		m_pDebugWire->AddDebugSphere(
-			playerCenter,
-			m_collisionRadius
-		);
-		// 当たり判定用Sphereを表示
-		m_pDebugWire->AddDebugSphere(
-			enemyCenter,
-			m_collisionRadius
-		);
+		if (enemy)
+		{
+			targetCenter =
+				enemy->GetPos() + Math::Vector3(0, enemy->GetCollisionHeight(), 0);
 
-		// 横方向だけで押し戻す
+			targetRadius = enemy->GetCollisionRadius();
+		}
+		else if (boss)
+		{
+			targetCenter =
+				boss->GetPos() + Math::Vector3(0, boss->GetCollisionHeight(), 0);
+
+			targetRadius = boss->GetCollisionRadius();
+		}
+
+		//==============================
+		// Enemy / Boss → Player の方向
+		//==============================
+		Math::Vector3 diff =
+			playerCenter - targetCenter;
+
+		// Y方向は無視
 		diff.y = 0.0f;
 
 		float distance = diff.Length();
 
-		float radius =
-			m_collisionRadius +
-			enemy->GetCollisionRadius();
+		// 半径の合計
+		float radius = m_collisionRadius + targetRadius;
 
+		//==============================
+		// 接触判定
+		//==============================
 		if (distance < radius)
 		{
-			float penetration = radius - distance;
+			float penetration =
+				radius - distance;
 
 			if (distance <= 0.0001f)
 			{
-				diff = Math::Vector3(1.0f, 0.0f, 0.0f);
+				diff = Math::Vector3(1, 0, 0);
 			}
 			else
 			{
 				diff.Normalize();
 			}
 
-			// Playerを押し戻す
+			// PlayerをEnemy/Bossから押し出す
 			m_nowPos += diff * penetration;
 		}
 	}

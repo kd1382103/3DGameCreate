@@ -98,7 +98,7 @@ public:
 		return m_nowHp > 0;
 	}
 
-	void ResolveEnemyContact();
+	void ResolveContact();
 
 	float GetCollisionRadius() const
 	{
@@ -149,7 +149,7 @@ public:
 
 	//ロックオン
 	bool m_lookOn = false;
-	EnemyBase* m_lockOnTarget = nullptr;
+	KdGameObject* m_lockOnTarget = nullptr;
 
 	//歩行速度
 	float m_walkSpeed = 0.05f;
@@ -202,5 +202,6 @@ private:
 
 	//当たり判定
 	float m_collisionRadius = 0.5f;
+	float m_collisionHeight = 1.0f;
 
 };

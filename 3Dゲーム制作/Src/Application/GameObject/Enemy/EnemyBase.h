@@ -77,6 +77,11 @@ public:
 		return m_collisionRadius;
 	}
 
+	float GetCollisionHeight() const
+	{
+		return m_collisionHeight;
+	}
+
 	void SetPos(const Math::Vector3& pos)
 	{
 		m_nowPos = pos;
@@ -185,5 +190,5 @@ private:
 
 	// Playerとの接触判定用
 	float m_collisionRadius = 0.5f;
-
+	float m_collisionHeight = 1.0f;
 };
