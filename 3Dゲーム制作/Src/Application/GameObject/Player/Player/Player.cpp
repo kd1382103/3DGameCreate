@@ -333,7 +333,7 @@ void Player::Update()
 	//===============================================================================
 	
 	//if (GetAsyncKeyState('1') & 0x8000) { m_hpGauge--; }	//体力ゲージの減少確認
-	if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	//必殺技確認用
+	//if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	//必殺技確認用
 	//if(GetAsyncKeyState('3') & 0x8000) { m_nowHp = 1; }	//ゲームオーバー確認用
 }
 
