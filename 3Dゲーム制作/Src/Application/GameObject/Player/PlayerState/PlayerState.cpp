@@ -277,6 +277,8 @@ void PlayerStateAttack3::Enter(Player& owner)
 	owner.m_attackHitOnce = false;
 	owner.m_attackContact = false;
 	owner.m_canGainUltimate = true;
+
+	owner.m_comboFinished = true;
 }
 
 void PlayerStateAttack3::Update(Player& owner)

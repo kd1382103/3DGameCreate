@@ -7,12 +7,21 @@ public:
 	~FontText() override {}
 
 	void Init(const Math::Vector3& worldPos, int value);
-	void InitMessage(const std::string& text);
+	void InitMessage(
+		const std::string& text,
+		const Math::Vector2& pos = { 0.0f, 0.0f },
+		float scale = 2.0f
+	);
 	void Update() override;
 	void DrawSprite() override;
 	void SetCamera(const std::shared_ptr<CameraBase>& cam)
 	{
 		m_wpCamera = cam;
+	}
+
+	void SetExpired()
+	{
+		m_isExpired = true;
 	}
 
 public:
@@ -42,4 +51,7 @@ private:
 	float m_maxScale = 1.0f;
 
 	bool m_isMessage = false;
+
+	Math::Vector2 m_screenPos = { 0.0f, 0.0f };
+	float m_messageScale = 2.0f;
 };

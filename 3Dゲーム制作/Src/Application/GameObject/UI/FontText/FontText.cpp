@@ -19,10 +19,19 @@ void FontText::Init(const Math::Vector3& worldPos, int value)
 }
 
 // 文字列のみを受け取り、FontTextを初期化する関数
-void FontText::InitMessage(const std::string& text)
+void FontText::InitMessage(
+	const std::string& text,
+	const Math::Vector2& pos,
+	float scale)
 {
 	m_text = text;
 	m_isMessage = true;
+
+	// 表示位置
+	m_screenPos = pos;
+
+	// 表示サイズ
+	m_messageScale = scale;
 
 	m_life = LifeTime;
 
@@ -31,7 +40,7 @@ void FontText::InitMessage(const std::string& text)
 	m_velocityX = 0.0f;
 
 	m_alpha = 255.0f;
-	m_scale = 0.0f;
+	m_scale = scale;
 
 	m_drawType = eDrawTypeUI;
 }
@@ -121,19 +130,29 @@ void FontText::DrawSprite()
 	//---------------------------------------
 	if (m_isMessage)
 	{
-		// 画面中央
-		param.pos = { 0.0f,0.0f };
-		param.scale = 2.0f;
-		param.color = { 1.0f,1.0f,1.0f,1.0f };
-		param.pivot = { 0.5f,0.5f };
+		param.pos = m_screenPos;
+		param.scale = m_messageScale;
+
+		param.color =
+		{
+			1.0f,
+			1.0f,
+			1.0f,
+			1.0f
+		};
+
+		param.pivot = { 0.5f, 0.5f };
 
 		const char* text = m_text.c_str();
-		float spacing = 40.0f;
-		float startX = -((strlen(text) - 1) * spacing) * 0.5f;
+
+		float spacing = 25.0f;
+		float startX =
+			-((strlen(text) - 1) * spacing) * 0.5f;
 
 		for (int i = 0; text[i] != '\0'; i++)
 		{
-			param.pos.x = startX + i * spacing;
+			param.pos.x =
+				m_screenPos.x + startX + i * spacing;
 
 			sprite.DrawFontEx(
 				param,

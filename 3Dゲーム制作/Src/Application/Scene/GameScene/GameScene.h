@@ -13,6 +13,7 @@ class HPGauge;
 class GameClearButton;
 class Boss;
 class Stage;
+class FontText;
 
 class GameScene : public BaseScene
 {
@@ -36,6 +37,7 @@ public :
 	enum class TutorialStep
 	{
 		Move,
+		Dash,
 		Attack,
 		Skill,
 		Ultimate,
@@ -68,6 +70,9 @@ private:
 	std::shared_ptr<HPGauge>hpGauge;
 	std::shared_ptr<GameClearButton> m_gameClearButton;
 
+	//テキスト
+	std::shared_ptr<FontText>m_tutorialText;
+
 	//========================================
 	// ゲーム進行
 	//========================================
@@ -77,6 +82,13 @@ private:
 	// チュートリアル進行
 	//========================================
 	TutorialStep m_tutorialStep = TutorialStep::Move;
+	TutorialStep m_prevTutorialStep = TutorialStep::Finish;
+
+	//========================================
+	// チュートリアル完了演出
+	//========================================
+	float m_tutorialFinishTimer = 0.0f;
+	const float m_tutorialFinishTime = 2.0f;
 
 	//キルカウント
 	int m_killCount = 0;
@@ -89,5 +101,5 @@ private:
 	bool m_isGameClear = false;
 	bool m_isGameOver = false;
 
-
+	void UpdateTutorialText();
 };

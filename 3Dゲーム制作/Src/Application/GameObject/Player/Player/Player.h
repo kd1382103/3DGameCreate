@@ -78,7 +78,7 @@ public:
 	// 攻撃判定
 	//void DoAttackHitCheck(float range,int damage);	//単体
 	void DoAttackHitCheckMulti(float range, float width, int damage);	//範囲
-	
+
 	//必殺技用
 	void DoUltimateHitCheck(float range, float width, int damage);
 
@@ -91,14 +91,38 @@ public:
 	bool IsDodgeInput() const { return m_dodgeing; }
 	bool IsUltimateInput() const { return m_ultimateOnce; }
 
+	//ゲームが終了したかどうか
 	void SetGameEnd(bool end) { m_isGameEnd = end; }
 
+	//生存フラグ
 	bool IsAlive() const
 	{
 		return m_nowHp > 0;
 	}
 
+	//========================================
+	// チュートリアル用
+	//========================================
+
+	bool IsMoving()			const { return m_moving; }
+	bool IsRunning()		const { return m_running; }
+	bool IsAttackOnce()		const { return m_attackOnce; }
+	bool IsSkillOnce()		const { return m_skillOnce; }
+	bool IsUltimateOnce()	const { return m_ultimateOnce; }
+	bool IsLockOn()			const { return m_lookOn; }
+
+	bool IsComboFinished()	const { return m_comboFinished; }
+	void ResetComboFinished() { m_comboFinished = false; }
+
+	bool IsJustDodgeSuccess() const { return m_justDodgeSuccess; }
+	void ResetJustDodgeSuccess() { m_justDodgeSuccess = false; }
+
+	//========================================
+
+
+	//敵・ボスとの当たり判定
 	void ResolveContact();
+
 
 	float GetCollisionRadius() const
 	{
@@ -162,22 +186,22 @@ public:
 	const int m_skillCost = 50;
 
 	// 必殺技関連
-	float m_ultimateEnergyMax = 500;
-	float m_ultimateEnergy = 0;
-	bool m_attackContact = false;	// 攻撃が当たったかどうか
-	bool m_canGainUltimate = false;	// 必殺技の次の攻撃が可能かどうか
-	float m_ultimateHitTimer = 0.0f;	// 必殺技の攻撃判定の時間
-	const float m_ultimateHitInterval = 5; 
-	int m_ultimateHitCount = 0;	// 必殺技の攻撃回数
+	float		m_ultimateEnergyMax		= 500;
+	float		m_ultimateEnergy		= 0;
+	bool		m_attackContact			= false;	// 攻撃が当たったかどうか
+	bool		m_canGainUltimate		= false;	// 必殺技の次の攻撃が可能かどうか
+	float		m_ultimateHitTimer		= 0.0f;	// 必殺技の攻撃判定の時間
+	const float m_ultimateHitInterval	= 5; 
+	int			m_ultimateHitCount		= 0;	// 必殺技の攻撃回数
 
 	// HP
-	int   m_hpGaugeMax = 1000;
-	float m_nowHp = 1000;
+	int   m_hpGaugeMax	= 1000;
+	float m_nowHp		= 1000;
 
 	float m_pendingBeforeHP = -1.0f;   // 食らった瞬間のHP
-	float m_pendingAfterHP = -1.0f;   // 遅れて減らすHP
-	int   m_pendingDelay = 0;       // 遅延フレーム
-	float m_pendingDamage = 0.0f;    // ダメージ量
+	float m_pendingAfterHP	= -1.0f;   // 遅れて減らすHP
+	int   m_pendingDelay	= 0;       // 遅延フレーム
+	float m_pendingDamage	= 0.0f;    // ダメージ量
 
 	//ヒットストップ
 	float m_hitStopTimer = 0.0f;
@@ -193,6 +217,9 @@ public:
 
 	//ゲームが終了したかどうか
 	bool m_isGameEnd = false;
+
+	// チュートリアル用
+	bool m_comboFinished = false;
 
 private:
 
