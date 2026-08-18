@@ -88,6 +88,19 @@ void Player::Update()
 		{
 			m_dodgeing = true;
 			m_justDodgeSuccess = true;
+
+			//========================================
+			// ジャスト回避成功
+			// 攻撃中の敵をスロー
+			//========================================
+			for (auto& obj : SceneManager::Instance().GetObjList())
+			{
+				auto enemy = dynamic_cast<EnemyBase*>(obj.get());
+				if (!enemy) continue;
+				if (!enemy->IsAlive()) continue;
+
+				enemy->StartSlow(2.0f);
+			}
 		}
 		else
 		{
@@ -282,8 +295,7 @@ void Player::Update()
 	//===============================
 	if (m_slowTimer > 0)
 	{
-		m_slowTimer -= Application::Instance().GetDeltaTime();
-
+		m_slowTimer--;
 		if (m_slowTimer <= 0)
 		{
 			SceneManager::Instance().SetTimeScale(1.0f);

@@ -31,23 +31,37 @@ void HPGauge::DrawSprite()
 		}
 	}
 
+	//===========================
+	// ゲージサイズ計算
+	//===========================
 	float fullWidth = 200.0f;
 
 	float rate = m_hp / m_hpMax;
-	if (rate < 0.0f) rate = 0.0f;
-	if (rate > 1.0f) rate = 1.0f;
+	rate = std::clamp(rate, 0.0f, 1.0f);
 
 	float scale = 1.0f;
+
 	if (m_mode == GaugeMode::World)
 	{
 		scale = m_scale;
 	}
 
-	float nowWidth = fullWidth * rate * scale;
+	// 最大幅（距離による縮小込み）
+	float scaledFullWidth = fullWidth * scale;
+
+	// 現在HPの幅
+	float nowWidth = scaledFullWidth * rate;
+
+	// 高さ
 	float barHeight = 20.0f * scale;
 
-	float x, y;
 
+	//===========================
+	// 描画位置
+	//===========================
+	float x = 0.0f;
+	float y = 0.0f;
+	
 	if (m_mode == GaugeMode::Screen)
 	{
 		// プレイヤー用固定座標
@@ -59,39 +73,38 @@ void HPGauge::DrawSprite()
 		auto cam = m_wpCamera.lock();
 		if (!cam) return;
 
-		Math::Vector3 pos = m_worldPos;
+		Math::Vector2 screen =
+			cam->WorldToScreen(m_worldPos);
 
-		Math::Vector2 screen = cam->WorldToScreen(pos);
-
-		x = screen.x - (fullWidth * 0.5f);
+		// 敵の位置をゲージ中央にする
+		x = screen.x - scaledFullWidth * 0.5f;
 		y = screen.y;
-
-		// 描画サイズは scale を掛ける
-		float nowWidth = fullWidth * rate * scale;
-		float barHeight = 20.0f * scale;
 	}
 
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;
 
 	//===========================
-	// ① 通常のHPバー（緑）
-	//===========================
-	Math::Color color = { 0, 1, 0, 1 };
+		// ① 最大HP背景（黒）
+		// 常に最大幅
+		//===========================
+	Math::Color backColor = { 0, 0, 0, 1 };
+
 	sprite.DrawTex(
 		m_barTex.get(),
 		x,
 		y,
-		nowWidth,
+		scaledFullWidth,
 		barHeight,
 		nullptr,
-		&color,
+		&backColor,
 		{ 0, 0 }
 	);
 
+
 	//===========================
-	// ② 赤バー（滑らかに縮む）
+	// ② ダメージバー（赤）
 	//===========================
-	if (m_showDamageEffect && m_damageBarWidth > 0.0f)
+	if (m_showDamageEffect && m_damageBarRate > 0.0f)
 	{
 		if (m_damageDelayTimer < m_damageDelay)
 		{
@@ -99,26 +112,37 @@ void HPGauge::DrawSprite()
 		}
 		else
 		{
-			m_damageBarWidth -= m_damageShrinkSpeed * 0.016f;
-			if (m_damageBarWidth <= 0.0f)
+			// 1秒間に何％縮むか
+			m_damageBarRate -=
+				(m_damageShrinkSpeed / fullWidth) * 0.016f;
+
+			if (m_damageBarRate <= 0.0f)
 			{
-				m_damageBarWidth = 0.0f;
+				m_damageBarRate = 0.0f;
 				m_showDamageEffect = false;
 			}
 		}
 
-		// 赤バーが緑バーを超えないように制限
-		if (m_damageBarWidth + nowWidth > fullWidth)
+		//===========================
+		// 割合 → 実際の幅に変換
+		//===========================
+		float damageBarWidth =
+			scaledFullWidth * m_damageBarRate;
+
+		// 緑＋赤が最大幅を超えないようにする
+		if (damageBarWidth + nowWidth > scaledFullWidth)
 		{
-			m_damageBarWidth = fullWidth - nowWidth;
+			damageBarWidth =
+				scaledFullWidth - nowWidth;
 		}
 
 		Math::Color dmgColor = { 1, 0, 0, 1 };
+
 		sprite.DrawTex(
 			m_barTex.get(),
 			x + nowWidth,
 			y,
-			m_damageBarWidth,
+			damageBarWidth,
 			barHeight,
 			nullptr,
 			&dmgColor,
@@ -126,8 +150,20 @@ void HPGauge::DrawSprite()
 		);
 	}
 
-	//KdDebugGUI::Instance().AddLog(
-	//	"mode=%d hp=%.1f max=%.1f rate=%.3f nowWidth=%.1f\n",
-	//	(int)m_mode, m_hp, m_hpMax, rate, nowWidth
-	//);
+
+	//===========================
+	// ③ 現在HP（緑）
+	//===========================
+	Math::Color hpColor = { 0, 1, 0, 1 };
+
+	sprite.DrawTex(
+		m_barTex.get(),
+		x,
+		y,
+		nowWidth,
+		barHeight,
+		nullptr,
+		&hpColor,
+		{ 0, 0 }
+	);
 }

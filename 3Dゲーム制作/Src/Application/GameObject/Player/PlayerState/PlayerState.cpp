@@ -361,7 +361,7 @@ void PlayerStateDodge::Enter(Player& owner)
 	SceneManager::Instance().SetTimeScale(0.2f);
 	owner.m_slowTimer = 20;   
 	owner.m_isInvincible = true;
-
+	bool justDodge = false;
 
 	if (auto cam = std::dynamic_pointer_cast<TPSCamera>(owner.m_wpCamera.lock()))
 	{
