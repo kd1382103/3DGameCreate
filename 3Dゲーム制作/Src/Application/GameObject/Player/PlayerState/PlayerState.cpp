@@ -409,8 +409,8 @@ void PlayerUltimate::Enter(Player& owner)
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_attackHitOnce = false;
 	owner.m_attackContact = false;
-
 	owner.m_canGainUltimate = false;
+	owner.m_ultimateActivated = true;
 
 	// ゲージ消費
 	owner.m_ultimateEnergy = 0;

@@ -100,6 +100,7 @@ public:
 		return m_nowHp > 0;
 	}
 
+
 	//========================================
 	// チュートリアル用
 	//========================================
@@ -117,8 +118,24 @@ public:
 	bool IsJustDodgeSuccess() const { return m_justDodgeSuccess; }
 	void ResetJustDodgeSuccess() { m_justDodgeSuccess = false; }
 
-	//========================================
+	//=======================================
+	// 必殺技ゲージをMAXにする
+	//=======================================
+	void SetUltimateEnergyMax()
+	{
+		m_ultimateEnergy = m_ultimateEnergyMax;
+	}
 
+	bool IsUltimateActivated() const
+	{
+		return m_ultimateActivated;
+	}
+
+	void ResetUltimateActivated()
+	{
+		m_ultimateActivated = false;
+	}
+	//========================================
 
 	//敵・ボスとの当たり判定
 	void ResolveContact();
@@ -190,9 +207,11 @@ public:
 	float		m_ultimateEnergy		= 0;
 	bool		m_attackContact			= false;	// 攻撃が当たったかどうか
 	bool		m_canGainUltimate		= false;	// 必殺技の次の攻撃が可能かどうか
-	float		m_ultimateHitTimer		= 0.0f;	// 必殺技の攻撃判定の時間
+	float		m_ultimateHitTimer		= 0.0f;		// 必殺技の攻撃判定の時間
 	const float m_ultimateHitInterval	= 5; 
-	int			m_ultimateHitCount		= 0;	// 必殺技の攻撃回数
+	int			m_ultimateHitCount		= 0;		// 必殺技の攻撃回数
+	bool		m_ultimateActivated		= false;	// 必殺技が実際に発動したか
+
 
 	// HP
 	int   m_hpGaugeMax	= 1000;
@@ -217,6 +236,7 @@ public:
 
 	//ゲームが終了したかどうか
 	bool m_isGameEnd = false;
+
 
 	// チュートリアル用
 	bool m_comboFinished = false;

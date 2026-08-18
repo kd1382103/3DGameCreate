@@ -151,6 +151,9 @@
     <Filter Include="Src\Application\GameObject\UI\FontText">
       <UniqueIdentifier>{0b237cd9-980a-4257-8df1-0a878fa3ff56}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Enemy\TutorialEnemy">
+      <UniqueIdentifier>{77cf827f-492e-4fd2-8d2a-f39671f34628}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -387,6 +390,9 @@
     <ClInclude Include="Src\Application\GameObject\UI\FontText\FontText.h">
       <Filter>Src\Application\GameObject\UI\FontText</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Enemy\TutorialEnemy\TutorialEnemy.h">
+      <Filter>Src\Application\GameObject\Enemy\TutorialEnemy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -589,6 +595,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\FontText\FontText.cpp">
       <Filter>Src\Application\GameObject\UI\FontText</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Enemy\TutorialEnemy\TutorialEnemy.cpp">
+      <Filter>Src\Application\GameObject\Enemy\TutorialEnemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

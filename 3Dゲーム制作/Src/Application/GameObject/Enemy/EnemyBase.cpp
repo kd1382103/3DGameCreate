@@ -393,30 +393,33 @@ void EnemyBase::Damage(float dmg, bool isUltimate = false, bool finalHit = false
 		//=========================
 		// ノックバック
 		//=========================
-		Math::Vector3 knockDir = m_nowPos - player->GetPos();
-		knockDir.y = 0.0f;
-
-		if (knockDir.LengthSquared() > 0.00001f)
+		if (m_canKnockBack)
 		{
-			knockDir.Normalize();
+			Math::Vector3 knockDir = m_nowPos - player->GetPos();
+			knockDir.y = 0.0f;
 
-			if (isUltimate)
+			if (knockDir.LengthSquared() > 0.00001f)
 			{
-				if (finalHit)
+				knockDir.Normalize();
+
+				if (isUltimate)
 				{
-					// 最後の一撃だけ大きく吹き飛ばす
-					m_nowPos += knockDir * m_knockBackPower;
+					if (finalHit)
+					{
+						// 最後の一撃だけ大きく吹き飛ばす
+						m_nowPos += knockDir * m_knockBackPower;
+					}
+					else
+					{
+						// 多段中はほとんど動かさない
+						m_nowPos += knockDir * (m_knockBackPower * 0.2f);
+					}
 				}
 				else
 				{
-					// 多段中はほとんど動かさない
-					m_nowPos += knockDir * (m_knockBackPower * 0.2f);
+					// 通常攻撃
+					m_nowPos += knockDir * m_knockBackPower;
 				}
-			}
-			else
-			{
-				// 通常攻撃
-				m_nowPos += knockDir * m_knockBackPower;
 			}
 		}
 	}
@@ -476,5 +479,29 @@ void EnemyBase::PlayAnimationAuto(const std::string& animName, int animIndex, bo
 		auto anim = m_model->GetAnimation(animName);
 		if (anim) m_animator.SetAnimation(anim, loop);
 		return;
+	}
+}
+
+void EnemyBase::StartTutorialAttack()
+{
+	if (!stateMachine) return;
+
+	m_isTutorialAttack = true;
+	m_tutorialAttackFinished = false;
+
+	stateMachine->ChangeState(
+		std::make_unique<EnemyBaseStatePreAttack>()
+	);
+}
+
+void EnemyBase::StopTutorialAttack()
+{
+	m_isTutorialAttack = false;
+
+	if (stateMachine)
+	{
+		stateMachine->ChangeState(
+			std::make_unique<EnemyBaseStateIdle>()
+		);
 	}
 }

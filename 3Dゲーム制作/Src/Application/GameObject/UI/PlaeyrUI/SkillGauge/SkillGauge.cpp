@@ -17,7 +17,7 @@ void SkillGauge::DrawSprite()
 {
 	float rate = m_gauge / m_gaugeMax;
 
-	// ★ ゼロならパッと消える
+	// ゼロならパッと消える
 	if (rate <= 0.0f)
 	{
 		return;

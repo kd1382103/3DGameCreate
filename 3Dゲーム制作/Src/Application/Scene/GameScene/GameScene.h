@@ -8,6 +8,7 @@ class FPSCamera;
 class Player;
 class Enemy1;
 class Enemy2;
+class TutorialEnemy;
 class SkillGauge;
 class HPGauge;
 class GameClearButton;
@@ -60,6 +61,7 @@ private:
 	std::shared_ptr<Player>player;
 	std::shared_ptr<Enemy1>enemy1;
 	std::shared_ptr<Enemy2>enemy2;
+	std::shared_ptr<TutorialEnemy> tutorialEnemy;
 	std::shared_ptr<Boss>boss;
 
 	//ステージ

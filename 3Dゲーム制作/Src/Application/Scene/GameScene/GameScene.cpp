@@ -4,6 +4,7 @@
 #include<Application/GameObject/Player/Player/Player.h>
 #include<Application/GameObject/Enemy/Enemy1/Enemy1.h>
 #include<Application/GameObject/Enemy/Enemy2/Enemy2.h>
+#include <Application/GameObject/Enemy/TutorialEnemy/TutorialEnemy.h>
 #include<Application/GameObject/Boss/Boss/Boss.h>
 
 #include<Application/GameObject/Stages/Floor/Stage.h>
@@ -79,6 +80,7 @@ void GameScene::Event()
 		{
 			if (player && player->IsSkillOnce())
 			{
+				player->SetUltimateEnergyMax();
 				m_tutorialStep = TutorialStep::Ultimate;
 			}
 
@@ -92,7 +94,16 @@ void GameScene::Event()
 		{
 			if (player && player->IsUltimateOnce())
 			{
+				player->ResetUltimateActivated();		//発動フラグをリセット
 				m_tutorialStep = TutorialStep::Dodge;
+				
+				//---------------------------------------
+				// チュートリアル敵の攻撃を許可
+				//---------------------------------------
+				if (tutorialEnemy)
+				{
+					tutorialEnemy->StartTutorialAttack();
+				}
 			}
 
 			break;
@@ -103,9 +114,14 @@ void GameScene::Event()
 		//---------------------------------------
 		case TutorialStep::Dodge:
 		{
-			if (player && player->IsJustDodgeSuccess())
+
+			if (tutorialEnemy &&
+				tutorialEnemy->IsTutorialAttackFinished())
 			{
+				tutorialEnemy->ResetTutorialAttackFinished();
+
 				player->ResetJustDodgeSuccess();
+
 				m_tutorialStep = TutorialStep::LockOn;
 			}
 
@@ -130,6 +146,15 @@ void GameScene::Event()
 		//---------------------------------------
 		case TutorialStep::Finish:
 		{
+			//---------------------------------------
+			// チュートリアル敵を削除
+			//---------------------------------------
+			if (tutorialEnemy)
+			{
+				tutorialEnemy->SetExpired();
+				tutorialEnemy = nullptr;
+			}
+
 			m_gamePhase = GamePhase::Battle;
 
 			//---------------------------------------
@@ -345,6 +370,21 @@ void GameScene::Init()
 	player->SetPos(Math::Vector3{ 0, 5, 0 });
 	AddObject(player);
 
+	//---------------------------------------
+	// チュートリアル敵
+	//---------------------------------------
+	tutorialEnemy =
+		std::make_shared<TutorialEnemy>();
+
+	tutorialEnemy->Init();
+
+	tutorialEnemy->SetPos({ 0, 0, 5 });
+
+	tutorialEnemy->SetTarget(player);
+	tutorialEnemy->SetCamera(m_camera);
+	tutorialEnemy->SetGameScene(this);
+
+	AddObject(tutorialEnemy);
 
 	//=======================================
 	// UI

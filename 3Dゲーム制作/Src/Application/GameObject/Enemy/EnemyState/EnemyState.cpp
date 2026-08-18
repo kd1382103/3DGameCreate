@@ -116,24 +116,59 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
-	// 踏み込み（攻撃1専用）
-	//if (t > 20 && t < 30)
-	//{
-	//	Math::Vector3 f = owner.GetForward();
-	//	f.Normalize();
-	//	owner.m_nowPos += f * 0.05f;
-	//}
-
 	// 攻撃判定（攻撃1専用）
 	if (t > 15.0f && t < 25.0f)
 	{
 		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
-	// 終了判定（攻撃1専用）
+	//==============================
+	// 攻撃終了
+	//==============================
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStateIdle>());
+		//========================================
+		// チュートリアル攻撃の場合
+		//========================================
+		if (owner.m_isTutorialAttack)
+		{
+			auto player = owner.m_wpPlayer.lock();
+
+			if (player)
+			{
+				// 回避成功していた
+				if (player->m_justDodgeSuccess)
+				{
+					owner.m_tutorialAttackFinished = true;
+					owner.m_isTutorialAttack = false;
+
+					player->m_canDodge = false;
+
+					owner.stateMachine->ChangeState(
+						std::make_unique<EnemyBaseStateIdle>()
+					);
+
+					return;
+				}
+			}
+
+			//========================================
+			// 回避失敗
+			// → もう一度攻撃予知
+			//========================================
+			owner.stateMachine->ChangeState(
+				std::make_unique<EnemyBaseStatePreAttack>()
+			);
+
+			return;
+		}
+
+		//========================================
+		// 通常敵
+		//========================================
+		owner.stateMachine->ChangeState(
+			std::make_unique<EnemyBaseStateIdle>()
+		);
 	}
 
 };
@@ -175,11 +210,6 @@ void EnemyBaseStatePreAttack::Update(EnemyBase& owner)
 		auto player = owner.m_wpPlayer.lock();
 		if (player)
 		{
-			if (player->m_justDodgeSuccess)
-			{
-				owner.StartSlow(2.0f);
-				player->m_justDodgeSuccess = false;
-			}
 			player->m_canDodge = false;
 		}
 

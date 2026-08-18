@@ -92,6 +92,31 @@ public:
 		return m_nowPos;
 	}
 
+	//------------------------------------
+	//チュートリアルの敵専用関数
+	//------------------------------------
+	
+	// 強制的に削除状態にする
+	void SetExpired() { m_isExpired = true; }
+
+	// チュートリアル用攻撃
+	void SetCanAttack(bool enable) { m_canAttack = enable; }
+	bool GetCanAttack() const { return m_canAttack; }
+
+	void StartTutorialAttack();
+	void StopTutorialAttack();
+	bool IsTutorialAttackFinished() const { return m_tutorialAttackFinished; }
+
+	void ResetTutorialAttackFinished() { m_tutorialAttackFinished = false; }
+
+	//------------------------------------
+
+	// ノックバックするか
+	void SetCanKnockBack(bool enable)
+	{
+		m_canKnockBack = enable;
+	}
+
 public:
 
 	// モデル・アニメーション
@@ -181,6 +206,18 @@ public:
 
 	//ノックバックの強さ
 	float m_knockBackPower = 0.75f;
+
+	// ノックバック可能か
+	bool m_canKnockBack = true;
+
+	//チュートリアル専用
+	bool m_canAttack = false;
+
+	// チュートリアル攻撃中か
+	bool m_isTutorialAttack = false;
+
+	// チュートリアル攻撃を回避成功で終了したか
+	bool m_tutorialAttackFinished = false;
 
 	bool m_attackHitOnce = false;
 
