@@ -490,7 +490,7 @@ void EnemyBase::StartTutorialAttack()
 	m_tutorialAttackFinished = false;
 
 	stateMachine->ChangeState(
-		std::make_unique<EnemyBaseStatePreAttack>()
+		std::make_unique<EnemyBaseStateAttack1>()
 	);
 }
 

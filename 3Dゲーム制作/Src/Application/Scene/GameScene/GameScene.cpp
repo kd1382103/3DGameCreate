@@ -32,9 +32,9 @@ void GameScene::Event()
 
 		switch (m_tutorialStep)
 		{
-		//---------------------------------------
-		// 移動
-		//---------------------------------------
+			//---------------------------------------
+			// 移動
+			//---------------------------------------
 		case TutorialStep::Move:
 		{
 			if (player && player->IsMoving())
@@ -96,7 +96,7 @@ void GameScene::Event()
 			{
 				player->ResetUltimateActivated();		//発動フラグをリセット
 				m_tutorialStep = TutorialStep::Dodge;
-				
+
 				//---------------------------------------
 				// チュートリアル敵の攻撃を許可
 				//---------------------------------------
@@ -155,40 +155,45 @@ void GameScene::Event()
 				tutorialEnemy = nullptr;
 			}
 
-			m_gamePhase = GamePhase::Battle;
-
-			//---------------------------------------
-			// Enemy1 出現
-			//---------------------------------------
-			enemy1 = std::make_shared<Enemy1>();
-
-			enemy1->Init();
-
-			enemy1->SetPos({ 5, 0, 5 });
-
-			enemy1->SetTarget(player);
-			enemy1->SetCamera(m_camera);
-			enemy1->SetGameScene(this);
-
-			AddObject(enemy1);
-
-			//---------------------------------------
-			// Enemy2 出現
-			//---------------------------------------
-			enemy2 = std::make_shared<Enemy2>();
-
-			enemy2->Init();
-
-			enemy2->SetPos({ -5, 0, -5 });
-
-			enemy2->SetTarget(player);
-			enemy2->SetCamera(m_camera);
-			enemy2->SetGameScene(this);
-
-			AddObject(enemy2);
+			m_gamePhase = GamePhase::TutorialComplete;
+			m_phaseTimer = 0.0f;
 
 			break;
 		}
+		}
+	}
+	//==============================
+	// チュートリアル完了
+	//==============================
+	if (m_gamePhase == GamePhase::TutorialComplete)
+	{
+		m_phaseTimer += Application::Instance().GetDeltaTime();
+
+		// 2秒経過したら準備フェーズへ
+		if (m_phaseTimer >= m_tutorialFinishTime)
+		{
+			m_gamePhase = GamePhase::Prepare;
+			m_phaseTimer = 0.0f;
+		}
+	}
+
+	//==============================
+	// 準備フェーズ
+	//==============================
+	if (m_gamePhase == GamePhase::Prepare)
+	{
+		if (!player)
+		{
+			return;
+		}
+
+		// プレイヤーと戦闘開始地点との距離
+		float distance = (player->GetPos() - m_battleStartPos).Length();
+
+		// 戦闘開始地点に近づいたら
+		if (distance < 2.0f)
+		{
+			m_gamePhase = GamePhase::Battle;
 		}
 	}
 
@@ -197,30 +202,67 @@ void GameScene::Event()
 	//==============================
 	if (m_gamePhase == GamePhase::Battle)
 	{
-		// 敵撃破 → Boss出現
-	}
+		if (!m_battleStarted)
+		{
+			m_battleStarted = true;
 
+			//---------------------------------------
+			// Enemy1生成
+			//---------------------------------------
+			enemy1 = std::make_shared<Enemy1>();
+			enemy1->Init();
+
+			enemy1->SetPos({ -3, 0, 15 });
+
+			enemy1->SetTarget(player);
+			enemy1->SetCamera(m_camera);
+			enemy1->SetGameScene(this);
+
+			AddObject(enemy1);
+
+
+			//---------------------------------------
+			// Enemy2生成
+			//---------------------------------------
+			enemy2 = std::make_shared<Enemy2>();
+			enemy2->Init();
+
+			enemy2->SetPos({ 3, 0, 15 });
+
+			enemy2->SetTarget(player);
+			enemy2->SetCamera(m_camera);
+			enemy2->SetGameScene(this);
+
+			AddObject(enemy2);
+		}
+	}
 	//---------------------------------------
 	// Boss
 	//---------------------------------------
-	if (m_gamePhase == GamePhase::Battle && 
-		!m_isBossSpawned && 
-		m_killCount >= m_bossSpawnKillCount)
+	if (m_gamePhase == GamePhase::Battle && m_battleStarted && !m_isBossSpawned)
 	{
-		m_isBossSpawned = true;
+		bool enemy1Dead = !enemy1 || !enemy1->IsAlive();
 
-		m_gamePhase = GamePhase::Boss;
+		bool enemy2Dead = !enemy2 || !enemy2->IsAlive();
 
-		boss = std::make_shared<Boss>();
-		boss->Init();
+		// Enemy1とEnemy2が両方死亡
+		if (enemy1Dead && enemy2Dead)
+		{
+			m_isBossSpawned = true;
 
-		boss->SetPos({ 0, 0, 0 });
+			m_gamePhase = GamePhase::Boss;
 
-		boss->SetTarget(player);
-		boss->SetCamera(m_camera);
-		boss->SetGameScene(this);
+			boss = std::make_shared<Boss>();
+			boss->Init();
 
-		AddObject(boss);
+			boss->SetPos({ 0, 0, 0 });
+
+			boss->SetTarget(player);
+			boss->SetCamera(m_camera);
+			boss->SetGameScene(this);
+
+			AddObject(boss);
+		}
 	}
 
 	//---------------------------------------
@@ -367,7 +409,7 @@ void GameScene::Init()
 	//=======================================
 	player = std::make_shared<Player>();
 	player->Init();
-	player->SetPos(Math::Vector3{ 0, 5, 0 });
+	player->SetPos(Math::Vector3{ 0, 0, 0 });
 	AddObject(player);
 
 	//---------------------------------------
@@ -514,6 +556,8 @@ void GameScene::UpdateTutorialText()
 			1.0f
 		);
 		break;
+
+
 
 	//case TutorialStep::Finish:
 	//	m_tutorialText->InitMessage(

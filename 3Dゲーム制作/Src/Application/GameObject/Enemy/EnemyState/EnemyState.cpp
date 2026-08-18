@@ -83,7 +83,7 @@ void EnemyBaseStateWalk::Update(EnemyBase& owner)
 	float dist = (player->GetPos() - owner.m_nowPos).Length();
 	if (dist < owner.m_attackDist)
 	{
-		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStatePreAttack>());
+		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStateAttack1>());
 		return;
 	}
 }
@@ -108,15 +108,90 @@ void EnemyBaseStateDash::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void EnemyBaseStateAttack1::Enter(EnemyBase& owner)
 {
+	//---------------------------------------
+	// 攻撃アニメーション開始
+	//---------------------------------------
 	owner.PlayAnimationAuto("", owner.animAttackIndex, false);
 	owner.m_attackHitOnce = false;
+
+	//---------------------------------------
+	// 攻撃予知開始
+	//---------------------------------------
+	owner.m_preAttackActive = true;
+	owner.m_preAttackAlpha = 1.0f;
+	owner.m_preAttackTimer = 0.0f;
+	owner.m_preAttackPos = owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
+
+	//---------------------------------------
+	// 回避可能
+	//---------------------------------------
+	auto player = owner.m_wpPlayer.lock();
+
+	if (player)
+	{
+		player->m_canDodge = true;
+	}
 }
 
 void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 {
+	float dt =
+		Application::Instance().GetDeltaTime() *
+		SceneManager::Instance().GetTimeScale();
+
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
-	// 攻撃判定（攻撃1専用）
+	//---------------------------------------
+	// 攻撃予知演出
+	// 今までのPreAttackと同じ処理
+	//---------------------------------------
+	if (owner.m_preAttackActive)
+	{
+		owner.m_preAttackTimer += dt;
+
+		// 敵の頭上に追従
+		owner.m_preAttackPos =
+			owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
+
+		//---------------------------------------
+		// 攻撃判定直前まで徐々にフェードアウト
+		//---------------------------------------
+
+		const float predictionEndTime = 14.0f;
+
+		float progress = t / predictionEndTime;
+
+		// 0.0 ～ 1.0 に制限
+		progress = std::clamp(progress, 0.0f, 1.0f);
+
+		// 1 → 0
+		owner.m_preAttackAlpha = 1.0f - progress;
+
+		//---------------------------------------
+		// Alphaに合わせて拡大
+		//---------------------------------------
+		owner.m_preAttackScale =
+			1.0f +
+			(1.0f - owner.m_preAttackAlpha) * 0.5f;
+	}
+
+	//---------------------------------------
+	// ダメージ判定直前で予知終了
+	//---------------------------------------
+	if (t >= 14.0f && owner.m_preAttackActive)
+	{
+		owner.m_preAttackActive = false;
+
+		auto player = owner.m_wpPlayer.lock();
+		if (player)
+		{
+			player->m_canDodge = false;
+		}
+	}
+
+	//---------------------------------------
+	// 攻撃判定
+	//---------------------------------------
 	if (t > 15.0f && t < 25.0f)
 	{
 		owner.DoAttackHitCheck(owner.m_attackDist);
@@ -136,7 +211,7 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 
 			if (player)
 			{
-				// 回避成功していた
+				// 回避成功
 				if (player->m_justDodgeSuccess)
 				{
 					owner.m_tutorialAttackFinished = true;
@@ -152,12 +227,12 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 				}
 			}
 
-			//========================================
+			//---------------------------------------
 			// 回避失敗
-			// → もう一度攻撃予知
-			//========================================
+			// → もう一度Attack1
+			//---------------------------------------
 			owner.stateMachine->ChangeState(
-				std::make_unique<EnemyBaseStatePreAttack>()
+				std::make_unique<EnemyBaseStateAttack1>()
 			);
 
 			return;
@@ -170,51 +245,4 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 			std::make_unique<EnemyBaseStateIdle>()
 		);
 	}
-
 };
-
-void EnemyBaseStatePreAttack::Enter(EnemyBase& owner)
-{
-	owner.m_preAttackActive = true;
-	owner.m_preAttackAlpha = 1.0f;
-	owner.m_preAttackTimer = 0.0f;   
-	owner.m_preAttackPos = owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
-
-	auto player = owner.m_wpPlayer.lock();
-	if (player)
-	{
-		player->m_canDodge = true;
-	}
-}
-
-void EnemyBaseStatePreAttack::Update(EnemyBase& owner)
-{
-	float dt =Application::Instance().GetDeltaTime() * SceneManager::Instance().GetTimeScale();
-	owner.m_preAttackTimer += dt; 
-
-	// 敵の頭上に追従
-	owner.m_preAttackPos = owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
-	owner.m_preAttackScale = 1.0f + (1.0f - owner.m_preAttackAlpha) * 0.5f;
-
-	// フェードアウト
-	owner.m_preAttackAlpha -= dt * 2.0f;
-	if (owner.m_preAttackAlpha < 0.0f)
-	{
-		owner.m_preAttackAlpha = 0.0f;
-	}
-
-
-	// フェードアウト完了で Attack1 へ
-	if (owner.m_preAttackTimer > 0.8f)
-	{
-		auto player = owner.m_wpPlayer.lock();
-		if (player)
-		{
-			player->m_canDodge = false;
-		}
-
-		owner.m_preAttackActive = false;
-		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStateAttack1>());
-		return;
-	}
-}

@@ -28,9 +28,11 @@ public :
 
 	enum class GamePhase
 	{
-		Tutorial,	// 訓練場
-		Battle,		// 通常戦闘
-		Boss,		// ボス戦
+		Tutorial,
+		TutorialComplete,
+		Prepare,
+		Battle,	
+		Boss,			
 		Clear,
 		GameOver
 	};
@@ -102,6 +104,10 @@ private:
 	//ゲームクリア or ゲームオーバー
 	bool m_isGameClear = false;
 	bool m_isGameOver = false;
+
+	float m_phaseTimer = 0.0f;
+	Math::Vector3 m_battleStartPos = { 0, 0, 10 };
+	bool m_battleStarted = false;
 
 	void UpdateTutorialText();
 };
