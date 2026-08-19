@@ -34,7 +34,7 @@ void BossStateIdle::Update(BossBase& owner)
 
 void BossStateMove::Update(BossBase& owner)
 {
-	float dt = SceneManager::Instance().GetTimeScale();
+	float dt = SceneManager::Instance().GetTimeScale() * owner.GetTimeScale();
 
 	auto player = owner.m_wpPlayer.lock();
 	if (!player) return;
@@ -382,7 +382,8 @@ void BossStateAttack1::Update(BossBase& owner)
 {
 	float dt =
 		Application::Instance().GetDeltaTime() *
-		SceneManager::Instance().GetTimeScale();
+		SceneManager::Instance().GetTimeScale() *
+		owner.GetTimeScale();
 
 	float t =
 		owner.m_animator.GetAnimeCurrentTime();
@@ -425,14 +426,11 @@ void BossStateAttack1::Update(BossBase& owner)
 			* 0.5f;
 	}
 
-	//---------------------------------------
-	// 予知終了
-	//---------------------------------------
-	if (
-		t >= 14.0f &&
-		owner.m_preAttackActive
-		)
+	if (t >= 14.0f && owner.m_preAttackActive)
 	{
+		//---------------------------------------
+		// 予知終了
+		//---------------------------------------
 		owner.m_preAttackActive = false;
 
 		auto player =
@@ -440,6 +438,20 @@ void BossStateAttack1::Update(BossBase& owner)
 
 		if (player)
 		{
+			//---------------------------------------
+			// ジャスト回避成功
+			//---------------------------------------
+			if (player->m_justDodgeSuccess)
+			{
+				owner.StartSlow(2.0f);
+
+				// 成功フラグをリセット
+				player->m_justDodgeSuccess = false;
+			}
+
+			//---------------------------------------
+			// 回避受付終了
+			//---------------------------------------
 			player->m_canDodge = false;
 		}
 	}
@@ -512,7 +524,8 @@ void BossStateAttack2::Update(BossBase& owner)
 {
 	float dt =
 		Application::Instance().GetDeltaTime() *
-		SceneManager::Instance().GetTimeScale();
+		SceneManager::Instance().GetTimeScale() *
+		owner.GetTimeScale();
 
 	float t =
 		owner.m_animator.GetAnimeCurrentTime();
@@ -549,14 +562,11 @@ void BossStateAttack2::Update(BossBase& owner)
 			* 0.5f;
 	}
 
-	//---------------------------------------
-	// 予知終了
-	//---------------------------------------
-	if (
-		t >= 14.0f &&
-		owner.m_preAttackActive
-		)
+	if (t >= 14.0f && owner.m_preAttackActive)
 	{
+		//---------------------------------------
+		// 予知終了
+		//---------------------------------------
 		owner.m_preAttackActive = false;
 
 		auto player =
@@ -564,6 +574,20 @@ void BossStateAttack2::Update(BossBase& owner)
 
 		if (player)
 		{
+			//---------------------------------------
+			// ジャスト回避成功
+			//---------------------------------------
+			if (player->m_justDodgeSuccess)
+			{
+				owner.StartSlow(2.0f);
+
+				// 成功フラグをリセット
+				player->m_justDodgeSuccess = false;
+			}
+
+			//---------------------------------------
+			// 回避受付終了
+			//---------------------------------------
 			player->m_canDodge = false;
 		}
 	}
@@ -636,7 +660,8 @@ void BossStateAttack3::Update(BossBase& owner)
 {
 	float dt =
 		Application::Instance().GetDeltaTime() *
-		SceneManager::Instance().GetTimeScale();
+		SceneManager::Instance().GetTimeScale() *
+		owner.GetTimeScale();
 
 	float t =
 		owner.m_animator.GetAnimeCurrentTime();
@@ -673,14 +698,11 @@ void BossStateAttack3::Update(BossBase& owner)
 			* 0.5f;
 	}
 
-	//---------------------------------------
-	// 予知終了
-	//---------------------------------------
-	if (
-		t >= 14.0f &&
-		owner.m_preAttackActive
-		)
+	if (t >= 14.0f && owner.m_preAttackActive)
 	{
+		//---------------------------------------
+		// 予知終了
+		//---------------------------------------
 		owner.m_preAttackActive = false;
 
 		auto player =
@@ -688,10 +710,23 @@ void BossStateAttack3::Update(BossBase& owner)
 
 		if (player)
 		{
+			//---------------------------------------
+			// ジャスト回避成功
+			//---------------------------------------
+			if (player->m_justDodgeSuccess)
+			{
+				owner.StartSlow(2.0f);
+
+				// 成功フラグをリセット
+				player->m_justDodgeSuccess = false;
+			}
+
+			//---------------------------------------
+			// 回避受付終了
+			//---------------------------------------
 			player->m_canDodge = false;
 		}
 	}
-
 	//---------------------------------------
 	// 攻撃判定
 	//---------------------------------------

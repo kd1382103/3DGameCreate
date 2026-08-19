@@ -52,24 +52,27 @@ void BossBase::Init()
 void BossBase::Update()
 {
 	if(m_isGameEnd) return;
-
-	float dt = SceneManager::Instance().GetTimeScale();
-
 	//==========================================================
-	// スロー
+	// スロー時間更新
 	//==========================================================
 	if (m_isSlow)
 	{
-		dt *= m_slowRate;
-
 		m_slowTimer -=
 			Application::Instance().GetDeltaTime();
 
-		if (m_slowTimer <= 0)
+		if (m_slowTimer <= 0.0f)
 		{
+			m_slowTimer = 0.0f;
 			m_isSlow = false;
 		}
 	}
+
+	//==========================================================
+	// Boss自身の時間倍率
+	//==========================================================
+	float dt =
+		SceneManager::Instance().GetTimeScale() *
+		GetTimeScale();
 
 	//==========================================================
 	// 重力

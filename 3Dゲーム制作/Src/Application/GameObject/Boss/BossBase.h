@@ -81,6 +81,16 @@ public:
 		m_slowTimer = time;
 	}
 
+	float GetTimeScale() const
+	{
+		if (m_isSlow)
+		{
+			return m_slowRate;
+		}
+
+		return 1.0f;
+	}
+
 	void SetGameScene(GameScene* scene)
 	{
 		m_pGameScene = scene;
