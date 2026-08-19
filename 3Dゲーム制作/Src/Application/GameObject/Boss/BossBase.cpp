@@ -706,4 +706,3 @@ void BossBase::PlayAnimationAuto(
 		return;
 	}
 }
-
