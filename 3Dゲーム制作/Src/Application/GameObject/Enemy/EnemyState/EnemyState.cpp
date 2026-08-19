@@ -33,7 +33,7 @@ void EnemyBaseStateIdle::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void EnemyBaseStateMove::Update(EnemyBase& owner)
 {
-	float dt = SceneManager::Instance().GetTimeScale();
+	float dt = SceneManager::Instance().GetTimeScale() * owner.GetTimeScale();
 
 	auto player = owner.m_wpPlayer.lock();
 	if (!player) return;
@@ -137,7 +137,8 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 {
 	float dt =
 		Application::Instance().GetDeltaTime() *
-		SceneManager::Instance().GetTimeScale();
+		SceneManager::Instance().GetTimeScale() *
+		owner.GetTimeScale();
 
 	float t = owner.m_animator.GetAnimeCurrentTime();
 

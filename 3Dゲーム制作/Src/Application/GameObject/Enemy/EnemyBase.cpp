@@ -46,19 +46,21 @@ void EnemyBase::Update()
 {
 	if(m_isGameEnd) return;
 
-	float dt = SceneManager::Instance().GetTimeScale();
-
+	//------------------------------------
+	// スロー時間管理
+	//------------------------------------
 	if (m_isSlow)
 	{
-		dt *= m_slowRate;
-
 		m_slowTimer -= Application::Instance().GetDeltaTime();
 
-		if (m_slowTimer <= 0)
+		if (m_slowTimer <= 0.0f)
 		{
+			m_slowTimer = 0.0f;
 			m_isSlow = false;
 		}
 	}
+
+	float dt = SceneManager::Instance().GetTimeScale() * GetTimeScale();
 
 	m_gravity += 0.005f * dt;
 	m_nowPos.y -= m_gravity * dt;
