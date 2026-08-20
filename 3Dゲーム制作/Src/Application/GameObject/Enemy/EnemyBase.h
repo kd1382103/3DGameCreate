@@ -127,7 +127,9 @@ public:
 		m_canKnockBack = enable;
 	}
 
+	void StopAttackSound();
 
+	bool IsAttacking() const { return m_isAttacking; }
 
 public:
 
@@ -150,6 +152,8 @@ public:
 
 	//HP
 	std::shared_ptr<HPGauge> m_hpGauge = nullptr;
+
+	std::shared_ptr<KdSoundInstance> m_attackSound;
 
 	// 回転
 	float m_angleY = 0.0f;
@@ -235,6 +239,9 @@ public:
 	bool m_attackSEPlayed = false;
 
 	bool m_isGameEnd = false;
+
+	// 攻撃中か
+	bool m_isAttacking = false;
 
 private:
 

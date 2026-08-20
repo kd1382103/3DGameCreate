@@ -108,6 +108,8 @@ void EnemyBaseStateDash::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void EnemyBaseStateAttack1::Enter(EnemyBase& owner)
 {
+	owner.m_isAttacking = true;
+
 	//---------------------------------------
 	// 攻撃アニメーション開始 & フラグリセット
 	//---------------------------------------
@@ -201,9 +203,15 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 		//-----------------------------------
 		if (!owner.m_attackSEPlayed)
 		{
-			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
-			owner.m_attackSEPlayed = true;
-		}
+			if (SceneManager::Instance().GetTimeScale() >= 0.99f)
+			{
+				owner.m_attackSound =
+					KdAudioManager::Instance().Play(
+						"Asset/Sounds/SE/Attack.wav"
+					);
+				owner.m_attackSEPlayed = true;
+			}
+		}		
 		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
@@ -212,6 +220,10 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 	//==============================
 	if (owner.m_animator.IsAnimationEnd())
 	{
+		owner.m_isAttacking = false;
+
+		owner.StopAttackSound();
+		
 		//========================================
 		// チュートリアル攻撃の場合
 		//========================================

@@ -98,7 +98,10 @@ void Player::Update()
 				auto enemy = dynamic_cast<EnemyBase*>(obj.get());
 				if (!enemy) continue;
 				if (!enemy->IsAlive()) continue;
+				if (!enemy->IsAttacking()) continue;
 
+				enemy->StopAttackSound();
+				enemy->m_attackSEPlayed = true;
 				enemy->StartSlow(2.0f);
 			}
 		}

@@ -507,3 +507,12 @@ void EnemyBase::StopTutorialAttack()
 		);
 	}
 }
+
+void EnemyBase::StopAttackSound()
+{
+	if (m_attackSound)
+	{
+		m_attackSound->Stop();
+		m_attackSound.reset();
+	}
+}
