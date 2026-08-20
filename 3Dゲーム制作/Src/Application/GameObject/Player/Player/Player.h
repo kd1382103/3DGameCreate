@@ -82,8 +82,6 @@ public:
 	//必殺技用
 	void DoUltimateHitCheck(float range, float width, int damage);
 
-	//void CheckAttackContact(float range, float width);
-
 	// ステート方式で使う補助関数
 	bool IsMoveInput() const { return m_moving; }
 	bool IsAttackInput() const { return m_attackOnce; }
@@ -95,10 +93,7 @@ public:
 	void SetGameEnd(bool end) { m_isGameEnd = end; }
 
 	//生存フラグ
-	bool IsAlive() const
-	{
-		return m_nowHp > 0;
-	}
+	bool IsAlive() const { return m_nowHp > 0; }
 
 
 	//========================================
@@ -140,11 +135,7 @@ public:
 	//敵・ボスとの当たり判定
 	void ResolveContact();
 
-
-	float GetCollisionRadius() const
-	{
-		return m_collisionRadius;
-	}
+	float GetCollisionRadius() const { return m_collisionRadius; }
 
 public:
 	// モデル・アニメーション
@@ -184,6 +175,8 @@ public:
 	bool m_dodgeing = false;
 	bool m_attackHitOnce = false;
 	bool m_ultimateOnce = false;
+
+	bool m_attackSEPlayed = false;
 
 	//攻撃
 	float m_attackDist = 1.25f;

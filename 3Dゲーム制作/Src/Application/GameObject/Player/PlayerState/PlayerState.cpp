@@ -162,6 +162,7 @@ void PlayerStateAttack1::Enter(Player& owner)
 	owner.m_attackHitOnce = false;
 	owner.m_attackContact = false;
 	owner.m_canGainUltimate = true;
+	owner.m_attackSEPlayed = false;
 }
 
 void PlayerStateAttack1::Update(Player& owner)
@@ -179,6 +180,14 @@ void PlayerStateAttack1::Update(Player& owner)
 	// 攻撃判定
 	if (t > 35.0f && t < 40.0f)
 	{
+		//-----------------------------------
+		// 攻撃SE
+		//-----------------------------------
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			owner.m_attackSEPlayed = true;
+		}
 		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 15);
 	}
 	else
@@ -222,6 +231,7 @@ void PlayerStateAttack2::Enter(Player& owner)
 	owner.m_attackHitOnce = false;
 	owner.m_attackContact = false;
 	owner.m_canGainUltimate = true;
+	owner.m_attackSEPlayed = false;
 }
 
 void PlayerStateAttack2::Update(Player& owner)
@@ -237,6 +247,14 @@ void PlayerStateAttack2::Update(Player& owner)
 
 	if (t > 35.0f && t < 40.0f)
 	{
+		//-----------------------------------
+		// 攻撃SE
+		//-----------------------------------
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			owner.m_attackSEPlayed = true;
+		}
 		owner.DoAttackHitCheckMulti(owner.m_attackDist,90.0f,20);
 	}
 	else
@@ -277,7 +295,7 @@ void PlayerStateAttack3::Enter(Player& owner)
 	owner.m_attackHitOnce = false;
 	owner.m_attackContact = false;
 	owner.m_canGainUltimate = true;
-
+	owner.m_attackSEPlayed = false;
 	owner.m_comboFinished = true;
 }
 
@@ -294,6 +312,14 @@ void PlayerStateAttack3::Update(Player& owner)
 
 	if (t > 35.0f && t < 40.0f)
 	{
+		//-----------------------------------
+		// 攻撃SE
+		//-----------------------------------
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			owner.m_attackSEPlayed = true;
+		}
 		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 30);
 	}
 	else

@@ -109,10 +109,11 @@ void EnemyBaseStateDash::Update(EnemyBase& owner)
 void EnemyBaseStateAttack1::Enter(EnemyBase& owner)
 {
 	//---------------------------------------
-	// 攻撃アニメーション開始
+	// 攻撃アニメーション開始 & フラグリセット
 	//---------------------------------------
 	owner.PlayAnimationAuto("", owner.animAttackIndex, false);
 	owner.m_attackHitOnce = false;
+	owner.m_attackSEPlayed = false;
 
 	//---------------------------------------
 	// 攻撃予知開始
@@ -195,6 +196,14 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 	//---------------------------------------
 	if (t > 15.0f && t < 25.0f)
 	{
+		//-----------------------------------
+		// 攻撃SE
+		//-----------------------------------
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			owner.m_attackSEPlayed = true;
+		}
 		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 

@@ -232,6 +232,7 @@ public:
 	bool m_tutorialAttackFinished = false;
 
 	bool m_attackHitOnce = false;
+	bool m_attackSEPlayed = false;
 
 	bool m_isGameEnd = false;
 

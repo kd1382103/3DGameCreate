@@ -319,7 +319,7 @@ public:
 	//==============================================================
 
 	bool m_attackHitOnce = false;
-
+	bool m_attackSEPlayed = false;
 	bool m_isGameEnd = false;
 
 	// Playerとの接触判定用

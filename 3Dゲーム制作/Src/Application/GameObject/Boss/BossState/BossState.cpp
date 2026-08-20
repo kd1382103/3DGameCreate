@@ -182,167 +182,6 @@ void BossStateDash::Update(BossBase& owner)
 	BossStateMove::Update(owner);
 }
 
-//// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-//// 攻撃予知ステート
-//// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-//
-//void BossStatePreAttack::Enter(BossBase& owner)
-//{
-//	owner.m_preAttackActive = true;
-//	owner.m_preAttackAlpha = 1.0f;
-//	owner.m_preAttackTimer = 0.0f;
-//	owner.m_preAttackPos =
-//		owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
-//
-//	auto player = owner.m_wpPlayer.lock();
-//	if (player)
-//	{
-//		player->m_canDodge = true;
-//	}
-//}
-//
-//void BossStatePreAttack::Update(BossBase& owner)
-//{
-//	float dt = Application::Instance().GetDeltaTime() * SceneManager::Instance().GetTimeScale();
-//
-//	owner.m_preAttackTimer += dt;
-//
-//	//==========================================================
-//	// ボスの頭上に追従
-//	//==========================================================
-//
-//	owner.m_preAttackPos = owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
-//
-//	owner.m_preAttackScale = 1.0f + (1.0f - owner.m_preAttackAlpha) * 0.5f;
-//
-//	//==========================================================
-//	// フェードアウト
-//	//==========================================================
-//
-//	owner.m_preAttackAlpha -= dt * 2.0f;
-//
-//	if (owner.m_preAttackAlpha < 0.0f)
-//	{
-//		owner.m_preAttackAlpha = 0.0f;
-//	}
-//
-//	//==========================================================
-//	// 予知終了
-//	//==========================================================
-//	if (owner.m_preAttackTimer > 0.8f)
-//	{
-//		auto player = owner.m_wpPlayer.lock();
-//
-//		if (player)
-//		{
-//			if (player->m_justDodgeSuccess)
-//			{
-//				owner.StartSlow(2.0f);
-//				player->m_justDodgeSuccess = false;
-//			}
-//
-//			player->m_canDodge = false;
-//		}
-//
-//		owner.m_preAttackActive = false;
-//
-//		//======================================================
-//		// 初回の予知
-//		//======================================================
-//
-//		if (!owner.m_isComboStarted)
-//		{
-//			int pattern = rand() % 4;
-//
-//			switch (pattern)
-//			{
-//			case 0:
-//
-//				owner.m_attackPattern =
-//				{
-//					BossBase::BossAttackType::Attack1,
-//					BossBase::BossAttackType::Attack2,
-//					BossBase::BossAttackType::Attack3
-//				};
-//
-//				break;
-//
-//			case 1:
-//
-//				owner.m_attackPattern =
-//				{
-//					BossBase::BossAttackType::Attack1,
-//					BossBase::BossAttackType::Attack1,
-//					BossBase::BossAttackType::Attack2
-//				};
-//
-//				break;
-//
-//			case 2:
-//
-//				owner.m_attackPattern =
-//				{
-//					BossBase::BossAttackType::Attack2,
-//					BossBase::BossAttackType::Attack1,
-//					BossBase::BossAttackType::Attack3
-//				};
-//
-//				break;
-//
-//			case 3:
-//
-//				owner.m_attackPattern =
-//				{
-//					BossBase::BossAttackType::Attack1,
-//					BossBase::BossAttackType::Attack3
-//				};
-//
-//				break;
-//			}
-//
-//			owner.m_attackPatternIndex = 0;
-//
-//			// コンボ開始
-//			owner.m_isComboStarted = true;
-//		}
-//
-//		//======================================================
-//		// 現在の攻撃を開始
-//		//======================================================
-//
-//		if (owner.m_attackPattern.empty())
-//		{
-//			owner.m_isComboStarted = false;
-//			owner.stateMachine->ChangeState(std::make_unique<BossStateIdle>());
-//			return;
-//		}
-//
-//		//==========================================================
-//		// パターンの1段目を開始
-//		//==========================================================
-//
-//		switch (owner.m_attackPattern[owner.m_attackPatternIndex]) 
-//		{
-//		case BossBase::BossAttackType::Attack1:
-//			
-//			owner.stateMachine->ChangeState(std::make_unique<BossStateAttack1>());
-//			break;
-//
-//		case BossBase::BossAttackType::Attack2:
-//
-//			owner.stateMachine->ChangeState(std::make_unique<BossStateAttack2>());
-//			break;
-//
-//		case BossBase::BossAttackType::Attack3:
-//
-//			owner.stateMachine->ChangeState(std::make_unique<BossStateAttack3>());
-//			break;
-//		}
-//
-//		return;
-//	}
-//}
-
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // 攻撃1ステート
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -355,6 +194,7 @@ void BossStateAttack1::Enter(BossBase& owner)
 
 	owner.PlayAnimationAuto("", owner.animAttack1Index, false);
 	owner.m_attackHitOnce = false;
+	owner.m_attackSEPlayed = false;
 
 	//---------------------------------------
 	// 攻撃予知開始
@@ -459,14 +299,17 @@ void BossStateAttack1::Update(BossBase& owner)
 	//---------------------------------------
 	// 攻撃判定
 	//---------------------------------------
-	if (
-		t > 15.0f &&
-		t < 25.0f
-		)
+	if (t > 15.0f && t < 25.0f)
 	{
-		owner.DoAttackHitCheck(
-			owner.m_attackDist
-		);
+		//-----------------------------------
+		// 攻撃SE
+		//-----------------------------------
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			owner.m_attackSEPlayed = true;
+		}
+		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
 	//---------------------------------------
@@ -490,13 +333,9 @@ void BossStateAttack2::Enter(BossBase& owner)
 	//---------------------------------------
 	// 攻撃アニメーション開始
 	//---------------------------------------
-	owner.PlayAnimationAuto(
-		"",
-		owner.animAttack2Index,
-		false
-	);
-
+	owner.PlayAnimationAuto("", owner.animAttack2Index, false);
 	owner.m_attackHitOnce = false;
+	owner.m_attackSEPlayed = false;
 
 	//---------------------------------------
 	// 攻撃予知開始
@@ -595,14 +434,17 @@ void BossStateAttack2::Update(BossBase& owner)
 	//---------------------------------------
 	// 攻撃判定
 	//---------------------------------------
-	if (
-		t > 15.0f &&
-		t < 25.0f
-		)
+	if (t > 15.0f && t < 25.0f)
 	{
-		owner.DoAttackHitCheck(
-			owner.m_attackDist
-		);
+		//-----------------------------------
+		// 攻撃SE
+		//-----------------------------------
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			owner.m_attackSEPlayed = true;
+		}
+		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
 	//---------------------------------------
@@ -626,13 +468,9 @@ void BossStateAttack3::Enter(BossBase& owner)
 	//---------------------------------------
 	// 攻撃アニメーション開始
 	//---------------------------------------
-	owner.PlayAnimationAuto(
-		"",
-		owner.animAttack3Index,
-		false
-	);
-
+	owner.PlayAnimationAuto("", owner.animAttack3Index, false);
 	owner.m_attackHitOnce = false;
+	owner.m_attackSEPlayed = false;
 
 	//---------------------------------------
 	// 攻撃予知開始
@@ -730,14 +568,17 @@ void BossStateAttack3::Update(BossBase& owner)
 	//---------------------------------------
 	// 攻撃判定
 	//---------------------------------------
-	if (
-		t > 15.0f &&
-		t < 25.0f
-		)
+	if (t > 15.0f && t < 25.0f)
 	{
-		owner.DoAttackHitCheck(
-			owner.m_attackDist
-		);
+		//-----------------------------------
+		// 攻撃SE
+		//-----------------------------------
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			owner.m_attackSEPlayed = true;
+		}
+		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
 	//---------------------------------------
