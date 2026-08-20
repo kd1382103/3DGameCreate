@@ -306,14 +306,14 @@ void BossStateAttack1::Update(BossBase& owner)
 		//-----------------------------------
 		if (!owner.m_attackSEPlayed)
 		{
-			if (SceneManager::Instance().GetTimeScale() >= 0.99f)
+			if (owner.GetTimeScale() >= 0.99f)
 			{
 				KdAudioManager::Instance().Play(
 					"Asset/Sounds/SE/Attack.wav"
 				);
-			}
 
-			owner.m_attackSEPlayed = true;
+				owner.m_attackSEPlayed = true;
+			}
 		}
 		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
@@ -447,14 +447,14 @@ void BossStateAttack2::Update(BossBase& owner)
 		//-----------------------------------
 		if (!owner.m_attackSEPlayed)
 		{
-			if (SceneManager::Instance().GetTimeScale() >= 0.99f)
+			if (owner.GetTimeScale() >= 0.99f)
 			{
 				KdAudioManager::Instance().Play(
 					"Asset/Sounds/SE/Attack.wav"
 				);
-			}
 
-			owner.m_attackSEPlayed = true;
+				owner.m_attackSEPlayed = true;
+			}
 		}
 		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
@@ -587,14 +587,14 @@ void BossStateAttack3::Update(BossBase& owner)
 		//-----------------------------------
 		if (!owner.m_attackSEPlayed)
 		{
-			if (SceneManager::Instance().GetTimeScale() >= 0.99f)
+			if (owner.GetTimeScale() >= 0.99f)
 			{
 				KdAudioManager::Instance().Play(
 					"Asset/Sounds/SE/Attack.wav"
 				);
-			}
 
-			owner.m_attackSEPlayed = true;
+				owner.m_attackSEPlayed = true;
+			}
 		}
 		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
