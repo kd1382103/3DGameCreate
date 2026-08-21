@@ -6,6 +6,17 @@
 
 void SettingUI::Init()
 {
+
+	//---------------------------------------
+	// 背景画像
+	//---------------------------------------
+	m_backgroundTex =
+		std::make_shared<KdTexture>();
+
+	m_backgroundTex->Load(
+		"Asset/Textures/UI/Setting/SettingBackground.png"
+	);
+
 	//---------------------------------------
 	// Audio
 	//---------------------------------------
@@ -64,6 +75,19 @@ void SettingUI::DrawSprite()
 	}
 
 	//---------------------------------------
+	// 背景
+	//---------------------------------------
+	if (m_backgroundTex)
+	{
+		KdShaderManager::Instance().m_spriteShader.DrawTex(
+				m_backgroundTex,
+				0.0f,
+				0.0f,
+				1280.0f,
+				720.0f
+			);
+	}
+	//---------------------------------------
 	// 各設定UI描画
 	//---------------------------------------
 	if (m_audio)
@@ -82,6 +106,15 @@ void SettingUI::DrawSprite()
 	//}
 }
 
+float SettingUI::GetBGMVolume() const
+{
+	if (m_audio)
+	{
+		return m_audio->GetBGMVolume();
+	}
+
+	return 1.0f;
+}
 void SettingUI::Open()
 {
 	m_visible = true;

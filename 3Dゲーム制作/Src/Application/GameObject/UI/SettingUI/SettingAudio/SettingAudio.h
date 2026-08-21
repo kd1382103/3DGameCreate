@@ -13,6 +13,11 @@ public:
 	void Update() override;
 	void DrawSprite() override;
 
+	//---------------------------------------
+	// BGM音量取得
+	//---------------------------------------
+	float GetBGMVolume() const;
+
 private:
 
 	std::shared_ptr<BGMVolume> m_bgmVolume;

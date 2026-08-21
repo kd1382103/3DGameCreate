@@ -154,6 +154,24 @@
     <Filter Include="Src\Application\GameObject\Enemy\TutorialEnemy">
       <UniqueIdentifier>{77cf827f-492e-4fd2-8d2a-f39671f34628}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\UI\SettingUI">
+      <UniqueIdentifier>{0becd84f-e773-42a4-a1a5-6dec30ee6788}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\SettingUI\SettingAudio">
+      <UniqueIdentifier>{927f02ed-8412-4cbb-aa9d-b8e30a1eeb54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume">
+      <UniqueIdentifier>{22a28559-c76b-4748-ae9a-5dfff965e332}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume">
+      <UniqueIdentifier>{9a756ff9-9ba4-4f3b-99d7-de8a80e41dab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\SettingUI\SettingDisplay">
+      <UniqueIdentifier>{67ccedb0-4629-4316-8e29-0ed604d60607}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\SettingUI\SettingControl">
+      <UniqueIdentifier>{0e24f9cb-f737-43af-879d-46cf3ac76b27}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -393,6 +411,18 @@
     <ClInclude Include="Src\Application\GameObject\Enemy\TutorialEnemy\TutorialEnemy.h">
       <Filter>Src\Application\GameObject\Enemy\TutorialEnemy</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingUI.h">
+      <Filter>Src\Application\GameObject\UI\SettingUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SettingAudio.h">
+      <Filter>Src\Application\GameObject\UI\SettingUI\SettingAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume\BGMVolume.h">
+      <Filter>Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume\SEVolume.h">
+      <Filter>Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -598,6 +628,18 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Enemy\TutorialEnemy\TutorialEnemy.cpp">
       <Filter>Src\Application\GameObject\Enemy\TutorialEnemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingUI.cpp">
+      <Filter>Src\Application\GameObject\UI\SettingUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SettingAudio.cpp">
+      <Filter>Src\Application\GameObject\UI\SettingUI\SettingAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume\BGMVolume.cpp">
+      <Filter>Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume\SEVolume.cpp">
+      <Filter>Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

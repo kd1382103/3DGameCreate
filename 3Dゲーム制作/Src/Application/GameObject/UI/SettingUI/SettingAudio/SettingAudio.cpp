@@ -43,3 +43,13 @@ void SettingAudio::DrawSprite()
 		m_seVolume->DrawSprite();
 	}
 }
+
+float SettingAudio::GetBGMVolume() const
+{
+	if (m_bgmVolume)
+	{
+		return m_bgmVolume->GetVolume();
+	}
+
+	return 1.0f;
+}
