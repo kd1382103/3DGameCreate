@@ -78,6 +78,11 @@ private:
 	std::shared_ptr<FontText>m_tutorialText;
 
 	//========================================
+	// BGM
+	//========================================
+	std::shared_ptr<KdSoundInstance> m_gameBGM;
+
+	//========================================
 	// ゲーム進行
 	//========================================
 	GamePhase m_gamePhase = GamePhase::Tutorial;

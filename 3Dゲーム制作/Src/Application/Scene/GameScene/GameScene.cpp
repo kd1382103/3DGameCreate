@@ -370,15 +370,16 @@ void GameScene::Event()
 	//---------------------------------------
 	// 終了処理
 	//---------------------------------------
-	if (m_gamePhase == GamePhase::Clear ||
-		m_gamePhase == GamePhase::GameOver)
+	if (m_gamePhase == GamePhase::Clear || m_gamePhase == GamePhase::GameOver)
 	{
-		if (m_gameClearButton &&
-			m_gameClearButton->IsClicked())
+		if (m_gameClearButton && m_gameClearButton->IsClicked())
 		{
-			SceneManager::Instance().SetNextScene(
-				SceneManager::SceneType::Title
-			);
+			if (m_gameBGM)
+			{
+				m_gameBGM->Stop();
+				m_gameBGM = nullptr;
+			}
+			SceneManager::Instance().SetNextScene(SceneManager::SceneType::Title);
 		}
 	}
 }
@@ -386,6 +387,11 @@ void GameScene::Event()
 void GameScene::Init()
 {
 	BaseScene::Init();
+
+	//=======================================
+	// BGM開始
+	//=======================================
+	m_gameBGM = KdAudioManager::Instance().Play("Asset/Sounds/BGM/BattleBGM.wav", true);
 
 	//=======================================
 	// カメラ
