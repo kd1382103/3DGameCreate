@@ -115,6 +115,64 @@ std::shared_ptr<KdSoundInstance3D> KdAudioManager::Play3D(std::string_view rName
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+// 2Dサウンドの再生
+// ・サウンドアセットの取得orロード
+// ・再生用インスタンスの生成
+// ・BGM / SEに応じた音量設定
+// ・管理用プレイリストへの追加
+// ・戻り値で再生インスタンスを取得可能（音量・ピッチなどを変更する場合に必要
+// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+
+std::shared_ptr<KdSoundInstance> KdAudioManager::Play(std::string_view rName, SoundType type, bool loop)
+{
+	if (!m_audioEng)
+	{
+		return nullptr;
+	}
+
+	std::shared_ptr<KdSoundEffect> soundData =
+		GetSound(rName);
+
+	if (!soundData)
+	{
+		return nullptr;
+	}
+
+	std::shared_ptr<KdSoundInstance> instance =
+		std::make_shared<KdSoundInstance>(soundData);
+
+	if (!instance->CreateInstance())
+	{
+		return nullptr;
+	}
+
+	instance->SetSoundType(type);
+
+	//---------------------------------------
+	// 音量設定
+	//---------------------------------------
+	switch (type)
+	{
+	case SoundType::BGM:
+		instance->SetVolume(m_bgmVolume);
+		break;
+
+	case SoundType::SE:
+		instance->SetVolume(m_seVolume);
+		break;
+	}
+
+	//---------------------------------------
+	// 再生
+	//---------------------------------------
+	instance->Play(loop);
+
+	AddPlayList(instance);
+
+	return instance;
+}
+
+// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // 再生リストの全ての音を停止する
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void KdAudioManager::StopAllSound()
@@ -203,6 +261,47 @@ void KdAudioManager::Release()
 	m_soundMap.clear();
 
 	m_audioEng = nullptr;
+}
+
+//========================================
+// BGM音量設定
+//========================================
+void KdAudioManager::SetBGMVolume(float volume)
+{
+	// 0.0 ～ 1.0に制限
+	m_bgmVolume = std::clamp(volume, 0.0f, 1.0f);
+
+	// 現在再生中のBGMにも反映
+	for (auto& [key, sound] : m_playList)
+	{
+		if (!sound) continue;
+
+		if (sound->GetSoundType() == SoundType::BGM)
+		{
+			sound->SetVolume(m_bgmVolume);
+		}
+	}
+}
+
+
+//========================================
+// SE音量設定
+//========================================
+void KdAudioManager::SetSEVolume(float volume)
+{
+	// 0.0 ～ 1.0に制限
+	m_seVolume = std::clamp(volume, 0.0f, 1.0f);
+
+	// 現在再生中のSEにも反映
+	for (auto& [key, sound] : m_playList)
+	{
+		if (!sound) continue;
+
+		if (sound->GetSoundType() == SoundType::SE)
+		{
+			sound->SetVolume(m_seVolume);
+		}
+	}
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////

@@ -207,7 +207,8 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 			{
 				owner.m_attackSound =
 					KdAudioManager::Instance().Play(
-						"Asset/Sounds/SE/Attack.wav"
+						"Asset/Sounds/SE/Attack.wav",
+						SoundType::SE
 					);
 				owner.m_attackSEPlayed = true;
 			}

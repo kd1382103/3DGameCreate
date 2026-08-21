@@ -15,6 +15,7 @@ class GameClearButton;
 class Boss;
 class Stage;
 class FontText;
+class SettingUI;
 
 class GameScene : public BaseScene
 {
@@ -76,7 +77,10 @@ private:
 
 	//テキスト
 	std::shared_ptr<FontText>m_tutorialText;
-
+	
+	//設定
+	std::shared_ptr<SettingUI> m_settingUI;
+	
 	//========================================
 	// BGM
 	//========================================
@@ -113,6 +117,11 @@ private:
 	float m_phaseTimer = 0.0f;
 	Math::Vector3 m_battleStartPos = { 0, 0, 10 };
 	bool m_battleStarted = false;
+
+	//設定画面用
+	bool m_isSetting = false;
+	float m_savedTimeScale = 1.0f;
+	bool m_settingKeyPrev = false;
 
 	void UpdateTutorialText();
 };

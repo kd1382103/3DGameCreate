@@ -9,10 +9,11 @@
 
 #include<Application/GameObject/Stages/Floor/Stage.h>
 
-#include<Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
-#include<Application/GameObject/UI/HPGauge/HPGauge.h>
+#include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
+#include <Application/GameObject/UI/HPGauge/HPGauge.h>
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/GameObject/UI/GameClearBotton/GameClearButton.h>
+#include <Application/GameObject/UI/SettingUI/SettingUI.h>
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/Camera/CameraBase.h>
@@ -382,6 +383,31 @@ void GameScene::Event()
 			SceneManager::Instance().SetNextScene(SceneManager::SceneType::Title);
 		}
 	}
+
+	//---------------------------------------
+	// 設定画面
+	//---------------------------------------
+	bool settingKey =
+		(GetAsyncKeyState(VK_TAB) & 0x8000) != 0;
+
+	if (settingKey && !m_settingKeyPrev)
+	{
+		if (m_settingUI)
+		{
+			if (m_settingUI->IsVisible())
+			{
+				m_settingUI->Close();
+				SceneManager::Instance().SetTimeScale(1.0f);
+			}
+			else
+			{
+				m_settingUI->Open();
+				SceneManager::Instance().SetTimeScale(0.0f);
+			}
+		}
+	}
+
+	m_settingKeyPrev = settingKey;
 }
 
 void GameScene::Init()
@@ -391,7 +417,11 @@ void GameScene::Init()
 	//=======================================
 	// BGM開始
 	//=======================================
-	m_gameBGM = KdAudioManager::Instance().Play("Asset/Sounds/BGM/BattleBGM.wav", true);
+	m_gameBGM = KdAudioManager::Instance().Play(
+		"Asset/Sounds/BGM/BattleBGM.wav",
+		SoundType::BGM,
+		true
+	);
 
 	//=======================================
 	// カメラ
@@ -451,6 +481,10 @@ void GameScene::Init()
 	hpGauge->Init();
 	hpGauge->SetGauge(100, 100);
 
+	// 設定UI
+	m_settingUI = std::make_shared<SettingUI>();
+	m_settingUI->Init();
+	AddObject(m_settingUI);
 
 	//=======================================
 	// GAME CLEAR / GAME OVER ボタン
@@ -562,17 +596,6 @@ void GameScene::UpdateTutorialText()
 			1.0f
 		);
 		break;
-
-
-
-	//case TutorialStep::Finish:
-	//	m_tutorialText->InitMessage(
-	//		"TUTORIAL COMPLETE",
-	//		{ 0.0f, 300.0f },
-	//		1.2f
-	//	);
-	//	break;
-
 	}
 
 	AddObject(m_tutorialText);

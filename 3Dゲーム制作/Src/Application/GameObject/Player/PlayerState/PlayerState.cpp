@@ -185,7 +185,10 @@ void PlayerStateAttack1::Update(Player& owner)
 		//-----------------------------------
 		if (!owner.m_attackSEPlayed)
 		{
-			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/Attack.wav",
+				SoundType::SE
+			);
 			owner.m_attackSEPlayed = true;
 		}
 		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 15);
@@ -252,7 +255,10 @@ void PlayerStateAttack2::Update(Player& owner)
 		//-----------------------------------
 		if (!owner.m_attackSEPlayed)
 		{
-			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/Attack.wav",
+				SoundType::SE
+			);
 			owner.m_attackSEPlayed = true;
 		}
 		owner.DoAttackHitCheckMulti(owner.m_attackDist,90.0f,20);
@@ -317,7 +323,10 @@ void PlayerStateAttack3::Update(Player& owner)
 		//-----------------------------------
 		if (!owner.m_attackSEPlayed)
 		{
-			KdAudioManager::Instance().Play("Asset/Sounds/SE/Attack.wav");
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/Attack.wav",
+				SoundType::SE
+			);
 			owner.m_attackSEPlayed = true;
 		}
 		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 30);

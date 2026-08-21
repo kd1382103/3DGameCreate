@@ -12,6 +12,13 @@ class KdSoundInstance3D;
 // 再生中のサウンドインスタンスの管理（全停止・一時停止などが可能）
 // サウンドアセットの管理
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+
+enum class SoundType
+{
+	BGM,
+	SE
+};
+
 class KdAudioManager
 {
 public:
@@ -27,6 +34,13 @@ public:
 	// サウンド再生
 	std::shared_ptr<KdSoundInstance>  Play(std::string_view rName, bool loop = false);
 	std::shared_ptr<KdSoundInstance3D> Play3D(std::string_view rName, const Math::Vector3& rPos, bool loop = false);
+
+	//サウンド再生（BGM or SE区別Var）
+	std::shared_ptr<KdSoundInstance> Play(
+		std::string_view rName,
+		SoundType type,
+		bool loop = false
+	);
 
 	void AddPlayList(const std::shared_ptr<KdSoundInstance>& rSound)
 	{
@@ -56,6 +70,18 @@ public:
 	// 解放
 	void Release();
 
+	//========================================
+	// 音量設定
+	//========================================
+
+	// BGM
+	void SetBGMVolume(float volume);
+	float GetBGMVolume() const { return m_bgmVolume; }
+
+	// SE
+	void SetSEVolume(float volume);
+	float GetSEVolume() const { return m_seVolume; }
+
 private:
 
 	// サウンドデータの取得orロード
@@ -72,6 +98,17 @@ private:
 
 	// サウント管理マップ
 	std::unordered_map< std::string, std::shared_ptr<KdSoundEffect>> m_soundMap;
+
+	//========================================
+	// 音量
+	//========================================
+
+	// BGM音量
+	float m_bgmVolume = 1.0f;
+
+	// SE音量
+	float m_seVolume = 1.0f;
+
 
 	// シングルトンパターン
 public:
@@ -116,6 +153,9 @@ public:
 	bool IsPause();
 	bool IsStopped();
 
+	void SetSoundType(SoundType type) { m_soundType = type; }
+	SoundType GetSoundType() const { return m_soundType; }
+
 protected:
 
 	// サウンドの再生インスタンス
@@ -127,6 +167,8 @@ protected:
 	// コピー禁止用
 	KdSoundInstance(const KdSoundInstance& src) = delete;
 	void operator=(const KdSoundInstance& src) = delete;
+
+	SoundType m_soundType = SoundType::SE;
 };
 
 
