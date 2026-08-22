@@ -149,6 +149,11 @@ std::shared_ptr<KdSoundInstance> KdAudioManager::Play(std::string_view rName, So
 	instance->SetSoundType(type);
 
 	//---------------------------------------
+	// 再生
+	//---------------------------------------
+	instance->Play(loop);
+
+	//---------------------------------------
 	// 音量設定
 	//---------------------------------------
 	switch (type)
@@ -161,11 +166,6 @@ std::shared_ptr<KdSoundInstance> KdAudioManager::Play(std::string_view rName, So
 		instance->SetVolume(m_seVolume);
 		break;
 	}
-
-	//---------------------------------------
-	// 再生
-	//---------------------------------------
-	instance->Play(loop);
 
 	AddPlayList(instance);
 

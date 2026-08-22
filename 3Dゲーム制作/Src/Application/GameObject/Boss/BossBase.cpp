@@ -151,6 +151,10 @@ void BossBase::Update()
 		m_hp,
 		m_hpMax
 	);
+
+	//デバックキー
+	if (GetAsyncKeyState('3') & 0x8000) { m_hp = 1; }
+
 }
 
 //==============================================================
@@ -707,5 +711,13 @@ void BossBase::PlayAnimationAuto(
 		}
 
 		return;
+	}
+}
+
+void BossBase::SetHPGaugeVisible(bool visible)
+{
+	if (m_hpGauge)
+	{
+		m_hpGauge->SetVisible(visible);
 	}
 }

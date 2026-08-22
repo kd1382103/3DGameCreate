@@ -2,9 +2,10 @@
 
 #include <Application/main.h>
 
+float SEVolume::s_volume = 1.0f;
+
 void SEVolume::Init()
 {
-	m_volume = 1.0f;
 }
 
 void SEVolume::Update()
@@ -66,20 +67,19 @@ void SEVolume::Update()
 		//---------------------------------------
 		// 音量計算
 		//---------------------------------------
-		m_volume =
-			(mouseX - m_barX) / m_barWidth;
+		s_volume = (mouseX - m_barX) / m_barWidth;
 
 		//---------------------------------------
 		// 0～1に制限
 		//---------------------------------------
-		if (m_volume < 0.0f)
+		if (s_volume < 0.0f)
 		{
-			m_volume = 0.0f;
+			s_volume = 0.0f;
 		}
 
-		if (m_volume > 1.0f)
+		if (s_volume > 1.0f)
 		{
-			m_volume = 1.0f;
+			s_volume = 1.0f;
 		}
 	}
 }
@@ -113,7 +113,7 @@ void SEVolume::DrawSprite()
 	// 現在の音量部分
 	//---------------------------------------
 	float volumeWidth =
-		m_barWidth * m_volume;
+		m_barWidth * s_volume;
 
 	Math::Color volumeColor =
 	{

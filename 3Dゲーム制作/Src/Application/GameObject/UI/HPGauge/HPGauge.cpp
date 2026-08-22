@@ -12,6 +12,8 @@ void HPGauge::Init()
 
 void HPGauge::DrawSprite()
 {
+	if (!m_visible) { return; }
+
 	if (m_mode == GaugeMode::World)
 	{
 		auto cam = m_wpCamera.lock();

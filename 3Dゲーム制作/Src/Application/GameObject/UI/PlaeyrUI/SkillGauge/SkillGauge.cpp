@@ -15,6 +15,8 @@ void SkillGauge::SetGauge(float gauge, float gaugeMax)
 
 void SkillGauge::DrawSprite()
 {
+	if (!m_visible) { return; }
+
 	float rate = m_gauge / m_gaugeMax;
 
 	// ゼロならパッと消える

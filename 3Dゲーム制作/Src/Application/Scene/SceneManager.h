@@ -42,6 +42,13 @@ public :
 	{
 		return m_currentScene;
 	}
+
+	void SetBGMVolume(float volume) { m_bgmVolume = std::clamp(volume, 0.0f, 1.0f); }
+	float GetBGMVolume() const { return m_bgmVolume; }
+
+	void SetSEVolume(float volume) { m_seVolume = std::clamp(volume, 0.0f, 1.0f); }
+	float GetSEVolume() const { return m_seVolume; }
+
 private :
 
 	// マネージャーの初期化
@@ -71,6 +78,9 @@ private:
 
 	SceneManager() { Init(); }
 	~SceneManager() {}
+
+	float m_bgmVolume = 1.0f;
+	float m_seVolume = 1.0f;
 
 public:
 

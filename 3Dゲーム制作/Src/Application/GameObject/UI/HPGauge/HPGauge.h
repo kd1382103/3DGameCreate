@@ -51,6 +51,16 @@ public:
 		m_mode = mode;
 	}
 
+	void SetVisible(bool visible)
+	{
+		m_visible = visible;
+	}
+
+	bool IsVisible() const
+	{
+		return m_visible;
+	}
+
 private:
 	std::shared_ptr<KdTexture> m_barTex = nullptr;
 
@@ -68,4 +78,6 @@ private:
 	float m_damageDelay = 1.0f;			// 表示しておく時間
 	float m_damageDelayTimer = 0.0f;	// 経過時間
 	float m_damageShrinkSpeed = 50.0f;	// 縮む速度
+
+	bool m_visible = true;
 };

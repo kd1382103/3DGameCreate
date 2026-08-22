@@ -26,6 +26,8 @@ public :
 
 	void AddKillCount() { m_killCount++; }
 	int GetKillCount() const { return m_killCount; }
+	void SetGameUIVisible(bool visible);
+
 
 	enum class GamePhase
 	{

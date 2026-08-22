@@ -180,11 +180,14 @@ void GameScene::Event()
 	//=======================================
 	// BGM音量反映
 	//=======================================
-	if (m_settingUI && m_gameBGM)
+	if (m_settingUI)
 	{
-		m_gameBGM->SetVolume(
-			m_settingUI->GetBGMVolume()
-		);
+		float bgmVolume = m_settingUI->GetBGMVolume();
+
+		if (m_gameBGM)
+		{
+			m_gameBGM->SetVolume(bgmVolume);
+		}
 	}
 
 	//=======================================
@@ -192,11 +195,10 @@ void GameScene::Event()
 	//=======================================
 	if (m_settingUI)
 	{
-		KdAudioManager::Instance().SetSEVolume(
-			m_settingUI->GetSEVolume()
-		);
-	}
+		float seVolume = m_settingUI->GetSEVolume();
 
+		KdAudioManager::Instance().SetSEVolume(seVolume);
+	}
 	//==============================
 	// 準備フェーズ
 	//==============================
@@ -421,20 +423,14 @@ void GameScene::Event()
 				m_settingUI->Close();
 
 				//---------------------------------------
-				// チュートリアル文字を再表示
+				// チュートリアル文字や敵・ボスのHPを非表示
 				//---------------------------------------
-				if (m_tutorialText)
-				{
-					m_tutorialText->SetVisible(true);
-				}
+				SetGameUIVisible(true);
 
 				//---------------------------------------
 				// プレイヤー入力を解除
 				//---------------------------------------
-				if (player)
-				{
-					player->SetInputLock(false);
-				}
+				if (player) { player->SetInputLock(false); }
 
 				//---------------------------------------
 				// ゲーム再開
@@ -444,17 +440,13 @@ void GameScene::Event()
 				//---------------------------------------
 				// マウスをゲーム操作に戻す
 				//---------------------------------------
-				if (tpsCamera)
-				{
-					tpsCamera->m_mouseFree = false;
-				}
+				if (tpsCamera) { tpsCamera->m_mouseFree = false; }
 
 				//---------------------------------------
 				// マウスカーソルを表示
 				//---------------------------------------
 				ShowCursor(FALSE);
 				ClipCursor(nullptr);
-
 			}
 			else
 			{
@@ -464,20 +456,14 @@ void GameScene::Event()
 				m_settingUI->Open();
 
 				//---------------------------------------
-				// チュートリアル文字を非表示
+				// チュートリアル文字や敵・ボスのHPを非表示
 				//---------------------------------------
-				if (m_tutorialText)
-				{
-					m_tutorialText->SetVisible(false);
-				}
+				SetGameUIVisible(false);
 
 				//---------------------------------------
 				// プレイヤー入力をロック
 				//---------------------------------------
-				if (player)
-				{
-					player->SetInputLock(true);
-				}
+				if (player) { player->SetInputLock(true); }
 
 				//---------------------------------------
 				// ゲーム停止
@@ -487,10 +473,7 @@ void GameScene::Event()
 				//---------------------------------------
 				// マウスを自由にする
 				//---------------------------------------
-				if (tpsCamera)
-				{
-					tpsCamera->m_mouseFree = true;
-				}
+				if (tpsCamera) { tpsCamera->m_mouseFree = true; }
 
 				//---------------------------------------
 				// マウスカーソルを表示
@@ -509,14 +492,33 @@ void GameScene::Init()
 	BaseScene::Init();
 
 	//=======================================
+	// 設定UI
+	//=======================================
+	m_settingUI = std::make_shared<SettingUI>();
+	m_settingUI->Init();
+	AddObject(m_settingUI);
+
+	//=======================================
+	// 保存されている音量を取得
+	//=======================================
+	float bgmVolume = m_settingUI->GetBGMVolume();
+	float seVolume = m_settingUI->GetSEVolume();
+
+	//=======================================
+	// BGM・SE音量を先に設定
+	//=======================================
+	KdAudioManager::Instance().SetBGMVolume(bgmVolume);
+	KdAudioManager::Instance().SetSEVolume(seVolume);
+
+	//=======================================
 	// BGM開始
 	//=======================================
 	m_gameBGM = KdAudioManager::Instance().Play(
 		"Asset/Sounds/BGM/BattleBGM.wav",
 		SoundType::BGM,
 		true
-	);
-
+	);	
+	
 	//=======================================
 	// カメラ
 	//=======================================
@@ -564,42 +566,27 @@ void GameScene::Init()
 
 	// スキルゲージ
 	skillGauge = std::make_shared<SkillGauge>();
-
 	skillGauge->Init();
 	skillGauge->SetGauge(100, 100);
 
-
 	// HPゲージ
 	hpGauge = std::make_shared<HPGauge>();
-
 	hpGauge->Init();
 	hpGauge->SetGauge(100, 100);
-
-	// 設定UI
-	m_settingUI = std::make_shared<SettingUI>();
-	m_settingUI->Init();
-	AddObject(m_settingUI);
 
 	//=======================================
 	// GAME CLEAR / GAME OVER ボタン
 	//=======================================
-	m_gameClearButton =
-		std::make_shared<GameClearButton>();
-
+	m_gameClearButton = std::make_shared<GameClearButton>();
 	m_gameClearButton->Init();
-
 	m_gameClearButton->SetVisible(false);
-
 	AddObject(m_gameClearButton);
-
 
 	//=======================================
 	// 各オブジェクトに必要な情報を設定
 	//=======================================
 	tpsCamera->SetTarget(player);
-
 	player->SetCamera(m_camera);
-
 	player->RegisterUI(
 		Player::UIType::SkillGauge,
 		skillGauge
@@ -611,13 +598,59 @@ void GameScene::Init()
 	);
 }
 
+void GameScene::SetGameUIVisible(bool visible)
+{
+	if (m_tutorialText)
+	{
+		m_tutorialText->SetVisible(visible);
+	}
+
+	if (player)
+	{
+		auto hp =
+			player->GetUI<HPGauge>(
+				Player::UIType::HPGauge);
+
+		if (hp)
+		{
+			hp->SetVisible(visible);
+		}
+
+		auto skill =
+			player->GetUI<SkillGauge>(
+				Player::UIType::SkillGauge);
+
+		if (skill)
+		{
+			skill->SetVisible(visible);
+		}
+	}
+
+	if (enemy1)
+	{
+		enemy1->SetHPGaugeVisible(visible);
+	}
+
+	if (enemy2)
+	{
+		enemy2->SetHPGaugeVisible(visible);
+	}
+
+	if (tutorialEnemy)
+	{
+		tutorialEnemy->SetHPGaugeVisible(visible);
+	}
+
+	if (boss)
+	{
+		boss->SetHPGaugeVisible(visible);
+	}
+}
+
 void GameScene::UpdateTutorialText()
 {
 	// チュートリアル段階が変わっていなければ何もしない
-	if (m_prevTutorialStep == m_tutorialStep)
-	{
-		return;
-	}
+	if (m_prevTutorialStep == m_tutorialStep) { return; }
 
 	//---------------------------------------
 	// 前の文字を消す

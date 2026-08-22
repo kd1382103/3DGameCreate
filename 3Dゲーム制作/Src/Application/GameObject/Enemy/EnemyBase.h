@@ -102,6 +102,8 @@ public:
 		return m_nowPos;
 	}
 
+	void SetHPGaugeVisible(bool visible);
+
 	//------------------------------------
 	//チュートリアルの敵専用関数
 	//------------------------------------

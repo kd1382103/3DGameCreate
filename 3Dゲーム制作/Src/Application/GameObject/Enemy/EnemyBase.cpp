@@ -110,8 +110,10 @@ void EnemyBase::Update()
 	m_hpGauge->SetScale(scale);
 
 	m_hpGauge->SetGauge(m_hp, m_hpMax);
-	//Math::Vector3 worldPos = m_mWorld.Translation();
-	//m_hpGauge->SetWorldPos(worldPos + Math::Vector3(0, 2.0f, 0));
+
+	//デバックキー
+	if(GetAsyncKeyState('3') & 0x8000) { m_hp = 1; }
+
 }
 
 //==============================================================
@@ -481,6 +483,14 @@ void EnemyBase::PlayAnimationAuto(const std::string& animName, int animIndex, bo
 		auto anim = m_model->GetAnimation(animName);
 		if (anim) m_animator.SetAnimation(anim, loop);
 		return;
+	}
+}
+
+void EnemyBase::SetHPGaugeVisible(bool visible)
+{
+	if (m_hpGauge)
+	{
+		m_hpGauge->SetVisible(visible);
 	}
 }
 

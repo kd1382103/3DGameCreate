@@ -121,6 +121,8 @@ public:
 		return m_nowPos;
 	}
 
+	void SetHPGaugeVisible(bool visible);
+
 public:
 
 	//==============================================================
