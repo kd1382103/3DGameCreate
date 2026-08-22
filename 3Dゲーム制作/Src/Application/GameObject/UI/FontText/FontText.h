@@ -24,6 +24,16 @@ public:
 		m_isExpired = true;
 	}
 
+	void SetVisible(bool visible)
+	{
+		m_visible = visible;
+	}
+
+	bool IsVisible() const
+	{
+		return m_visible;
+	}
+
 public:
 
 	//FlyTextの表示時間
@@ -54,4 +64,6 @@ private:
 
 	Math::Vector2 m_screenPos = { 0.0f, 0.0f };
 	float m_messageScale = 2.0f;
+
+	bool m_visible = true;
 };

@@ -115,6 +115,17 @@ float SettingUI::GetBGMVolume() const
 
 	return 1.0f;
 }
+
+float SettingUI::GetSEVolume() const
+{
+	if (m_audio)
+	{
+		return m_audio->GetSEVolume();
+	}
+
+	return 1.0f;
+}
+
 void SettingUI::Open()
 {
 	m_visible = true;

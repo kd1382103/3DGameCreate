@@ -137,6 +137,11 @@ public:
 
 	float GetCollisionRadius() const { return m_collisionRadius; }
 
+	void SetInputLock(bool lock)
+	{
+		m_inputLock = lock;
+	}
+
 public:
 	// モデル・アニメーション
 	std::shared_ptr<KdModelWork> m_model;
@@ -230,6 +235,8 @@ public:
 	//ゲームが終了したかどうか
 	bool m_isGameEnd = false;
 
+	// 入力ロック
+	bool m_inputLock = false;
 
 	// チュートリアル用
 	bool m_comboFinished = false;

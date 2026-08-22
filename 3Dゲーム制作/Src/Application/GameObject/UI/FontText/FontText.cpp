@@ -114,6 +114,10 @@ void FontText::Update()
 
 void FontText::DrawSprite()
 {
+	if (!m_visible)
+	{
+		return;
+	}
 
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;
 

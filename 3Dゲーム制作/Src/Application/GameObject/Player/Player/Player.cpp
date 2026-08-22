@@ -70,156 +70,182 @@ void Player::Update()
 	//================================================================================
 	// 入力
 	//================================================================================
+	
 	m_dir = Math::Vector3::Zero;
 
-	if (GetAsyncKeyState('W') & 0x8000) m_dir += {0, 0, 1};
-	if (GetAsyncKeyState('S') & 0x8000) m_dir += {0, 0, -1};
-	if (GetAsyncKeyState('A') & 0x8000) m_dir += {-1, 0, 0};
-	if (GetAsyncKeyState('D') & 0x8000) m_dir += {1, 0, 0};
-
-	m_moving = (m_dir.LengthSquared() > 0.0001f);
-
-	bool right = IsKeyPressedOnce(VK_RBUTTON);
-	m_dodgeing = false;
-
-	if (right)
+	if (!m_inputLock)
 	{
-		if (m_canDodge)
+		if (GetAsyncKeyState('W') & 0x8000) m_dir += { 0, 0, 1 };
+		if (GetAsyncKeyState('S') & 0x8000) m_dir += { 0, 0, -1 };
+		if (GetAsyncKeyState('A') & 0x8000) m_dir += { -1, 0, 0 };
+		if (GetAsyncKeyState('D') & 0x8000) m_dir += { 1, 0, 0 };
+
+		m_moving = (m_dir.LengthSquared() > 0.0001f);
+
+		bool right = IsKeyPressedOnce(VK_RBUTTON);
+		m_dodgeing = false;
+
+		if (right)
 		{
-			m_dodgeing = true;
-			m_justDodgeSuccess = true;
-
-			//========================================
-			// ジャスト回避成功
-			// 攻撃中の敵をスロー
-			//========================================
-			for (auto& obj : SceneManager::Instance().GetObjList())
+			if (m_canDodge)
 			{
-				auto enemy = dynamic_cast<EnemyBase*>(obj.get());
-				if (!enemy) continue;
-				if (!enemy->IsAlive()) continue;
-				if (!enemy->IsAttacking()) continue;
+				m_dodgeing = true;
+				m_justDodgeSuccess = true;
 
-				enemy->StopAttackSound();
-				enemy->m_attackSEPlayed = true;
-				enemy->StartSlow(2.0f);
+				for (auto& obj : SceneManager::Instance().GetObjList())
+				{
+					auto enemy = dynamic_cast<EnemyBase*>(obj.get());
+
+					if (!enemy) continue;
+					if (!enemy->IsAlive()) continue;
+					if (!enemy->IsAttacking()) continue;
+
+					enemy->StopAttackSound();
+					enemy->m_attackSEPlayed = true;
+					enemy->StartSlow(2.0f);
+				}
+			}
+			else
+			{
+				m_running = !m_running;
 			}
 		}
-		else
+
+		m_attackOnce = IsKeyPressedOnce(VK_LBUTTON);
+		m_skillOnce = IsKeyPressedOnce('E');
+		m_ultimateOnce = IsKeyPressedOnce('Q');
+
+		// ① ロックオン切り替え
+		if (IsKeyPressedOnce(VK_MBUTTON))
 		{
-			m_running = !m_running;
+			m_lookOn = !m_lookOn;
+
+			if (m_lookOn)
+			{
+				KdGameObject* nearest = nullptr;
+				float nearestDist = FLT_MAX;
+
+				for (auto& obj : SceneManager::Instance().GetObjList())
+				{
+					// 通常敵
+					EnemyBase* enemy =
+						dynamic_cast<EnemyBase*>(obj.get());
+
+					// ボス
+					BossBase* boss =
+						dynamic_cast<BossBase*>(obj.get());
+
+					// どちらでもない
+					if (!enemy && !boss) continue;
+
+					// 死んでいる場合
+					if (enemy && !enemy->IsAlive()) continue;
+					if (boss && !boss->IsAlive()) continue;
+
+					// 判定用座標
+					Math::Vector3 targetPos;
+
+					if (enemy)
+					{
+						targetPos = enemy->GetHitCenter();
+					}
+					else
+					{
+						targetPos = boss->GetHitCenter();
+					}
+
+					float dist =
+						(targetPos - m_nowPos).Length();
+
+					if (dist < nearestDist)
+					{
+						nearestDist = dist;
+						nearest = obj.get();
+					}
+				}
+
+				m_lockOnTarget = nearest;
+
+				// ロックオン表示ON
+				if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
+				{
+					enemy->m_lockOnActive = true;
+				}
+				else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+				{
+					boss->m_lockOnActive = true;
+				}
+			}
+			else
+			{
+				// ロックオン表示OFF
+				if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
+				{
+					enemy->m_lockOnActive = false;
+				}
+				else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+				{
+					boss->m_lockOnActive = false;
+				}
+
+				m_lockOnTarget = nullptr;
+			}
 		}
-	}
 
-	m_attackOnce = IsKeyPressedOnce(VK_LBUTTON);
-	m_skillOnce = IsKeyPressedOnce('E');
-	m_ultimateOnce = IsKeyPressedOnce('Q');
-
-	// ① ロックオン切り替え
-	if (IsKeyPressedOnce(VK_MBUTTON))
-	{
-		m_lookOn = !m_lookOn;
-
+		// ② 死んだ敵・ボスを参照しない
 		if (m_lookOn)
 		{
-			KdGameObject* nearest = nullptr;
-			float nearestDist = FLT_MAX;
+			bool targetAlive = false;
 
-			for (auto& obj : SceneManager::Instance().GetObjList())
-			{
-				// 通常敵
-				EnemyBase* enemy =
-					dynamic_cast<EnemyBase*>(obj.get());
-
-				// ボス
-				BossBase* boss =
-					dynamic_cast<BossBase*>(obj.get());
-
-				// どちらでもない
-				if (!enemy && !boss) continue;
-
-				// 死んでいる場合
-				if (enemy && !enemy->IsAlive()) continue;
-				if (boss && !boss->IsAlive()) continue;
-
-				// 判定用座標
-				Math::Vector3 targetPos;
-
-				if (enemy)
-				{
-					targetPos = enemy->GetHitCenter();
-				}
-				else
-				{
-					targetPos = boss->GetHitCenter();
-				}
-
-				float dist =
-					(targetPos - m_nowPos).Length();
-
-				if (dist < nearestDist)
-				{
-					nearestDist = dist;
-					nearest = obj.get();
-				}
-			}
-
-			m_lockOnTarget = nearest;
-
-			// ロックオン表示ON
 			if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
 			{
-				enemy->m_lockOnActive = true;
+				targetAlive = enemy->IsAlive();
 			}
 			else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
 			{
-				boss->m_lockOnActive = true;
-			}
-		}
-		else
-		{
-			// ロックオン表示OFF
-			if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
-			{
-				enemy->m_lockOnActive = false;
-			}
-			else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
-			{
-				boss->m_lockOnActive = false;
+				targetAlive = boss->IsAlive();
 			}
 
-			m_lockOnTarget = nullptr;
+			if (!targetAlive)
+			{
+				if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
+				{
+					enemy->m_lockOnActive = false;
+				}
+				else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+				{
+					boss->m_lockOnActive = false;
+				}
+
+				m_lookOn = false;
+				m_lockOnTarget = nullptr;
+			}
 		}
 	}
-
-	// ② 死んだ敵・ボスを参照しない
-	if (m_lookOn)
+	else
 	{
-		bool targetAlive = false;
+		// 入力ロック中は操作フラグをOFF
+		m_moving = false;
+		m_attackOnce = false;
+		m_skillOnce = false;
+		m_ultimateOnce = false;
+		m_dodgeing = false;
 
-		if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
-		{
-			targetAlive = enemy->IsAlive();
-		}
-		else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
-		{
-			targetAlive = boss->IsAlive();
-		}
+		// 現在のキー状態を保存
+		m_prevKeyState[VK_LBUTTON] =
+			(GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
 
-		if (!targetAlive)
-		{
-			if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
-			{
-				enemy->m_lockOnActive = false;
-			}
-			else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
-			{
-				boss->m_lockOnActive = false;
-			}
+		m_prevKeyState[VK_RBUTTON] =
+			(GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
 
-			m_lookOn = false;
-			m_lockOnTarget = nullptr;
-		}
+		m_prevKeyState[VK_MBUTTON] =
+			(GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
+
+		m_prevKeyState['E'] =
+			(GetAsyncKeyState('E') & 0x8000) != 0;
+
+		m_prevKeyState['Q'] =
+			(GetAsyncKeyState('Q') & 0x8000) != 0;
 	}
 
 	//================================================================================

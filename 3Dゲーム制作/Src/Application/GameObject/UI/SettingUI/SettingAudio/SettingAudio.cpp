@@ -53,3 +53,13 @@ float SettingAudio::GetBGMVolume() const
 
 	return 1.0f;
 }
+
+float SettingAudio::GetSEVolume() const
+{
+	if (m_seVolume)
+	{
+		return m_seVolume->GetVolume();
+	}
+
+	return 1.0f;
+}

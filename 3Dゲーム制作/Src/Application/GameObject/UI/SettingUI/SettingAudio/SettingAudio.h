@@ -14,9 +14,10 @@ public:
 	void DrawSprite() override;
 
 	//---------------------------------------
-	// BGM音量取得
+	// 音量取得
 	//---------------------------------------
 	float GetBGMVolume() const;
+	float GetSEVolume() const;
 
 private:
 
