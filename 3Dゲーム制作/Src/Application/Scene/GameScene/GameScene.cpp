@@ -199,6 +199,7 @@ void GameScene::Event()
 
 		KdAudioManager::Instance().SetSEVolume(seVolume);
 	}
+
 	//==============================
 	// 準備フェーズ
 	//==============================
@@ -258,6 +259,7 @@ void GameScene::Event()
 			AddObject(enemy2);
 		}
 	}
+
 	//---------------------------------------
 	// Boss
 	//---------------------------------------
@@ -443,7 +445,7 @@ void GameScene::Event()
 				if (tpsCamera) { tpsCamera->m_mouseFree = false; }
 
 				//---------------------------------------
-				// マウスカーソルを表示
+				// マウスカーソルを非表示
 				//---------------------------------------
 				ShowCursor(FALSE);
 				ClipCursor(nullptr);

@@ -33,15 +33,6 @@ void FontText::InitMessage(
 	// 表示サイズ
 	m_messageScale = scale;
 
-	//m_life = LifeTime;
-
-	//m_offsetY = 0.0f;
-	//m_offsetX = 0.0f;
-	//m_velocityX = 0.0f;
-
-	//m_alpha = 255.0f;
-	//m_scale = scale;
-
 	m_drawType = eDrawTypeUI;
 }
 

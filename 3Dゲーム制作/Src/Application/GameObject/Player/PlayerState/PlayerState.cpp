@@ -212,13 +212,6 @@ void PlayerStateAttack1::Update(Player& owner)
 	// 終了
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		/*if (owner.m_canNextAttack)
-		{
-			owner.m_canGainUltimate = false;
-			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack2>());
-			return;
-		}*/
-
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
 	}
 }
@@ -280,13 +273,6 @@ void PlayerStateAttack2::Update(Player& owner)
 
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		/*if (owner.m_canNextAttack)
-		{
-			owner.m_canGainUltimate = false;
-			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack3>());
-			return;
-		}*/
-
 		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
 	}
 }
@@ -394,7 +380,7 @@ void PlayerStateDodge::Enter(Player& owner)
 {
 	owner.SetAnim(27, false);
 	SceneManager::Instance().SetTimeScale(0.2f);
-	owner.m_slowTimer = 20;   
+	owner.m_slowTimer = 0.5f;   
 	owner.m_isInvincible = true;
 	bool justDodge = false;
 
@@ -419,20 +405,34 @@ void PlayerStateDodge::Enter(Player& owner)
 
 void PlayerStateDodge::Update(Player& owner)
 {
+	//---------------------------------------
+	// 回避中は無敵
+	//---------------------------------------
+	owner.m_isInvincible = true;
+
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
+	//---------------------------------------
+	// 回避移動
+	//---------------------------------------
 	if (t > 0.0f && t < 40.0f)
 	{
-		owner.m_nowPos += owner.m_dodgeDir * 0.1f * SceneManager::Instance().GetTimeScale();
+		owner.m_nowPos +=
+			owner.m_dodgeDir *
+			0.1f *
+			SceneManager::Instance().GetTimeScale();
 	}
 
-	owner.m_isInvincible = (t < 40.0f);
-
+	//---------------------------------------
+	// 回避終了
+	//---------------------------------------
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.m_isInvincible = false;
 
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>()
+		);
 	}
 }
 

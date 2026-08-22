@@ -72,7 +72,6 @@ void Player::Update()
 	//================================================================================
 	
 	m_dir = Math::Vector3::Zero;
-
 	if (!m_inputLock)
 	{
 		if (GetAsyncKeyState('W') & 0x8000) m_dir += { 0, 0, 1 };
@@ -322,13 +321,19 @@ void Player::Update()
 	//===============================
 	// 回避スロー処理
 	//===============================
-	if (m_slowTimer > 0)
+	if (m_slowTimer > 0.0f)
 	{
-		m_slowTimer--;
-		if (m_slowTimer <= 0)
+		m_slowTimer -= Application::Instance().GetDeltaTime();
+
+		if (m_slowTimer <= 0.0f)
 		{
+			m_slowTimer = 0.0f;
+
 			SceneManager::Instance().SetTimeScale(1.0f);
-			if (auto cam = std::dynamic_pointer_cast<TPSCamera>(m_wpCamera.lock()))
+
+			if (auto cam =
+				std::dynamic_pointer_cast<TPSCamera>(
+					m_wpCamera.lock()))
 			{
 				cam->EndDodgeCamera();
 			}

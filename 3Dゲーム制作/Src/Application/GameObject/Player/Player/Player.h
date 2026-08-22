@@ -70,7 +70,6 @@ public:
 	{
 		m_ultimateEnergy += value;
 
-		KdDebugGUI::Instance().AddLog("Ultimate : %f\n", m_ultimateEnergy);
 		if (m_ultimateEnergy > m_ultimateEnergyMax)
 			m_ultimateEnergy = m_ultimateEnergyMax;
 	}
@@ -166,7 +165,7 @@ public:
 	bool	m_canDodge = false;
 
 	// 回避スロー
-	int m_slowTimer = 0;
+	float m_slowTimer = 0.0f;
 	bool m_justDodgeSuccess = false;
 
 	// アニメ
