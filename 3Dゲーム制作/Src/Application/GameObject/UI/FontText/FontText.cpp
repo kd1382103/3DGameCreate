@@ -33,37 +33,30 @@ void FontText::InitMessage(
 	// 表示サイズ
 	m_messageScale = scale;
 
-	m_life = LifeTime;
+	//m_life = LifeTime;
 
-	m_offsetY = 0.0f;
-	m_offsetX = 0.0f;
-	m_velocityX = 0.0f;
+	//m_offsetY = 0.0f;
+	//m_offsetX = 0.0f;
+	//m_velocityX = 0.0f;
 
-	m_alpha = 255.0f;
-	m_scale = scale;
+	//m_alpha = 255.0f;
+	//m_scale = scale;
 
 	m_drawType = eDrawTypeUI;
 }
 
 void FontText::Update()
 {
-	float dt = Application::Instance().GetDeltaTime();
-
 	//==================================================
 	// GAME CLEARなどのメッセージ
 	//==================================================
-	if (m_isMessage)
-	{
-		// 消えないようにする
-		m_alpha = 255.0f;
-		m_scale = m_maxScale;
-
-		return;
-	}
+	if (m_isMessage) { return; }
 
 	//==================================================
-	// ダメージ数字
+	// フライテキスト
 	//==================================================
+	float dt = Application::Instance().GetDeltaTime();
+
 	m_life -= dt;
 
 	m_offsetY += 0.25f * dt;
@@ -82,14 +75,14 @@ void FontText::Update()
 	}
 	else if (elapsed < shrinkStart)
 	{
-		m_scale = m_maxScale;
+		m_scale = 1.0f;
 	}
 	else
 	{
 		float t = (elapsed - shrinkStart) / ScaleTime;
 		t = std::clamp(t, 0.0f, 1.0f);
 
-		m_scale = m_maxScale * (1.0f - t);
+		m_scale = 1.0f - t;
 	}
 
 	//---------------------------------------
@@ -147,27 +140,14 @@ void FontText::DrawSprite()
 
 		param.pivot = { 0.5f, 0.5f };
 
-		const char* text = m_text.c_str();
-
-		float spacing = 25.0f;
-		float startX =
-			-((strlen(text) - 1) * spacing) * 0.5f;
-
-		for (int i = 0; text[i] != '\0'; i++)
-		{
-			param.pos.x =
-				m_screenPos.x + startX + i * spacing;
-
-			sprite.DrawFontEx(
-				param,
-				"%c",
-				text[i]
-			);
-		}
+		sprite.DrawFontEx(
+			param,
+			"%s",
+			m_text.c_str()
+		);
 
 		return;
 	}
-
 	//---------------------------------------
 	// ダメージ数字
 	//---------------------------------------

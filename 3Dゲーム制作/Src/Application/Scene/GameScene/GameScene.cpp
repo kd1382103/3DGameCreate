@@ -670,7 +670,7 @@ void GameScene::UpdateTutorialText()
 	{
 	case TutorialStep::Move:
 		m_tutorialText->InitMessage(
-			"WASD : MOVE",
+			"キャラクターの移動\nWASDで前後左右に移動",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -678,7 +678,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Dash:
 		m_tutorialText->InitMessage(
-			"RIGHT CLICK : DASH",
+			"歩きから走りへ切り替え\n右クリックで切り替え",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -686,7 +686,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Attack:
 		m_tutorialText->InitMessage(
-			"LEFT CLICK : ATTACK",
+			"左クリックで攻撃ができる\n攻撃をし続けてコンボを決めよう ",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -694,7 +694,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Skill:
 		m_tutorialText->InitMessage(
-			"E : SKILL",
+			"左の赤紫のスキルゲージの量が一定量の以上\nキーボードのEでスキル攻撃が可能",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -702,7 +702,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Ultimate:
 		m_tutorialText->InitMessage(
-			"Q : ULTIMATE",
+			"スキルゲージの下の数字が500なった時\nキーボードのQを押すと強力な攻撃が可能",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -710,7 +710,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Dodge:
 		m_tutorialText->InitMessage(
-			"RIGHT CLICK : DODGE",
+			"敵は攻撃してきたときに発光する\nその時に右クリックすると回避できるよ",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -718,7 +718,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::LockOn:
 		m_tutorialText->InitMessage(
-			"MOUSE WHEEL : LOCK ON",
+			"マウスホイールを押し込むと一番近い敵をロックオンできるよ",
 			{ 0.0f, 300.0f },
 			1.0f
 		);

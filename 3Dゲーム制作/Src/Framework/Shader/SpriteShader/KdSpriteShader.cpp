@@ -491,7 +491,10 @@ void KdSpriteShader::DrawFont(std::shared_ptr<KdFontSprite>& fontSprite, const M
 	if (!bBgn)End();
 }
 
-void KdSpriteShader::DrawFontEx(std::shared_ptr<KdFontSprite>& fontSprite,const FontParam& param,const int antiAliasingFlag)
+void KdSpriteShader::DrawFontEx(
+	std::shared_ptr<KdFontSprite>& fontSprite,
+	const FontParam& param,
+	const int antiAliasingFlag)
 {
 	if (fontSprite == nullptr) return;
 	if (fontSprite->GetTexList().empty()) return;
@@ -499,26 +502,117 @@ void KdSpriteShader::DrawFontEx(std::shared_ptr<KdFontSprite>& fontSprite,const 
 	bool bBgn = m_isBegin;
 	if (!bBgn) Begin();
 
+	//=======================================
 	// 色
+	//=======================================
 	m_cb0.Work().Color = param.color;
 	m_cb0.Write();
 
+	//=======================================
+	// 1行の高さ
+	//=======================================
 	float lineHeight =
-		fontSprite->GetTexList()[0]->FontTex->GetInfo().Height * param.scale;
+		fontSprite->GetTexList()[0]->FontTex->GetInfo().Height
+		* param.scale;
 
-	Math::Vector2 pos = param.pos;
-	float moveX = 0.0f;
+	//=======================================
+	// 各行の幅を調べる
+	//=======================================
+	std::vector<float> lineWidths;
+
+	float currentLineWidth = 0.0f;
 
 	for (auto& data : fontSprite->GetTexList())
 	{
+		//---------------------------------------
+		// 改行
+		//---------------------------------------
 		if (data->Code == '\n')
 		{
-			pos.x -= moveX;
-			pos.y -= lineHeight;
-			moveX = 0.0f;
+			// 最後のspacingを削除
+			if (currentLineWidth > 0.0f)
+			{
+				currentLineWidth -= param.spacing;
+			}
+
+			lineWidths.push_back(currentLineWidth);
+
+			currentLineWidth = 0.0f;
+
 			continue;
 		}
 
+		//---------------------------------------
+		// 文字幅
+		//---------------------------------------
+		auto tex = data->FontTex;
+
+		float w =
+			tex->GetInfo().Width * param.scale;
+
+		currentLineWidth += w + param.spacing;
+	}
+
+	//---------------------------------------
+	// 最後の行
+	//---------------------------------------
+	if (currentLineWidth > 0.0f)
+	{
+		currentLineWidth -= param.spacing;
+	}
+
+	lineWidths.push_back(currentLineWidth);
+
+	//=======================================
+	// 描画
+	//=======================================
+	Math::Vector2 pos = param.pos;
+
+	float moveX = 0.0f;
+	int lineIndex = 0;
+
+	//=======================================
+	// 現在の行を中央揃え
+	//=======================================
+	if (param.pivot.x == 0.5f)
+	{
+		pos.x -= lineWidths[lineIndex] * 0.5f;
+	}
+
+	for (auto& data : fontSprite->GetTexList())
+	{
+		//---------------------------------------
+		// 改行
+		//---------------------------------------
+		if (data->Code == '\n')
+		{
+			pos.y -= lineHeight;
+
+			moveX = 0.0f;
+
+			lineIndex++;
+
+			//---------------------------------------
+			// 次の行を中央揃え
+			//---------------------------------------
+			if (param.pivot.x == 0.5f &&
+				lineIndex < static_cast<int>(lineWidths.size()))
+			{
+				pos.x =
+					param.pos.x
+					- lineWidths[lineIndex] * 0.5f;
+			}
+			else
+			{
+				pos.x = param.pos.x;
+			}
+
+			continue;
+		}
+
+		//---------------------------------------
+		// テクスチャ取得
+		//---------------------------------------
 		auto tex = data->FontTex;
 
 		KdDirect3D::Instance().WorkDevContext()->PSSetShaderResources(
@@ -526,27 +620,49 @@ void KdSpriteShader::DrawFontEx(std::shared_ptr<KdFontSprite>& fontSprite,const 
 			1,
 			tex->WorkSRViewAddress());
 
-		float w = tex->GetInfo().Width * param.scale;
-		float h = tex->GetInfo().Height * param.scale;
+		//---------------------------------------
+		// 文字サイズ
+		//---------------------------------------
+		float w =
+			tex->GetInfo().Width * param.scale;
 
-		float px = pos.x - w * param.pivot.x;
-		float py = pos.y - h * param.pivot.y;
+		float h =
+			tex->GetInfo().Height * param.scale;
 
+		//---------------------------------------
+		// 文字の左上座標
+		//---------------------------------------
+		float px =
+			pos.x - w * param.pivot.x;
+
+		float py =
+			pos.y - h * param.pivot.y;
+
+		//---------------------------------------
+		// 文字の中心
+		//---------------------------------------
 		Math::Vector2 center =
 		{
 			px + w * param.pivot.x,
 			py + h * param.pivot.y
 		};
 
+		//---------------------------------------
+		// 文字の頂点
+		//---------------------------------------
 		Math::Vector2 local[4] =
 		{
-			{0,0},
-			{0,h},
-			{w,0},
-			{w,h}
+			{ 0, 0 },
+			{ 0, h },
+			{ w, 0 },
+			{ w, h }
 		};
 
-		float rad = DirectX::XMConvertToRadians(param.angle);
+		//---------------------------------------
+		// 回転
+		//---------------------------------------
+		float rad =
+			DirectX::XMConvertToRadians(param.angle);
 
 		float c = cosf(rad);
 		float s = sinf(rad);
@@ -555,11 +671,17 @@ void KdSpriteShader::DrawFontEx(std::shared_ptr<KdFontSprite>& fontSprite,const 
 
 		for (int i = 0; i < 4; i++)
 		{
-			float lx = local[i].x - w * param.pivot.x;
-			float ly = local[i].y - h * param.pivot.y;
+			float lx =
+				local[i].x - w * param.pivot.x;
 
-			float rx = lx * c - ly * s;
-			float ry = lx * s + ly * c;
+			float ly =
+				local[i].y - h * param.pivot.y;
+
+			float rx =
+				lx * c - ly * s;
+
+			float ry =
+				lx * s + ly * c;
 
 			vertex[i].Pos =
 			{
@@ -569,23 +691,39 @@ void KdSpriteShader::DrawFontEx(std::shared_ptr<KdFontSprite>& fontSprite,const 
 			};
 		}
 
-		vertex[0].UV = { 0,1 };
-		vertex[1].UV = { 0,0 };
-		vertex[2].UV = { 1,1 };
-		vertex[3].UV = { 1,0 };
+		//---------------------------------------
+		// UV
+		//---------------------------------------
+		vertex[0].UV = { 0, 1 };
+		vertex[1].UV = { 0, 0 };
+		vertex[2].UV = { 1, 1 };
+		vertex[3].UV = { 1, 0 };
 
+		//---------------------------------------
+		// 描画
+		//---------------------------------------
 		KdDirect3D::Instance().DrawVertices(
 			D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP,
 			4,
 			vertex,
 			sizeof(Vertex));
 
+		//---------------------------------------
+		// 次の文字へ
+		//---------------------------------------
 		pos.x += w + param.spacing;
 		moveX += w + param.spacing;
 	}
 
+	//=======================================
+	// SRV解除
+	//=======================================
 	ID3D11ShaderResourceView* srv = nullptr;
-	KdDirect3D::Instance().WorkDevContext()->PSSetShaderResources(0, 1, &srv);
+
+	KdDirect3D::Instance().WorkDevContext()->PSSetShaderResources(
+		0,
+		1,
+		&srv);
 
 	if (!bBgn) End();
 }
