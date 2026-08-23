@@ -12,7 +12,7 @@ void Stage::Init()
 	}
 }
 
-void Stage::DrawUnLit()
+void Stage::DrawLit()
 {
 	if (!m_model) { return; }
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model);
