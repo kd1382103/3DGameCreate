@@ -16,6 +16,7 @@ class Boss;
 class Stage;
 class FontText;
 class SettingUI;
+class SwordTrail;
 
 class GameScene : public BaseScene
 {
@@ -124,6 +125,9 @@ private:
 	bool m_isSetting = false;
 	float m_savedTimeScale = 1.0f;
 	bool m_settingKeyPrev = false;
+
+	// エフェクト
+	std::shared_ptr<SwordTrail> m_swordTrail;
 
 	void UpdateTutorialText();
 };

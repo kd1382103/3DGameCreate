@@ -172,6 +172,12 @@
     <Filter Include="Src\Application\GameObject\UI\SettingUI\SettingControl">
       <UniqueIdentifier>{0e24f9cb-f737-43af-879d-46cf3ac76b27}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Effect">
+      <UniqueIdentifier>{22a09f82-ce9a-4910-95d0-9ce37e48ac3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Effect\SwordTrail">
+      <UniqueIdentifier>{d3712fc2-d446-4a5d-9752-4361b8015577}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -423,6 +429,9 @@
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume\SEVolume.h">
       <Filter>Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\SwordTrail\SwordTrail.h">
+      <Filter>Src\Application\GameObject\Effect\SwordTrail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -640,6 +649,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume\SEVolume.cpp">
       <Filter>Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Effect\SwordTrail\SwordTrail.cpp">
+      <Filter>Src\Application\GameObject\Effect\SwordTrail</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

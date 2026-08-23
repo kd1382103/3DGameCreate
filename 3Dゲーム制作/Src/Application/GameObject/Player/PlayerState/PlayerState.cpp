@@ -169,6 +169,16 @@ void PlayerStateAttack1::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
+	// 剣の軌跡
+	if (t > 25.0f && t < 45.0f)
+	{
+		owner.StartSwordTrail();
+	}
+	else
+	{
+		owner.StopSwordTrail();
+	}
+
 	// 踏み込み
 	if (t > 20 && t < 30)
 	{
@@ -234,6 +244,16 @@ void PlayerStateAttack2::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
+	// 剣の軌跡
+	if (t > 25.0f && t < 45.0f)
+	{
+		owner.StartSwordTrail();
+	}
+	else
+	{
+		owner.StopSwordTrail();
+	}
+
 	if (t > 20 && t < 30)
 	{
 		Math::Vector3 f = owner.GetForward();
@@ -294,6 +314,16 @@ void PlayerStateAttack3::Enter(Player& owner)
 void PlayerStateAttack3::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
+
+	// 剣の軌跡
+	if (t > 25.0f && t < 45.0f)
+	{
+		owner.StartSwordTrail();
+	}
+	else
+	{
+		owner.StopSwordTrail();
+	}
 
 	if (t > 20 && t < 30)
 	{

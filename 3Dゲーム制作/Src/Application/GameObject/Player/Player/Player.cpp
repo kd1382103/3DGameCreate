@@ -354,16 +354,16 @@ void Player::Update()
 	//m_pDebugWire->AddDebugLine(m_nowPos, m_nowPos + forward, { 1,0,0,1 }); // 赤線で前方向
 	
 	
-	//KdDebugGUI::Instance().ClearLog();
-	//
-	////アニメーションの番号一覧をLogWindowに表示
-	//for (int i = 0; ; i++)
-	//{
-	//	auto anim = m_model->GetAnimation(i);
-	//	if (!anim) break; // 取得できなくなったら終了
-	//
-	//	KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
-	//}
+	KdDebugGUI::Instance().ClearLog();
+	
+	//アニメーションの番号一覧をLogWindowに表示
+	for (int i = 0; ; i++)
+	{
+		auto anim = m_model->GetAnimation(i);
+		if (!anim) break; // 取得できなくなったら終了
+	
+		KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
+	}
 	
 	/*KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
 	KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);

@@ -141,6 +141,24 @@ public:
 		m_inputLock = lock;
 	}
 
+	//---------------------------------------
+	// 剣の軌跡
+	//---------------------------------------
+	void StartSwordTrail()
+	{
+		m_isSwordTrailActive = true;
+	}
+
+	void StopSwordTrail()
+	{
+		m_isSwordTrailActive = false;
+	}
+
+	bool IsSwordTrailActive() const
+	{
+		return m_isSwordTrailActive;
+	}
+
 public:
 	// モデル・アニメーション
 	std::shared_ptr<KdModelWork> m_model;
@@ -250,4 +268,6 @@ private:
 	float m_collisionRadius = 0.5f;
 	float m_collisionHeight = 1.0f;
 
+	// 剣の軌跡
+	bool m_isSwordTrailActive = false;
 };
