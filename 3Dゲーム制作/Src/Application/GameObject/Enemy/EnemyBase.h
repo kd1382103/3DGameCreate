@@ -4,9 +4,11 @@
 class Player;
 class CameraBase;
 class HPGauge;
-template <class T>
-class StateMachine;class GameScene;
 class GameScene;
+
+template <class T>
+class StateMachine;
+
 class EnemyBase : public BaseObject
 {
 public:
@@ -18,6 +20,7 @@ public:
 	void PostUpdate() override;
 	void DrawLit() override;
 	void DrawSprite()override;
+	void GenerateDepthMapFromLight() override;
 
 	virtual Math::Vector3 GetHitCenter() const
 	{
@@ -55,6 +58,9 @@ public:
 
 	bool IsAlive() const { return !m_isExpired; }
 
+	//==============================================================
+	// スロー
+	//==============================================================
 	void StartSlow(float time)
 	{
 		m_isSlow = true;
@@ -70,6 +76,7 @@ public:
 
 		return 1.0f;
 	}
+
 
 	void SetGameScene(GameScene* scene)
 	{
@@ -133,6 +140,33 @@ public:
 
 	bool IsAttacking() const { return m_isAttacking; }
 
+private:
+
+	//==============================================================
+	// 初期化
+	//==============================================================
+	void InitAttackPrediction();
+	void InitHPGauge();
+	void InitStateMachine();
+	void InitLockOnIcon();
+
+	//==============================================================
+	// 更新
+	//==============================================================
+	void UpdateSlow();
+	void UpdateGravity(float dt);
+	void UpdateAnimation(float dt);
+	void UpdateHPGauge();
+	void UpdateDebug();
+
+	//==============================================================
+	// 後更新
+	//==============================================================
+	void UpdateGroundCollision();
+	//void UpdateWallCollision();
+	//void UpdateWorldMatrix();
+	//void UpdateUIWorldPosition();
+   
 public:
 
 	// モデル・アニメーション
@@ -217,11 +251,6 @@ public:
 	Math::Vector3 m_lockOnPos = Math::Vector3::Zero;
 	float m_lockOnScale = 1.0f;
 
-	//回避成功された後のスロー
-	bool m_isSlow = false;
-	float m_slowTimer = 0.0f;
-	float m_slowRate = 0.2f;
-
 	//ノックバックの強さ
 	float m_knockBackPower = 0.75f;
 
@@ -250,4 +279,12 @@ private:
 	// Playerとの接触判定用
 	float m_collisionRadius = 0.5f;
 	float m_collisionHeight = 1.0f;
+
+	//==============================================================
+	// スロー
+	//==============================================================
+	bool m_isSlow = false;
+	float m_slowTimer = 0.0f;
+	float m_slowRate = 0.2f;
+
 };

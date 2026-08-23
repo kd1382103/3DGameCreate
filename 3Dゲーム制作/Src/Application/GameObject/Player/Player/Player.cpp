@@ -32,56 +32,110 @@ void Player::Init()
 
 void Player::Update()
 {
-	if (m_isGameEnd)
-	{
-		return;
-	}
+	if (m_isGameEnd) return;
 
-	//ゲーム全体の速度を取得
-	float dt = SceneManager::Instance().GetTimeScale();
+	//========================================
+	// ゲーム全体の速度
+	//========================================
+	float timeScale = SceneManager::Instance().GetTimeScale();
 
-	//================================================================================
-	// カメラの回転行列
-	//================================================================================
-	Math::Matrix camRotMat;
-	if (!m_wpCamera.expired())
-	{
-		camRotMat = m_wpCamera.lock()->GetRotationYMatrix();
-	}
+	//========================================
+	// 入力
+	//========================================
+	UpdateInput();
 
-	//=====================================
+	//========================================
+	// 移動
+	//========================================
+	UpdateMovementInput();
+
+	//========================================
+	// アニメーション
+	//========================================
+	UpdateAnimation(timeScale);
+
+	//========================================
+	// 重力
+	//========================================
+	UpdateGravity(timeScale);
+
+	//========================================
+	// スキルゲージ
+	//========================================
+	UpdateSkillGauge(timeScale);
+
+	//========================================
+	// 遅延ダメージ
+	//========================================
+	UpdatePendingDamage();
+
+	//========================================
+	// 回避スロー
+	//========================================
+	UpdateDodgeSlow();
+
+	//========================================
 	// 必殺技ポイント加算
-	//=====================================
+	//========================================
+
+	//攻撃が当たった時
 	if (m_canGainUltimate && m_attackContact)
 	{
 		AddUltimateEnergy(1.0f);
 	}
 
-	//============================
-	// ヒットストップ解除
-	//============================
+	//========================================
+	// ヒットストップ
+	//========================================
 	if (m_hitStopTimer > 0.0f)
 	{
-		m_hitStopTimer -= 0.016f;  // 1フレーム分
-
-		return;  // Update停止
+		m_hitStopTimer -= 0.016f;
+		return;
 	}
 
-	//================================================================================
-	// 入力
-	//================================================================================
-	
+	//========================================
+	// ステート更新
+	//========================================
+	stateMachine->Update(*this);
+
+	//========================================
+	// デバッグ
+	//========================================
+	UpdateDebug();
+}
+
+void Player::UpdateInput()
+{
 	m_dir = Math::Vector3::Zero;
+
 	if (!m_inputLock)
 	{
-		if (GetAsyncKeyState('W') & 0x8000) m_dir += { 0, 0, 1 };
-		if (GetAsyncKeyState('S') & 0x8000) m_dir += { 0, 0, -1 };
-		if (GetAsyncKeyState('A') & 0x8000) m_dir += { -1, 0, 0 };
-		if (GetAsyncKeyState('D') & 0x8000) m_dir += { 1, 0, 0 };
+		//========================================
+		// 移動入力
+		//========================================
+		if (GetAsyncKeyState('W') & 0x8000)
+			m_dir += { 0, 0, 1 };
 
-		m_moving = (m_dir.LengthSquared() > 0.0001f);
+		if (GetAsyncKeyState('S') & 0x8000)
+			m_dir += { 0, 0, -1 };
 
+		if (GetAsyncKeyState('A') & 0x8000)
+			m_dir += { -1, 0, 0 };
+
+		if (GetAsyncKeyState('D') & 0x8000)
+			m_dir += { 1, 0, 0 };
+
+		//========================================
+		// 移動中か
+		//========================================
+		m_moving =
+			(m_dir.LengthSquared() > 0.0001f);
+
+		//========================================
+		// 回避 / 走行切り替え
+		//========================================
 		bool right = IsKeyPressedOnce(VK_RBUTTON);
+
 		m_dodgeing = false;
 
 		if (right)
@@ -91,9 +145,12 @@ void Player::Update()
 				m_dodgeing = true;
 				m_justDodgeSuccess = true;
 
+				AddUltimateEnergy(10.0f);
+
 				for (auto& obj : SceneManager::Instance().GetObjList())
 				{
-					auto enemy = dynamic_cast<EnemyBase*>(obj.get());
+					auto enemy =
+						dynamic_cast<EnemyBase*>(obj.get());
 
 					if (!enemy) continue;
 					if (!enemy->IsAlive()) continue;
@@ -110,11 +167,16 @@ void Player::Update()
 			}
 		}
 
+		//========================================
+		// 攻撃・スキル・必殺技
+		//========================================
 		m_attackOnce = IsKeyPressedOnce(VK_LBUTTON);
 		m_skillOnce = IsKeyPressedOnce('E');
 		m_ultimateOnce = IsKeyPressedOnce('Q');
 
-		// ① ロックオン切り替え
+		//========================================
+		// ロックオン
+		//========================================
 		if (IsKeyPressedOnce(VK_MBUTTON))
 		{
 			m_lookOn = !m_lookOn;
@@ -126,22 +188,20 @@ void Player::Update()
 
 				for (auto& obj : SceneManager::Instance().GetObjList())
 				{
-					// 通常敵
 					EnemyBase* enemy =
 						dynamic_cast<EnemyBase*>(obj.get());
 
-					// ボス
 					BossBase* boss =
 						dynamic_cast<BossBase*>(obj.get());
 
-					// どちらでもない
 					if (!enemy && !boss) continue;
 
-					// 死んでいる場合
-					if (enemy && !enemy->IsAlive()) continue;
-					if (boss && !boss->IsAlive()) continue;
+					if (enemy && !enemy->IsAlive())
+						continue;
 
-					// 判定用座標
+					if (boss && !boss->IsAlive())
+						continue;
+
 					Math::Vector3 targetPos;
 
 					if (enemy)
@@ -166,11 +226,13 @@ void Player::Update()
 				m_lockOnTarget = nearest;
 
 				// ロックオン表示ON
-				if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
+				if (auto enemy =
+					dynamic_cast<EnemyBase*>(m_lockOnTarget))
 				{
 					enemy->m_lockOnActive = true;
 				}
-				else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+				else if (auto boss =
+					dynamic_cast<BossBase*>(m_lockOnTarget))
 				{
 					boss->m_lockOnActive = true;
 				}
@@ -178,11 +240,13 @@ void Player::Update()
 			else
 			{
 				// ロックオン表示OFF
-				if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
+				if (auto enemy =
+					dynamic_cast<EnemyBase*>(m_lockOnTarget))
 				{
 					enemy->m_lockOnActive = false;
 				}
-				else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+				else if (auto boss =
+					dynamic_cast<BossBase*>(m_lockOnTarget))
 				{
 					boss->m_lockOnActive = false;
 				}
@@ -191,27 +255,33 @@ void Player::Update()
 			}
 		}
 
-		// ② 死んだ敵・ボスを参照しない
+		//========================================
+		// ロックオン対象の生存確認
+		//========================================
 		if (m_lookOn)
 		{
 			bool targetAlive = false;
 
-			if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
+			if (auto enemy =
+				dynamic_cast<EnemyBase*>(m_lockOnTarget))
 			{
 				targetAlive = enemy->IsAlive();
 			}
-			else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+			else if (auto boss =
+				dynamic_cast<BossBase*>(m_lockOnTarget))
 			{
 				targetAlive = boss->IsAlive();
 			}
 
 			if (!targetAlive)
 			{
-				if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
+				if (auto enemy =
+					dynamic_cast<EnemyBase*>(m_lockOnTarget))
 				{
 					enemy->m_lockOnActive = false;
 				}
-				else if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+				else if (auto boss =
+					dynamic_cast<BossBase*>(m_lockOnTarget))
 				{
 					boss->m_lockOnActive = false;
 				}
@@ -223,7 +293,9 @@ void Player::Update()
 	}
 	else
 	{
-		// 入力ロック中は操作フラグをOFF
+		//========================================
+		// 入力ロック中
+		//========================================
 		m_moving = false;
 		m_attackOnce = false;
 		m_skillOnce = false;
@@ -231,156 +303,237 @@ void Player::Update()
 		m_dodgeing = false;
 
 		// 現在のキー状態を保存
-		m_prevKeyState[VK_LBUTTON] =
-			(GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
-
-		m_prevKeyState[VK_RBUTTON] =
-			(GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
-
-		m_prevKeyState[VK_MBUTTON] =
-			(GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
-
-		m_prevKeyState['E'] =
-			(GetAsyncKeyState('E') & 0x8000) != 0;
-
-		m_prevKeyState['Q'] =
-			(GetAsyncKeyState('Q') & 0x8000) != 0;
+		m_prevKeyState[VK_LBUTTON] = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+		m_prevKeyState[VK_RBUTTON] = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
+		m_prevKeyState[VK_MBUTTON] = (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0;
+		m_prevKeyState['E'] = (GetAsyncKeyState('E') & 0x8000) != 0;
+		m_prevKeyState['Q'] = (GetAsyncKeyState('Q') & 0x8000) != 0;
 	}
+}
 
-	//================================================================================
-	// カメラ方向へ変換
-	//================================================================================
-	if (m_moving && !m_wpCamera.expired())
-	{
-		m_dir = Math::Vector3::TransformNormal(m_dir, camRotMat);
-		m_dir.Normalize();
-	}
+void Player::UpdateMovementInput()
+{
+	if (!m_moving) return;
+	if (m_wpCamera.expired()) return;
 
-	//================================================================================
-	// アニメ進行（速度固定）
-	//================================================================================
-	m_animator.AdvanceTime(m_model->WorkNodes(), dt);
+	Math::Matrix camRotMat =
+		m_wpCamera.lock()->GetRotationYMatrix();
+
+	m_dir =
+		Math::Vector3::TransformNormal(
+			m_dir,
+			camRotMat
+		);
+
+	m_dir.Normalize();
+}
+
+void Player::UpdateAnimation(float dt)
+{
+	m_animator.AdvanceTime(
+		m_model->WorkNodes(),
+		dt
+	);
 
 	if (m_model->NeedCalcNodeMatrices())
 	{
 		m_model->CalcNodeMatrices();
 	}
+}
 
-	//================================================================================
-	// 重力
-	//================================================================================
+void Player::UpdateGravity(float dt)
+{
 	m_gravity += 0.005f * dt;
+
 	m_nowPos.y -= m_gravity * dt;
+}
 
-	//================================================================================
-	// スキルゲージ回復
-	//================================================================================
+void Player::UpdateSkillGauge(float dt)
+{
 	m_skillGauge += m_skillRegen * dt;
-	if (m_skillGauge > m_skillGaugeMax) m_skillGauge = m_skillGaugeMax;
 
-	// UI 更新
-	if (auto ui = GetUI<SkillGauge>(UIType::SkillGauge))
+	if (m_skillGauge > m_skillGaugeMax)
 	{
-		ui->SetGauge(m_skillGauge, m_skillGaugeMax);
-	}
-	if (auto ui = GetUI<HPGauge>(UIType::HPGauge))
-	{
-		ui->SetGauge(m_nowHp, m_hpGaugeMax);
-	}
-	
-	//===============================
-	// 遅延ダメージ処理
-	//===============================
-	if (m_pendingDelay > 0)
-	{
-		m_pendingDelay--;
-
-		if (m_pendingDelay == 0)
-		{
-			float before = m_pendingBeforeHP;
-			float after = before - m_pendingDamage;
-			if (after < 0) after = 0;
-
-			// HPを減らす
-			m_nowHp = after;
-
-			// UIへ通知
-			if (auto hpUI = GetUI<HPGauge>(UIType::HPGauge))
-			{
-				hpUI->OnDamage(before, after);        // 赤バー幅決定
-				hpUI->SetGauge(after, m_hpGaugeMax);  // 緑バー更新
-			}
-
-			// リセット
-			m_pendingBeforeHP = -1.0f;
-			m_pendingAfterHP = -1.0f;
-			m_pendingDamage = 0.0f;
-		}
+		m_skillGauge = m_skillGaugeMax;
 	}
 
-	//===============================
-	// 回避スロー処理
-	//===============================
+	//========================================
+	// UI更新
+	//========================================
+	if (auto ui =
+		GetUI<SkillGauge>(UIType::SkillGauge))
+	{
+		ui->SetGauge(
+			m_skillGauge,
+			m_skillGaugeMax
+		);
+	}
+
+	if (auto ui =
+		GetUI<HPGauge>(UIType::HPGauge))
+	{
+		ui->SetGauge(
+			m_nowHp,
+			m_hpGaugeMax
+		);
+	}
+}
+
+void Player::UpdatePendingDamage()
+{
+	if (m_pendingDelay <= 0)
+	{
+		return;
+	}
+
+	m_pendingDelay--;
+
+	if (m_pendingDelay != 0)
+	{
+		return;
+	}
+
+	float before = m_pendingBeforeHP;
+
+	float after =
+		before - m_pendingDamage;
+
+	if (after < 0)
+	{
+		after = 0;
+	}
+
+	//========================================
+	// HP減少
+	//========================================
+	m_nowHp = after;
+
+	//========================================
+	// HPゲージ更新
+	//========================================
+	if (auto hpUI =
+		GetUI<HPGauge>(UIType::HPGauge))
+	{
+		hpUI->OnDamage(before, after);
+		hpUI->SetGauge(after, m_hpGaugeMax);
+	}
+
+	//========================================
+	// リセット
+	//========================================
+	m_pendingBeforeHP = -1.0f;
+	m_pendingAfterHP = -1.0f;
+	m_pendingDamage = 0.0f;
+}
+
+void Player::UpdateDodgeSlow()
+{
+	if (m_slowTimer <= 0.0f)
+	{
+		return;
+	}
+
+	m_slowTimer -=
+		Application::Instance().GetDeltaTime();
+
 	if (m_slowTimer > 0.0f)
 	{
-		m_slowTimer -= Application::Instance().GetDeltaTime();
-
-		if (m_slowTimer <= 0.0f)
-		{
-			m_slowTimer = 0.0f;
-
-			SceneManager::Instance().SetTimeScale(1.0f);
-
-			if (auto cam =
-				std::dynamic_pointer_cast<TPSCamera>(
-					m_wpCamera.lock()))
-			{
-				cam->EndDodgeCamera();
-			}
-		}
+		return;
 	}
 
-	//================================================================================
-	// ステート更新（最重要）
-	//================================================================================
-	stateMachine->Update(*this);
+	m_slowTimer = 0.0f;
 
-	//===============================================================================
-	//	デバック関係
-	//===============================================================================
-	
-	//デバック（プレイヤーの向いている方向）
-	//Math::Vector3 forward = m_mWorld.Forward();
-	//m_pDebugWire->AddDebugLine(m_nowPos, m_nowPos + forward, { 1,0,0,1 }); // 赤線で前方向
-	
-	
-	KdDebugGUI::Instance().ClearLog();
-	
-	//アニメーションの番号一覧をLogWindowに表示
-	for (int i = 0; ; i++)
+	SceneManager::Instance().SetTimeScale(1.0f);
+
+	if (auto cam =
+		std::dynamic_pointer_cast<TPSCamera>(
+			m_wpCamera.lock()))
 	{
-		auto anim = m_model->GetAnimation(i);
-		if (!anim) break; // 取得できなくなったら終了
-	
-		KdDebugGUI::Instance().AddLog("%d : %s\n", i, anim->m_name.c_str());
+		cam->EndDodgeCamera();
 	}
-	
-	/*KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.x);
-	KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.z);
-	KdDebugGUI::Instance().AddLog("%f\n", m_nowPos.y);
-	
-	KdDebugGUI::Instance().AddLog("Gravity : %f\n", m_gravity);
-	KdDebugGUI::Instance().AddLog("m_isLanding : %s\n", m_isLanding ? "true" : "false");
-	KdDebugGUI::Instance().AddLog("m_isAttacking : %s\n", m_attacking ? "true" : "false");
-	KdDebugGUI::Instance().AddLog("m_skillGauge : %f\n", m_skillGauge);*/
-	
-	//===============================================================================
-	//	デバックキー一覧
-	//===============================================================================
-	
-	//if (GetAsyncKeyState('1') & 0x8000) { m_hpGauge--; }	//体力ゲージの減少確認
-	//if (GetAsyncKeyState('2') & 0x8000) { m_ultimateEnergy = m_ultimateEnergyMax; }	//必殺技確認用
-	//if(GetAsyncKeyState('3') & 0x8000) { m_nowHp = 1; }	//ゲームオーバー確認用
+}
+
+void Player::UpdateDebug()
+{
+	//KdDebugGUI::Instance().ClearLog();
+
+	////========================================
+	//// アニメーション一覧
+	////========================================
+	//for (int i = 0; ; i++)
+	//{
+	//	auto anim = m_model->GetAnimation(i);
+
+	//	if (!anim)
+	//	{
+	//		break;
+	//	}
+
+	//	KdDebugGUI::Instance().AddLog(
+	//		"%d : %s\n",
+	//		i,
+	//		anim->m_name.c_str()
+	//	);
+	//}
+
+	/*
+	KdDebugGUI::Instance().AddLog(
+		"%f\n",
+		m_nowPos.x
+	);
+
+	KdDebugGUI::Instance().AddLog(
+		"%f\n",
+		m_nowPos.z
+	);
+
+	KdDebugGUI::Instance().AddLog(
+		"%f\n",
+		m_nowPos.y
+	);
+
+	KdDebugGUI::Instance().AddLog(
+		"Gravity : %f\n",
+		m_gravity
+	);
+
+	KdDebugGUI::Instance().AddLog(
+		"m_isLanding : %s\n",
+		m_isLanding ? "true" : "false"
+	);
+
+	KdDebugGUI::Instance().AddLog(
+		"m_isAttacking : %s\n",
+		m_attacking ? "true" : "false"
+	);
+
+	KdDebugGUI::Instance().AddLog(
+		"m_skillGauge : %f\n",
+		m_skillGauge
+	);
+	*/
+
+	//========================================
+	// デバッグキー
+	//========================================
+
+	/*
+	if (GetAsyncKeyState('1') & 0x8000)
+	{
+		m_hpGauge--;
+	}
+
+	if (GetAsyncKeyState('2') & 0x8000)
+	{
+		m_ultimateEnergy =
+			m_ultimateEnergyMax;
+	}
+
+	if (GetAsyncKeyState('3') & 0x8000)
+	{
+		m_nowHp = 1;
+	}
+	*/
 }
 
 void Player::PostUpdate()

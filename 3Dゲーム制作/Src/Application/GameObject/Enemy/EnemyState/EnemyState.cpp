@@ -83,7 +83,7 @@ void EnemyBaseStateWalk::Update(EnemyBase& owner)
 	float dist = (player->GetPos() - owner.m_nowPos).Length();
 	if (dist < owner.m_attackDist)
 	{
-		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStateAttack1>());
+		owner.stateMachine->ChangeState(std::make_unique<EnemyBaseStateAttack>());
 		return;
 	}
 }
@@ -106,7 +106,7 @@ void EnemyBaseStateDash::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // 攻撃系ステート
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-void EnemyBaseStateAttack1::Enter(EnemyBase& owner)
+void EnemyBaseStateAttack::Enter(EnemyBase& owner)
 {
 	owner.m_isAttacking = true;
 
@@ -136,7 +136,7 @@ void EnemyBaseStateAttack1::Enter(EnemyBase& owner)
 	}
 }
 
-void EnemyBaseStateAttack1::Update(EnemyBase& owner)
+void EnemyBaseStateAttack::Update(EnemyBase& owner)
 {
 	float dt =
 		Application::Instance().GetDeltaTime() *
@@ -255,7 +255,7 @@ void EnemyBaseStateAttack1::Update(EnemyBase& owner)
 			// → もう一度Attack1
 			//---------------------------------------
 			owner.stateMachine->ChangeState(
-				std::make_unique<EnemyBaseStateAttack1>()
+				std::make_unique<EnemyBaseStateAttack>()
 			);
 
 			return;

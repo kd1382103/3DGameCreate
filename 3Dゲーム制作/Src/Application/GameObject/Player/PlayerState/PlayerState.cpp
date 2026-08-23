@@ -157,72 +157,43 @@ void PlayerStateDash::Update(Player& owner)
 void PlayerStateAttack1::Enter(Player& owner)
 {
 	owner.SetAnim(39, false);
-	owner.m_dir = Math::Vector3::Zero;
-	owner.m_canNextAttack = false;
-	owner.m_attackHitOnce = false;
-	owner.m_attackContact = false;
-	owner.m_canGainUltimate = true;
-	owner.m_attackSEPlayed = false;
+
+	EnterAttack(owner);
 }
 
 void PlayerStateAttack1::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
-	// 剣の軌跡
-	if (t > 25.0f && t < 45.0f)
-	{
-		owner.StartSwordTrail();
-	}
-	else
-	{
-		owner.StopSwordTrail();
-	}
+	//// 剣の軌跡
+	//if (t > 25.0f && t < 45.0f)
+	//{
+	//	owner.StartSwordTrail();
+	//}
+	//else
+	//{
+	//	owner.StopSwordTrail();
+	//}
 
-	// 踏み込み
-	if (t > 20 && t < 30)
-	{
-		Math::Vector3 f = owner.GetForward();
-		f.Normalize();
-		owner.m_nowPos += f * 0.05f * SceneManager::Instance().GetTimeScale();
-	}
-
-	// 攻撃判定
-	if (t > 35.0f && t < 40.0f)
-	{
-		//-----------------------------------
-		// 攻撃SE
-		//-----------------------------------
-		if (!owner.m_attackSEPlayed)
-		{
-			KdAudioManager::Instance().Play(
-				"Asset/Sounds/SE/Attack.wav",
-				SoundType::SE
-			);
-			owner.m_attackSEPlayed = true;
-		}
-		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 15);
-	}
-	else
-	{
-		owner.m_attackContact = false;
-	}
-
-	// Attack2 受付
+	UpdateAttack(owner, t, 15);
+	
 	if (t > 40 && t < 85)
 	{
 		if (owner.IsAttackInput())
-			{
+		{
 			owner.m_canGainUltimate = false;
-			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack2>());
+			owner.stateMachine->ChangeState(
+				std::make_unique<PlayerStateAttack2>()
+			);
 			return;
 		}
 	}
 
-	// 終了
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>()
+		);
 	}
 }
 
@@ -232,68 +203,44 @@ void PlayerStateAttack1::Update(Player& owner)
 void PlayerStateAttack2::Enter(Player& owner)
 {
 	owner.SetAnim(40, false);
-	owner.m_dir = Math::Vector3::Zero;
-	owner.m_canNextAttack = false;
-	owner.m_attackHitOnce = false;
-	owner.m_attackContact = false;
-	owner.m_canGainUltimate = true;
-	owner.m_attackSEPlayed = false;
+
+	EnterAttack(owner);
 }
 
 void PlayerStateAttack2::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
-	// 剣の軌跡
-	if (t > 25.0f && t < 45.0f)
-	{
-		owner.StartSwordTrail();
-	}
-	else
-	{
-		owner.StopSwordTrail();
-	}
+	//// 剣の軌跡
+	//if (t > 25.0f && t < 45.0f)
+	//{
+	//	owner.StartSwordTrail();
+	//}
+	//else
+	//{
+	//	owner.StopSwordTrail();
+	//}
 
-	if (t > 20 && t < 30)
-	{
-		Math::Vector3 f = owner.GetForward();
-		f.Normalize();
-		owner.m_nowPos += f * 0.05f * SceneManager::Instance().GetTimeScale();
-	}
+	UpdateAttack(owner, t, 20);
 
-	if (t > 35.0f && t < 40.0f)
-	{
-		//-----------------------------------
-		// 攻撃SE
-		//-----------------------------------
-		if (!owner.m_attackSEPlayed)
-		{
-			KdAudioManager::Instance().Play(
-				"Asset/Sounds/SE/Attack.wav",
-				SoundType::SE
-			);
-			owner.m_attackSEPlayed = true;
-		}
-		owner.DoAttackHitCheckMulti(owner.m_attackDist,90.0f,20);
-	}
-	else
-	{
-		owner.m_attackContact = false;
-	}
-
-	if (t > 40 && t < 85)
+	if (t > 40.0f && t < 85.0f)
 	{
 		if (owner.IsAttackInput())
 		{
 			owner.m_canGainUltimate = false;
-			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack3>());
+
+			owner.stateMachine->ChangeState(
+				std::make_unique<PlayerStateAttack3>()
+			);
 			return;
 		}
 	}
 
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>()
+		);
 	}
 }
 
@@ -303,11 +250,9 @@ void PlayerStateAttack2::Update(Player& owner)
 void PlayerStateAttack3::Enter(Player& owner)
 {
 	owner.SetAnim(41, false);
-	owner.m_dir = Math::Vector3::Zero;
-	owner.m_attackHitOnce = false;
-	owner.m_attackContact = false;
-	owner.m_canGainUltimate = true;
-	owner.m_attackSEPlayed = false;
+
+	EnterAttack(owner);
+
 	owner.m_comboFinished = true;
 }
 
@@ -315,49 +260,27 @@ void PlayerStateAttack3::Update(Player& owner)
 {
 	float t = owner.m_animator.GetAnimeCurrentTime();
 
-	// 剣の軌跡
-	if (t > 25.0f && t < 45.0f)
-	{
-		owner.StartSwordTrail();
-	}
-	else
-	{
-		owner.StopSwordTrail();
-	}
+	//// 剣の軌跡
+	//if (t > 25.0f && t < 45.0f)
+	//{
+	//	owner.StartSwordTrail();
+	//}
+	//else
+	//{
+	//	owner.StopSwordTrail();
+	//}
 
-	if (t > 20 && t < 30)
-	{
-		Math::Vector3 f = owner.GetForward();
-		f.Normalize();
-		owner.m_nowPos += f * 0.05f * SceneManager::Instance().GetTimeScale();
-	}
+	UpdateAttack(owner, t, 30);
 
-	if (t > 35.0f && t < 40.0f)
-	{
-		//-----------------------------------
-		// 攻撃SE
-		//-----------------------------------
-		if (!owner.m_attackSEPlayed)
-		{
-			KdAudioManager::Instance().Play(
-				"Asset/Sounds/SE/Attack.wav",
-				SoundType::SE
-			);
-			owner.m_attackSEPlayed = true;
-		}
-		owner.DoAttackHitCheckMulti(owner.m_attackDist, 90.0f, 30);
-	}
-	else
-	{
-		owner.m_attackContact = false;
-	}
-
-	if (t > 40 && t < 85)
+	if (t > 40.0f && t < 85.0f)
 	{
 		if (owner.IsAttackInput())
 		{
 			owner.m_canGainUltimate = false;
-			owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack1>());
+
+			owner.stateMachine->ChangeState(
+				std::make_unique<PlayerStateAttack1>()
+			);
 			return;
 		}
 	}
@@ -365,7 +288,10 @@ void PlayerStateAttack3::Update(Player& owner)
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.m_canGainUltimate = false;
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
+
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>()
+		);
 	}
 }
 
@@ -389,7 +315,7 @@ void PlayerStateSkill::Update(Player& owner)
 	//個々の数値は変更予定
 	if (t > 3.0f && t < 8.0f)
 	{
-		owner.DoAttackHitCheckMulti(1.2f, 120.0f, 40);
+		owner.DoAttackHitCheckMulti(2.5f, 120.0f, 40);
 	}
 	else
 	{
@@ -502,5 +428,68 @@ void PlayerUltimate::Update(Player& owner)
 	{
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>());
+	}
+}
+
+void PlayerAttackStateBase::EnterAttack(Player& owner)
+{
+	owner.m_dir = Math::Vector3::Zero;
+	owner.m_canNextAttack = false;
+	owner.m_attackHitOnce = false;
+	owner.m_attackContact = false;
+	owner.m_canGainUltimate = true;
+	owner.m_attackSEPlayed = false;
+}
+
+void PlayerAttackStateBase::UpdateAttack(
+	Player& owner,
+	float t,
+	int damage
+)
+{
+	//---------------------------------------
+	// 踏み込み
+	//---------------------------------------
+	if (t > 20.0f && t < 30.0f)
+	{
+		Math::Vector3 f = owner.GetForward();
+		f.Normalize();
+
+		owner.m_nowPos +=
+			f *
+			0.05f *
+			SceneManager::Instance().GetTimeScale();
+	}
+
+	//---------------------------------------
+	// 攻撃判定
+	//---------------------------------------
+	if (t > 35.0f && t < 40.0f)
+	{
+		//-----------------------------------
+		// 攻撃SE
+		//-----------------------------------
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/Attack.wav",
+				SoundType::SE
+			);
+
+			owner.m_attackSEPlayed = true;
+		}
+
+		//-----------------------------------
+		// 攻撃判定
+		//-----------------------------------
+		owner.DoAttackHitCheckMulti(
+			owner.m_attackDist,
+			90.0f,
+			damage
+		);
+	}
+	else
+	{
+		owner.m_attackContact = false;
 	}
 }

@@ -15,7 +15,7 @@
 #include <Application/GameObject/UI/GameClearBotton/GameClearButton.h>
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
 
-#include <Application/GameObject/Effect/SwordTrail/SwordTrail.h>
+//#include <Application/GameObject/Effect/SwordTrail/SwordTrail.h>
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/Camera/CameraBase.h>
@@ -24,484 +24,56 @@
 
 void GameScene::Event()
 {
-	//==============================
-	// チュートリアル
-	//==============================
-	if (m_gamePhase == GamePhase::Tutorial)
-	{
-		// チュートリアル表示更新
-		UpdateTutorialText();
-
-		switch (m_tutorialStep)
-		{
-			//---------------------------------------
-			// 移動
-			//---------------------------------------
-		case TutorialStep::Move:
-		{
-			if (player && player->IsMoving())
-			{
-				m_tutorialStep = TutorialStep::Dash;
-			}
-
-			break;
-		}
-
-		//---------------------------------------
-		// ダッシュ
-		//---------------------------------------
-		case TutorialStep::Dash:
-		{
-			if (player && player->IsRunning())
-			{
-				m_tutorialStep = TutorialStep::Attack;
-			}
-
-
-			break;
-		}
-
-		//---------------------------------------
-		// 通常攻撃(３段コンボ)
-		//---------------------------------------
-		case TutorialStep::Attack:
-		{
-			if (player && player->IsComboFinished())
-			{
-				player->ResetComboFinished();
-				m_tutorialStep = TutorialStep::Skill;
-			}
-
-			break;
-		}
-
-		//---------------------------------------
-		// スキル
-		//---------------------------------------
-		case TutorialStep::Skill:
-		{
-			if (player && player->IsSkillOnce())
-			{
-				player->SetUltimateEnergyMax();
-				m_tutorialStep = TutorialStep::Ultimate;
-			}
-
-			break;
-		}
-
-		//---------------------------------------
-		// 必殺技
-		//---------------------------------------
-		case TutorialStep::Ultimate:
-		{
-			if (player && player->IsUltimateOnce())
-			{
-				player->ResetUltimateActivated();		//発動フラグをリセット
-				m_tutorialStep = TutorialStep::Dodge;
-
-				//---------------------------------------
-				// チュートリアル敵の攻撃を許可
-				//---------------------------------------
-				if (tutorialEnemy)
-				{
-					tutorialEnemy->StartTutorialAttack();
-				}
-			}
-
-			break;
-		}
-
-		//---------------------------------------
-		// 回避
-		//---------------------------------------
-		case TutorialStep::Dodge:
-		{
-
-			if (tutorialEnemy &&
-				tutorialEnemy->IsTutorialAttackFinished())
-			{
-				tutorialEnemy->ResetTutorialAttackFinished();
-
-				player->ResetJustDodgeSuccess();
-
-				m_tutorialStep = TutorialStep::LockOn;
-			}
-
-			break;
-		}
-
-		//---------------------------------------
-		// ロックオン
-		//---------------------------------------
-		case TutorialStep::LockOn:
-		{
-			if (player && player->IsLockOn())
-			{
-				m_tutorialStep = TutorialStep::Finish;
-			}
-
-			break;
-		}
-
-		//---------------------------------------
-		// チュートリアル終了
-		//---------------------------------------
-		case TutorialStep::Finish:
-		{
-			//---------------------------------------
-			// チュートリアル敵を削除
-			//---------------------------------------
-			if (tutorialEnemy)
-			{
-				tutorialEnemy->SetExpired();
-				tutorialEnemy = nullptr;
-			}
-
-			m_gamePhase = GamePhase::TutorialComplete;
-			m_phaseTimer = 0.0f;
-
-			break;
-		}
-		}
-	}
-	//==============================
-	// チュートリアル完了
-	//==============================
-	if (m_gamePhase == GamePhase::TutorialComplete)
-	{
-		m_phaseTimer += Application::Instance().GetDeltaTime();
-
-		// 2秒経過したら準備フェーズへ
-		if (m_phaseTimer >= m_tutorialFinishTime)
-		{
-			m_gamePhase = GamePhase::Prepare;
-			m_phaseTimer = 0.0f;
-		}
-	}
+	//=======================================
+	// ゲーム進行
+	//=======================================
+	UpdateGameFlow();
 
 	//=======================================
-	// BGM音量反映
+	// 音量
 	//=======================================
-	if (m_settingUI)
-	{
-		float bgmVolume = m_settingUI->GetBGMVolume();
-
-		if (m_gameBGM)
-		{
-			m_gameBGM->SetVolume(bgmVolume);
-		}
-	}
+	UpdateAudioVolume();
 
 	//=======================================
-	// SE音量反映
-	//=======================================
-	if (m_settingUI)
-	{
-		float seVolume = m_settingUI->GetSEVolume();
-
-		KdAudioManager::Instance().SetSEVolume(seVolume);
-	}
-
-	//==============================
-	// 準備フェーズ
-	//==============================
-	if (m_gamePhase == GamePhase::Prepare)
-	{
-		if (!player)
-		{
-			return;
-		}
-
-		// プレイヤーと戦闘開始地点との距離
-		float distance = (player->GetPos() - m_battleStartPos).Length();
-
-		// 戦闘開始地点に近づいたら
-		if (distance < 2.0f)
-		{
-			m_gamePhase = GamePhase::Battle;
-		}
-	}
-
-	//==============================
-	// Battle
-	//==============================
-	if (m_gamePhase == GamePhase::Battle)
-	{
-		if (!m_battleStarted)
-		{
-			m_battleStarted = true;
-
-			//---------------------------------------
-			// Enemy1生成
-			//---------------------------------------
-			enemy1 = std::make_shared<Enemy1>();
-			enemy1->Init();
-
-			enemy1->SetPos({ -3, 0, 15 });
-
-			enemy1->SetTarget(player);
-			enemy1->SetCamera(m_camera);
-			enemy1->SetGameScene(this);
-
-			AddObject(enemy1);
-
-
-			//---------------------------------------
-			// Enemy2生成
-			//---------------------------------------
-			enemy2 = std::make_shared<Enemy2>();
-			enemy2->Init();
-
-			enemy2->SetPos({ 3, 0, 15 });
-
-			enemy2->SetTarget(player);
-			enemy2->SetCamera(m_camera);
-			enemy2->SetGameScene(this);
-
-			AddObject(enemy2);
-		}
-	}
-
-	//---------------------------------------
-	// Boss
-	//---------------------------------------
-	if (m_gamePhase == GamePhase::Battle && m_battleStarted && !m_isBossSpawned)
-	{
-		bool enemy1Dead = !enemy1 || !enemy1->IsAlive();
-
-		bool enemy2Dead = !enemy2 || !enemy2->IsAlive();
-
-		// Enemy1とEnemy2が両方死亡
-		if (enemy1Dead && enemy2Dead)
-		{
-			m_isBossSpawned = true;
-
-			m_gamePhase = GamePhase::Boss;
-
-			boss = std::make_shared<Boss>();
-			boss->Init();
-
-			boss->SetPos({ 0, 0, 0 });
-
-			boss->SetTarget(player);
-			boss->SetCamera(m_camera);
-			boss->SetGameScene(this);
-
-			AddObject(boss);
-		}
-	}
-
-	//---------------------------------------
-	// GAME CLEAR
-	//---------------------------------------
-	
-	if (!m_isGameClear &&
-		!m_isGameOver &&
-		m_gamePhase == GamePhase::Boss &&
-		boss &&
-		!boss->IsAlive())
-	{
-		m_isGameClear = true;
-		m_gamePhase = GamePhase::Clear;
-
-		//---------------------------------------
-		// プレイヤー停止
-		//---------------------------------------
-		if (player) { player->SetGameEnd(true); }
-
-		//---------------------------------------
-		// 敵停止
-		//---------------------------------------
-		if (enemy1) { enemy1->SetGameEnd(true); }
-		if (enemy2) { enemy2->SetGameEnd(true); }
-
-		//---------------------------------------
-		// Boss停止
-		//---------------------------------------
-		if (boss) { boss->SetGameEnd(true); }
-
-		//---------------------------------------
-		// カメラ操作停止
-		//---------------------------------------
-		if (tpsCamera) { tpsCamera->m_mouseFree = true; }
-
-		// マウス解放
-		ShowCursor(TRUE);
-		ClipCursor(nullptr);
-
-		//---------------------------------------
-		// GAME CLEAR表示
-		//---------------------------------------
-		auto clearText = std::make_shared<FontText>();
-		clearText->InitMessage("GAME CLEAR");
-		AddObject(clearText);
-
-		// タイトルに戻るボタン表示
-		if (m_gameClearButton)
-		{
-			m_gameClearButton->SetVisible(true);
-		}
-	}
-
-	//---------------------------------------
-	// GAME OVER
-	//---------------------------------------
-	if (!m_isGameClear &&
-		!m_isGameOver &&
-		player &&
-		!player->IsAlive())
-	{
-		m_isGameOver = true;
-		m_gamePhase = GamePhase::GameOver;
-
-		//---------------------------------------
-		// プレイヤー停止
-		//---------------------------------------
-		if (player) { player->SetGameEnd(true); }
-
-		//---------------------------------------
-		// 敵停止
-		//---------------------------------------
-		if (enemy1) { enemy1->SetGameEnd(true); }
-		if (enemy2) { enemy2->SetGameEnd(true); }
-
-		//---------------------------------------
-		// Boss停止
-		//---------------------------------------
-		if (boss) { boss->SetGameEnd(true); }
-
-		//---------------------------------------
-		// カメラ操作停止
-		//---------------------------------------
-		if (tpsCamera) { tpsCamera->m_mouseFree = true; }
-
-		// マウス解放
-		ShowCursor(TRUE);
-		ClipCursor(nullptr);
-
-		//---------------------------------------
-		// GAME OVER表示
-		//---------------------------------------
-		auto overText = std::make_shared<FontText>();
-		overText->InitMessage("GAME OVER");
-		AddObject(overText);
-
-		// タイトルに戻るボタン表示
-		if (m_gameClearButton)
-		{
-			m_gameClearButton->SetVisible(true);
-		}
-	}
-
-	//---------------------------------------
-	// 終了処理
-	//---------------------------------------
-	if (m_gamePhase == GamePhase::Clear || m_gamePhase == GamePhase::GameOver)
-	{
-		if (m_gameClearButton && m_gameClearButton->IsClicked())
-		{
-			if (m_gameBGM)
-			{
-				m_gameBGM->Stop();
-				m_gameBGM = nullptr;
-			}
-			SceneManager::Instance().SetNextScene(SceneManager::SceneType::Title);
-		}
-	}
-
-	//---------------------------------------
 	// 設定画面
-	//---------------------------------------
-	bool settingKey =
-		(GetAsyncKeyState(VK_TAB) & 0x8000) != 0;
-
-	if (settingKey && !m_settingKeyPrev)
-	{
-		if (m_settingUI)
-		{
-			if (m_settingUI->IsVisible())
-			{
-				//---------------------------------------
-				// 設定画面を閉じる
-				//---------------------------------------
-				m_settingUI->Close();
-
-				//---------------------------------------
-				// チュートリアル文字や敵・ボスのHPを非表示
-				//---------------------------------------
-				SetGameUIVisible(true);
-
-				//---------------------------------------
-				// プレイヤー入力を解除
-				//---------------------------------------
-				if (player) { player->SetInputLock(false); }
-
-				//---------------------------------------
-				// ゲーム再開
-				//---------------------------------------
-				SceneManager::Instance().SetTimeScale(1.0f);
-
-				//---------------------------------------
-				// マウスをゲーム操作に戻す
-				//---------------------------------------
-				if (tpsCamera) { tpsCamera->m_mouseFree = false; }
-
-				//---------------------------------------
-				// マウスカーソルを非表示
-				//---------------------------------------
-				ShowCursor(FALSE);
-				ClipCursor(nullptr);
-			}
-			else
-			{
-				//---------------------------------------
-				// 設定画面を開く
-				//---------------------------------------
-				m_settingUI->Open();
-
-				//---------------------------------------
-				// チュートリアル文字や敵・ボスのHPを非表示
-				//---------------------------------------
-				SetGameUIVisible(false);
-
-				//---------------------------------------
-				// プレイヤー入力をロック
-				//---------------------------------------
-				if (player) { player->SetInputLock(true); }
-
-				//---------------------------------------
-				// ゲーム停止
-				//---------------------------------------
-				SceneManager::Instance().SetTimeScale(0.0f);
-
-				//---------------------------------------
-				// マウスを自由にする
-				//---------------------------------------
-				if (tpsCamera) { tpsCamera->m_mouseFree = true; }
-
-				//---------------------------------------
-				// マウスカーソルを表示
-				//---------------------------------------
-				ShowCursor(TRUE);
-				ClipCursor(nullptr);
-			}
-		}
-	}
-
-	m_settingKeyPrev = settingKey;
+	//=======================================
+	UpdateSetting();
 }
 
 void GameScene::Init()
 {
 	BaseScene::Init();
 
+	InitSetting();
+	InitAudio();
+	InitCamera();
+	InitStage();
+	InitPlayer();
+	InitTutorialEnemy();
+	InitUI();
+
+	//=======================================
+	// 剣の軌跡
+	//=======================================
+	//m_swordTrail = std::make_shared<SwordTrail>();
+	//m_swordTrail->Init();
+	//m_swordTrail->SetPlayer(player);
+	//AddObject(m_swordTrail);
+
+}
+
+void GameScene::InitSetting()
+{
 	//=======================================
 	// 設定UI
 	//=======================================
 	m_settingUI = std::make_shared<SettingUI>();
 	m_settingUI->Init();
 	AddObject(m_settingUI);
+}
 
+void GameScene::InitAudio()
+{
 	//=======================================
 	// 保存されている音量を取得
 	//=======================================
@@ -521,72 +93,79 @@ void GameScene::Init()
 		"Asset/Sounds/BGM/BattleBGM.wav",
 		SoundType::BGM,
 		true
-	);	
-	
+	);
+}
+
+void GameScene::InitCamera()
+{
 	//=======================================
 	// カメラ
 	//=======================================
-	tpsCamera = std::make_shared<TPSCamera>();
-	tpsCamera->Init();
-	tpsCamera->SetActive(true);
-	AddObject(tpsCamera);
+	m_tpsCamera = std::make_shared<TPSCamera>();
+	m_tpsCamera->Init();
+	m_tpsCamera->SetActive(true);
 
-	m_camera = tpsCamera;
+	AddObject(m_tpsCamera);
 
+	m_camera = m_tpsCamera;
+}
+
+void GameScene::InitStage()
+{
 	//=======================================
 	// ステージ
 	//=======================================
-	stage = std::make_shared<Stage>();
-	stage->Init();
-	AddObject(stage);
+	m_stage = std::make_shared<Stage>();
+	m_stage->Init();
 
+	AddObject(m_stage);
+}
+
+void GameScene::InitPlayer()
+{
 	//=======================================
 	// プレイヤー
 	//=======================================
-	player = std::make_shared<Player>();
-	player->Init();
-	player->SetPos(Math::Vector3{ 0, 0, 0 });
-	AddObject(player);
+	m_player = std::make_shared<Player>();
+	m_player->Init();
+	m_player->SetPos(Math::Vector3{ 0, 0, 0 });
 
+	AddObject(m_player);
+}
+
+void GameScene::InitTutorialEnemy()
+{
 	//=======================================
-	// 剣の軌跡
-	//=======================================
-	m_swordTrail = std::make_shared<SwordTrail>();
-	m_swordTrail->Init();
-	m_swordTrail->SetPlayer(player);
-	AddObject(m_swordTrail);
-
-
-
-	//---------------------------------------
 	// チュートリアル敵
-	//---------------------------------------
-	tutorialEnemy =
-		std::make_shared<TutorialEnemy>();
-
-	tutorialEnemy->Init();
-
-	tutorialEnemy->SetPos({ 0, 0, 5 });
-
-	tutorialEnemy->SetTarget(player);
-	tutorialEnemy->SetCamera(m_camera);
-	tutorialEnemy->SetGameScene(this);
-
-	AddObject(tutorialEnemy);
-
 	//=======================================
-	// UI
-	//=======================================
+	m_tutorialEnemy = std::make_shared<TutorialEnemy>();
 
+	m_tutorialEnemy->Init();
+
+	m_tutorialEnemy->SetPos({ 0, 0, 5 });
+
+	m_tutorialEnemy->SetTarget(m_player);
+	m_tutorialEnemy->SetCamera(m_camera);
+	m_tutorialEnemy->SetGameScene(this);
+
+	AddObject(m_tutorialEnemy);
+}
+
+void GameScene::InitUI()
+{
+	//=======================================
 	// スキルゲージ
-	skillGauge = std::make_shared<SkillGauge>();
-	skillGauge->Init();
-	skillGauge->SetGauge(100, 100);
+	//=======================================
+	m_skillGauge = std::make_shared<SkillGauge>();
+	m_skillGauge->Init();
+	m_skillGauge->SetGauge(100, 100);
 
+	//=======================================
 	// HPゲージ
-	hpGauge = std::make_shared<HPGauge>();
-	hpGauge->Init();
-	hpGauge->SetGauge(100, 100);
+	//=======================================
+	m_hpGauge = std::make_shared<HPGauge>();
+	m_hpGauge->Init();
+	m_hpGauge->SetGauge(100, 100);
 
 	//=======================================
 	// GAME CLEAR / GAME OVER ボタン
@@ -594,22 +173,593 @@ void GameScene::Init()
 	m_gameClearButton = std::make_shared<GameClearButton>();
 	m_gameClearButton->Init();
 	m_gameClearButton->SetVisible(false);
+
 	AddObject(m_gameClearButton);
 
 	//=======================================
-	// 各オブジェクトに必要な情報を設定
+	// カメラ設定
 	//=======================================
-	tpsCamera->SetTarget(player);
-	player->SetCamera(m_camera);
-	player->RegisterUI(
+	m_tpsCamera->SetTarget(m_player);
+
+	//=======================================
+	// プレイヤー設定
+	//=======================================
+	m_player->SetCamera(m_camera);
+
+	m_player->RegisterUI(
 		Player::UIType::SkillGauge,
-		skillGauge
+		m_skillGauge
 	);
 
-	player->RegisterUI(
+	m_player->RegisterUI(
 		Player::UIType::HPGauge,
-		hpGauge
+		m_hpGauge
 	);
+}
+
+void GameScene::UpdateGameFlow()
+{
+	switch (m_gamePhase)
+	{
+	case GamePhase::Tutorial:
+		UpdateTutorial();
+		break;
+
+	case GamePhase::TutorialComplete:
+		UpdateTutorialComplete();
+		break;
+
+	case GamePhase::Prepare:
+		UpdatePrepare();
+		break;
+
+	case GamePhase::Battle:
+		UpdateBattle();
+		UpdateBoss();
+		break;
+
+	case GamePhase::Boss:
+		UpdateGameEnd();
+		break;
+
+	case GamePhase::Clear:
+	case GamePhase::GameOver:
+		UpdateGameEnd();
+		break;
+	}
+}
+
+void GameScene::UpdateTutorial()
+{
+	if (m_gamePhase != GamePhase::Tutorial) { return; }
+
+	// チュートリアル表示更新
+	UpdateTutorialText();
+
+	switch (m_tutorialStep)
+	{
+	//---------------------------------------
+	// 移動
+	//---------------------------------------
+	case TutorialStep::Move:
+	{
+		if (m_player && m_player->IsMoving())
+		{
+			m_tutorialStep = TutorialStep::Dash;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// ダッシュ
+	//---------------------------------------
+	case TutorialStep::Dash:
+	{
+		if (m_player && m_player->IsRunning())
+		{
+			m_tutorialStep = TutorialStep::Attack;
+		}
+		break;
+	}
+
+	//---------------------------------------
+	// 通常攻撃(３段コンボ)
+	//---------------------------------------
+	case TutorialStep::Attack:
+	{
+		if (m_player && m_player->IsComboFinished())
+		{
+			m_player->ResetComboFinished();
+			m_tutorialStep = TutorialStep::Skill;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// スキル
+	//---------------------------------------
+	case TutorialStep::Skill:
+	{
+		if (m_player && m_player->IsSkillOnce())
+		{
+			m_player->SetUltimateEnergyMax();
+			m_tutorialStep = TutorialStep::Ultimate;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// 必殺技
+	//---------------------------------------
+	case TutorialStep::Ultimate:
+	{
+		if (m_player && m_player->IsUltimateOnce())
+		{
+			m_player->ResetUltimateActivated();		//発動フラグをリセット
+			m_tutorialStep = TutorialStep::Dodge;
+
+			//---------------------------------------
+			// チュートリアル敵の攻撃を許可
+			//---------------------------------------
+			if (m_tutorialEnemy)
+			{
+				m_tutorialEnemy->StartTutorialAttack();
+			}
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// 回避
+	//---------------------------------------
+	case TutorialStep::Dodge:
+	{
+
+		if (m_tutorialEnemy && m_tutorialEnemy->IsTutorialAttackFinished())
+		{
+			//m_tutorialEnemy->ResetTutorialAttackFinished();
+
+			m_player->ResetJustDodgeSuccess();
+
+			m_tutorialStep = TutorialStep::LockOn;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// ロックオン
+	//---------------------------------------
+	case TutorialStep::LockOn:
+	{
+		if (m_player && m_player->IsLockOn())
+		{
+			m_tutorialStep = TutorialStep::Finish;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// チュートリアル終了
+	//---------------------------------------
+	case TutorialStep::Finish:
+	{
+		//---------------------------------------
+		// チュートリアル敵を削除
+		//---------------------------------------
+		if (m_tutorialEnemy)
+		{
+			m_tutorialEnemy->SetExpired();
+			m_tutorialEnemy = nullptr;
+		}
+
+		m_gamePhase = GamePhase::TutorialComplete;
+		m_phaseTimer = 0.0f;
+
+		break;
+	}
+	}
+}
+
+void GameScene::UpdateTutorialComplete()
+{
+	if (m_gamePhase != GamePhase::TutorialComplete)
+	{
+		return;
+	}
+
+	m_phaseTimer += Application::Instance().GetDeltaTime();
+
+	// 2秒経過したら準備フェーズへ
+	if (m_phaseTimer >= m_tutorialFinishTime)
+	{
+		m_gamePhase = GamePhase::Prepare;
+		m_phaseTimer = 0.0f;
+	}
+}
+
+void GameScene::UpdatePrepare()
+{
+	if (m_gamePhase != GamePhase::Prepare) { return; }
+	if (!m_player) { return; }
+
+	// プレイヤーと戦闘開始地点との距離
+	float distance =
+		(m_player->GetPos() - m_battleStartPos).Length();
+
+	// 戦闘開始地点に近づいたら
+	if (distance < 2.0f)
+	{
+		m_gamePhase = GamePhase::Battle;
+	}
+}
+
+void GameScene::UpdateBattle()
+{
+	if (m_gamePhase != GamePhase::Battle)
+	{
+		return;
+	}
+
+	if (m_battleStarted)
+	{
+		return;
+	}
+
+	m_battleStarted = true;
+
+	//---------------------------------------
+	// Enemy1生成
+	//---------------------------------------
+	m_enemy1 = std::make_shared<Enemy1>();
+	m_enemy1->Init();
+	
+	m_enemy1->SetPos({ -3, 0, 15 });
+	
+	m_enemy1->SetTarget(m_player);
+	m_enemy1->SetCamera(m_camera);
+	m_enemy1->SetGameScene(this);
+
+	AddObject(m_enemy1);
+
+	//---------------------------------------
+	// Enemy2生成
+	//---------------------------------------
+	m_enemy2 = std::make_shared<Enemy2>();
+	m_enemy2->Init();
+	
+	m_enemy2->SetPos({ 3, 0, 15 });
+	
+	m_enemy2->SetTarget(m_player);
+	m_enemy2->SetCamera(m_camera);
+	m_enemy2->SetGameScene(this);
+
+	AddObject(m_enemy2);
+}
+
+void GameScene::UpdateBoss()
+{
+	if (m_gamePhase != GamePhase::Battle)
+	{
+		return;
+	}
+
+	if (m_battleStarted && !m_isBossSpawned)
+	{
+		bool enemy1Dead = !m_enemy1 || !m_enemy1->IsAlive();
+		bool enemy2Dead = !m_enemy2 || !m_enemy2->IsAlive();
+
+		// Enemy1とEnemy2が両方死亡
+		if (enemy1Dead && enemy2Dead)
+		{
+			m_isBossSpawned = true;
+
+			m_gamePhase = GamePhase::Boss;
+
+			m_boss = std::make_shared<Boss>();
+			m_boss->Init();
+			
+			m_boss->SetPos({ 0, 0, 0 });
+			
+			m_boss->SetTarget(m_player);
+			m_boss->SetCamera(m_camera);
+			m_boss->SetGameScene(this);
+
+			AddObject(m_boss);
+		}
+	}
+}
+
+void GameScene::UpdateGameEnd()
+{
+	//---------------------------------------
+	// GAME CLEAR判定
+	//---------------------------------------
+	if (!m_isGameClear &&
+		!m_isGameOver &&
+		m_gamePhase == GamePhase::Boss &&
+		m_boss &&
+		!m_boss->IsAlive())
+	{
+		GameClear();
+	}
+
+	//---------------------------------------
+	// GAME OVER判定
+	//---------------------------------------
+	if (!m_isGameClear &&
+		!m_isGameOver &&
+		m_player &&
+		!m_player->IsAlive())
+	{
+		GameOver();
+	}
+
+	//---------------------------------------
+	// 終了後のボタン処理
+	//---------------------------------------
+	if (m_gamePhase == GamePhase::Clear ||
+		m_gamePhase == GamePhase::GameOver)
+	{
+		if (m_gameClearButton &&
+			m_gameClearButton->IsClicked())
+		{
+			if (m_gameBGM)
+			{
+				m_gameBGM->Stop();
+				m_gameBGM = nullptr;
+			}
+
+			SceneManager::Instance().SetNextScene(
+				SceneManager::SceneType::Title);
+		}
+	}
+}
+
+void GameScene::GameClear()
+{
+	m_isGameClear = true;
+	m_gamePhase = GamePhase::Clear;
+
+	//---------------------------------------
+	// ゲーム停止
+	//---------------------------------------
+	StopGameObjects();
+
+	//---------------------------------------
+	// GAME CLEAR表示
+	//---------------------------------------
+	auto clearText = std::make_shared<FontText>();
+	clearText->InitMessage("GAME CLEAR");
+	AddObject(clearText);
+
+	//---------------------------------------
+	// タイトルに戻るボタン表示
+	//---------------------------------------
+	if (m_gameClearButton)
+	{
+		m_gameClearButton->SetVisible(true);
+	}
+}
+
+void GameScene::GameOver()
+{
+	m_isGameOver = true;
+	m_gamePhase = GamePhase::GameOver;
+
+	//---------------------------------------
+	// ゲーム停止
+	//---------------------------------------
+	StopGameObjects();
+
+	//---------------------------------------
+	// GAME OVER表示
+	//---------------------------------------
+	auto overText = std::make_shared<FontText>();
+	overText->InitMessage("GAME OVER");
+	AddObject(overText);
+
+	//---------------------------------------
+	// タイトルに戻るボタン表示
+	//---------------------------------------
+	if (m_gameClearButton)
+	{
+		m_gameClearButton->SetVisible(true);
+	}
+}
+
+void GameScene::StopGameObjects()
+{
+	//---------------------------------------
+	// プレイヤー停止
+	//---------------------------------------
+	if (m_player)
+	{
+		m_player->SetGameEnd(true);
+	}
+
+	//---------------------------------------
+	// 敵停止
+	//---------------------------------------
+	if (m_enemy1)
+	{
+		m_enemy1->SetGameEnd(true);
+	}
+
+	if (m_enemy2)
+	{
+		m_enemy2->SetGameEnd(true);
+	}
+
+	//---------------------------------------
+	// Boss停止
+	//---------------------------------------
+	if (m_boss)
+	{
+		m_boss->SetGameEnd(true);
+	}
+
+	//---------------------------------------
+	// カメラ操作停止
+	//---------------------------------------
+	if (m_tpsCamera)
+	{
+		m_tpsCamera->m_mouseFree = true;
+	}
+
+	//---------------------------------------
+	// マウス解放
+	//---------------------------------------
+	ShowCursor(TRUE);
+	ClipCursor(nullptr);
+}
+
+void GameScene::UpdateSetting()
+{
+	bool settingKey =
+		(GetAsyncKeyState(VK_TAB) & 0x8000) != 0;
+
+	//---------------------------------------
+	// TABキーを押した瞬間だけ処理
+	//---------------------------------------
+	if (settingKey && !m_settingKeyPrev)
+	{
+		if (!m_settingUI)
+		{
+			return;
+		}
+
+		if (m_settingUI->IsVisible())
+		{
+			CloseSetting();
+		}
+		else
+		{
+			OpenSetting();
+		}
+	}
+
+	m_settingKeyPrev = settingKey;
+}
+
+void GameScene::OpenSetting()
+{
+	if (!m_settingUI)
+	{
+		return;
+	}
+
+	//---------------------------------------
+	// 設定画面を開く
+	//---------------------------------------
+	m_settingUI->Open();
+
+	//---------------------------------------
+	// ゲームUI非表示
+	//---------------------------------------
+	SetGameUIVisible(false);
+
+	//---------------------------------------
+	// プレイヤー入力をロック
+	//---------------------------------------
+	if (m_player)
+	{
+		m_player->SetInputLock(true);
+	}
+
+	//---------------------------------------
+	// ゲーム停止
+	//---------------------------------------
+	SceneManager::Instance().SetTimeScale(0.0f);
+
+	//---------------------------------------
+	// マウスを自由にする
+	//---------------------------------------
+	if (m_tpsCamera)
+	{
+		m_tpsCamera->m_mouseFree = true;
+	}
+
+	//---------------------------------------
+	// マウスカーソル表示
+	//---------------------------------------
+	ShowCursor(TRUE);
+	ClipCursor(nullptr);
+}
+
+void GameScene::CloseSetting()
+{
+	if (!m_settingUI)
+	{
+		return;
+	}
+
+	//---------------------------------------
+	// 設定画面を閉じる
+	//---------------------------------------
+	m_settingUI->Close();
+
+	//---------------------------------------
+	// ゲームUI表示
+	//---------------------------------------
+	SetGameUIVisible(true);
+
+	//---------------------------------------
+	// プレイヤー入力解除
+	//---------------------------------------
+	if (m_player)
+	{
+		m_player->SetInputLock(false);
+	}
+
+	//---------------------------------------
+	// ゲーム再開
+	//---------------------------------------
+	SceneManager::Instance().SetTimeScale(1.0f);
+
+	//---------------------------------------
+	// マウスをゲーム操作に戻す
+	//---------------------------------------
+	if (m_tpsCamera)
+	{
+		m_tpsCamera->m_mouseFree = false;
+	}
+
+	//---------------------------------------
+	// マウスカーソル非表示
+	//---------------------------------------
+	ShowCursor(FALSE);
+	ClipCursor(nullptr);
+}
+
+void GameScene::UpdateAudioVolume()
+{
+	if (!m_settingUI)
+	{
+		return;
+	}
+
+	//---------------------------------------
+	// BGM音量
+	//---------------------------------------
+	float bgmVolume = m_settingUI->GetBGMVolume();
+
+	if (m_gameBGM)
+	{
+		m_gameBGM->SetVolume(bgmVolume);
+	}
+
+	//---------------------------------------
+	// SE音量
+	//---------------------------------------
+	float seVolume = m_settingUI->GetSEVolume();
+
+	KdAudioManager::Instance().SetSEVolume(seVolume);
 }
 
 void GameScene::SetGameUIVisible(bool visible)
@@ -619,10 +769,10 @@ void GameScene::SetGameUIVisible(bool visible)
 		m_tutorialText->SetVisible(visible);
 	}
 
-	if (player)
+	if (m_player)
 	{
 		auto hp =
-			player->GetUI<HPGauge>(
+			m_player->GetUI<HPGauge>(
 				Player::UIType::HPGauge);
 
 		if (hp)
@@ -631,7 +781,7 @@ void GameScene::SetGameUIVisible(bool visible)
 		}
 
 		auto skill =
-			player->GetUI<SkillGauge>(
+			m_player->GetUI<SkillGauge>(
 				Player::UIType::SkillGauge);
 
 		if (skill)
@@ -640,24 +790,24 @@ void GameScene::SetGameUIVisible(bool visible)
 		}
 	}
 
-	if (enemy1)
+	if (m_enemy1)
 	{
-		enemy1->SetHPGaugeVisible(visible);
+		m_enemy1->SetHPGaugeVisible(visible);
 	}
 
-	if (enemy2)
+	if (m_enemy2)
 	{
-		enemy2->SetHPGaugeVisible(visible);
+		m_enemy2->SetHPGaugeVisible(visible);
 	}
 
-	if (tutorialEnemy)
+	if (m_tutorialEnemy)
 	{
-		tutorialEnemy->SetHPGaugeVisible(visible);
+		m_tutorialEnemy->SetHPGaugeVisible(visible);
 	}
 
-	if (boss)
+	if (m_boss)
 	{
-		boss->SetHPGaugeVisible(visible);
+		m_boss->SetHPGaugeVisible(visible);
 	}
 }
 

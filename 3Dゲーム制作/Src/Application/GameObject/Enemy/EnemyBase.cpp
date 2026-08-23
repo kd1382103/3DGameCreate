@@ -16,157 +16,71 @@ void EnemyBase::Init()
 	// モデルは各敵が設定する
 	m_animator = KdAnimator();
 
-	// 攻撃予知ポリゴン
-	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
-	m_preAttackPoly->SetMaterial("Asset/Textures/Effect/PreAttack.png");
-	m_preAttackPoly->Set2DObject(false);
-	m_preAttackPoly->SetScale(1.0f);
-
-	// HPゲージ
-	m_hpGauge = std::make_shared<HPGauge>();
-	m_hpGauge->Init();
-	m_hpGauge->SetMode(HPGauge::GaugeMode::World);
-
-	// ステートマシン生成
-	stateMachine = std::make_shared<StateMachine<EnemyBase>>();
-	stateMachine->ChangeStateImmediate(std::make_unique<EnemyBaseStateIdle>(), *this);
-
-	// ロックオンアイコン
-	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
-	m_lockOnIcon->SetMaterial("Asset/Textures/Effect/LookOn.png"); 
-	m_lockOnIcon->Set2DObject(false);
-	m_lockOnIcon->SetScale(0.8f);
-
+	InitAttackPrediction();
+	InitHPGauge();
+	InitStateMachine();
+	InitLockOnIcon();
 }
 
-//==============================================================
-// Update
-//==============================================================
 void EnemyBase::Update()
 {
-	if(m_isGameEnd) return;
+	if (m_isGameEnd) return;
 
-	//------------------------------------
-	// スロー時間管理
-	//------------------------------------
-	if (m_isSlow)
-	{
-		m_slowTimer -= Application::Instance().GetDeltaTime();
+	//---------------------------------------
+	// スロー更新
+	//---------------------------------------
+	UpdateSlow();
 
-		if (m_slowTimer <= 0.0f)
-		{
-			m_slowTimer = 0.0f;
-			m_isSlow = false;
-		}
-	}
+	//---------------------------------------
+	// 時間倍率
+	//---------------------------------------
+	float dt =
+		SceneManager::Instance().GetTimeScale() *
+		GetTimeScale();
 
-	float dt = SceneManager::Instance().GetTimeScale() * GetTimeScale();
+	//---------------------------------------
+	// 重力
+	//---------------------------------------
+	UpdateGravity(dt);
 
-	m_gravity += 0.005f * dt;
-	m_nowPos.y -= m_gravity * dt;
-
+	//---------------------------------------
+	// ステート
+	//---------------------------------------
 	if (stateMachine)
 	{
 		stateMachine->Update(*this);
 	}
 
+	//---------------------------------------
+	// ヒットストップ
+	//---------------------------------------
 	if (m_hitStopTimer > 0.0f)
 	{
 		m_hitStopTimer -= 0.016f;
 		return;
 	}
 
-	// アニメ更新
-	m_animator.AdvanceTime(m_model->WorkNodes(), dt);
+	//---------------------------------------
+	// アニメーション
+	//---------------------------------------
+	UpdateAnimation(dt);
 
-	if (m_model->NeedCalcNodeMatrices())
-	{
-		m_model->CalcNodeMatrices();
-	}
-
+	//---------------------------------------
 	// HPゲージ
-	if (auto cam = m_wpCamera.lock())
-	{
-		m_hpGauge->SetCamera(cam);
-	}
+	//---------------------------------------
+	UpdateHPGauge();
 
-	// 距離によるスケール計算
-	auto player = m_wpPlayer.lock();
-	float scale = 1.0f;
-
-	if (player)
-	{
-		float dist = (player->GetPos() - m_nowPos).Length();
-
-		float minDist = 3.0f;   // これ以下なら等倍
-		float maxDist = 15.0f;  // これ以上なら最小サイズ
-
-		float t = (dist - minDist) / (maxDist - minDist);
-		t = std::clamp(t, 0.0f, 1.0f);
-
-		scale = 1.0f - t * 0.6f;   // 1.0 → 0.4 まで縮む
-	}
-
-	m_hpGauge->SetScale(scale);
-
-	m_hpGauge->SetGauge(m_hp, m_hpMax);
-
-	//デバックキー
-	if(GetAsyncKeyState('3') & 0x8000) { m_hp = 1; }
-
+	//---------------------------------------
+	// デバッグ
+	//---------------------------------------
+	UpdateDebug();
 }
-
 //==============================================================
 // PostUpdate（地面判定・壁判定）
 //==============================================================
 void EnemyBase::PostUpdate()
 {
-	//========================
-	// 地面判定（レイ）
-	//========================
-	{
-		KdCollider::RayInfo ray;
-		ray.m_type = KdCollider::TypeGround;
-
-		ray.m_pos = m_nowPos;
-
-		static const float enableStepHigh = 0.2f;
-		ray.m_pos.y += enableStepHigh;
-
-		ray.m_dir = { 0, -1, 0 };
-		ray.m_range = enableStepHigh + m_gravity;
-
-		std::list<KdCollider::CollisionResult> retRayList;
-		for (auto& obj : SceneManager::Instance().GetObjList())
-		{
-			obj->Intersects(ray, &retRayList);
-		}
-
-		bool hit = false;
-		float maxOverLap = 0;
-		Math::Vector3 hitPos = {};
-
-		for (auto& ret : retRayList)
-		{
-			if (maxOverLap < ret.m_overlapDistance)
-			{
-				maxOverLap = ret.m_overlapDistance;
-				hitPos = ret.m_hitPos;
-				hit = true;
-			}
-		}
-
-		if (hit)
-		{
-			m_nowPos.y = hitPos.y;
-			m_gravity = 0.0f;
-			m_isGround = true;
-		}
-		else
-		{
-			m_isGround = false;
-		}
-	}
+	UpdateGroundCollision();
 
 	//========================
 	// 壁判定（カプセル）
@@ -257,6 +171,14 @@ void EnemyBase::DrawLit()
 	}
 }
 
+void EnemyBase::GenerateDepthMapFromLight()
+{
+	if (m_model)
+	{
+		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
+	}
+}
+
 void EnemyBase::DrawSprite()
 {
 	if (m_hpGauge) m_hpGauge->DrawSprite();
@@ -264,7 +186,10 @@ void EnemyBase::DrawSprite()
 	auto cam = m_wpCamera.lock();
 	if (!cam) return;
 
-	//攻撃予知
+	//==========================================================
+	// 攻撃予知
+	//==========================================================	
+		
 	if (m_preAttackActive && m_preAttackPoly)
 	{
 		// 背面判定（HPと同じ）
@@ -351,6 +276,8 @@ void EnemyBase::DrawSprite()
 	}
 }
 
+
+
 //==============================================================
 // Damage
 //==============================================================
@@ -375,9 +302,7 @@ void EnemyBase::Damage(float dmg, bool isUltimate = false, bool finalHit = false
 
 	if (m_hp <= 0)
 	{
-		m_pGameScene->AddKillCount();
 		m_isExpired = true;
-		
 		return;
 	}
 
@@ -502,7 +427,7 @@ void EnemyBase::StartTutorialAttack()
 	m_tutorialAttackFinished = false;
 
 	stateMachine->ChangeState(
-		std::make_unique<EnemyBaseStateAttack1>()
+		std::make_unique<EnemyBaseStateAttack>()
 	);
 }
 
@@ -524,5 +449,177 @@ void EnemyBase::StopAttackSound()
 	{
 		m_attackSound->Stop();
 		m_attackSound.reset();
+	}
+}
+
+void EnemyBase::InitAttackPrediction()
+{
+	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
+
+	m_preAttackPoly->SetMaterial(
+		"Asset/Textures/Effect/PreAttack.png"
+	);
+
+	m_preAttackPoly->Set2DObject(false);
+	m_preAttackPoly->SetScale(1.0f);
+}
+
+void EnemyBase::InitHPGauge()
+{
+	m_hpGauge = std::make_shared<HPGauge>();
+
+	m_hpGauge->Init();
+	m_hpGauge->SetMode(HPGauge::GaugeMode::World);
+}
+
+void EnemyBase::InitStateMachine()
+{
+	stateMachine = std::make_shared<StateMachine<EnemyBase>>();
+
+	stateMachine->ChangeStateImmediate(
+		std::make_unique<EnemyBaseStateIdle>(),
+		*this
+	);
+}
+
+void EnemyBase::InitLockOnIcon()
+{
+	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
+
+	m_lockOnIcon->SetMaterial(
+		"Asset/Textures/Effect/LookOn.png"
+	);
+
+	m_lockOnIcon->Set2DObject(false);
+	m_lockOnIcon->SetScale(0.8f);
+}
+
+
+//==============================================================
+// スロー更新
+//==============================================================
+void EnemyBase::UpdateSlow()
+{
+	if (!m_isSlow)
+	{
+		return;
+	}
+
+	m_slowTimer -= Application::Instance().GetDeltaTime();
+
+	if (m_slowTimer <= 0.0f)
+	{
+		m_slowTimer = 0.0f;
+		m_isSlow = false;
+	}
+}
+
+void EnemyBase::UpdateGravity(float dt)
+{
+	m_gravity += 0.005f * dt;
+	m_nowPos.y -= m_gravity * dt;
+}
+
+void EnemyBase::UpdateAnimation(float dt)
+{
+	if (!m_model) return;
+
+	m_animator.AdvanceTime(m_model->WorkNodes(), dt);
+
+	if (m_model->NeedCalcNodeMatrices())
+	{
+		m_model->CalcNodeMatrices();
+	}
+}
+
+void EnemyBase::UpdateHPGauge()
+{
+	if (!m_hpGauge) return;
+
+	//---------------------------------------
+	// カメラ
+	//---------------------------------------
+	if (auto cam = m_wpCamera.lock())
+	{
+		m_hpGauge->SetCamera(cam);
+	}
+
+	//---------------------------------------
+	// 距離によるスケール
+	//---------------------------------------
+	float scale = 1.0f;
+
+	if (auto player = m_wpPlayer.lock())
+	{
+		float dist =
+			(player->GetPos() - m_nowPos).Length();
+
+		const float minDist = 3.0f;
+		const float maxDist = 15.0f;
+
+		float t =
+			(dist - minDist) /
+			(maxDist - minDist);
+
+		t = std::clamp(t, 0.0f, 1.0f);
+
+		scale = 1.0f - t * 0.6f;
+	}
+
+	m_hpGauge->SetScale(scale);
+	m_hpGauge->SetGauge(m_hp, m_hpMax);
+}
+
+void EnemyBase::UpdateDebug()
+{
+	if (GetAsyncKeyState('3') & 0x8000)
+	{
+		m_hp = 1;
+	}
+}
+
+void EnemyBase::UpdateGroundCollision()
+{
+	KdCollider::RayInfo ray;
+	ray.m_type = KdCollider::TypeGround;
+
+	ray.m_pos = m_nowPos;
+
+	static const float enableStepHigh = 0.2f;
+	ray.m_pos.y += enableStepHigh;
+
+	ray.m_dir = { 0, -1, 0 };
+	ray.m_range = enableStepHigh + m_gravity;
+
+	std::list<KdCollider::CollisionResult> retRayList;
+
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		obj->Intersects(ray, &retRayList);
+	}
+
+	bool hit = false;
+	float maxOverLap = 0.0f;
+	Math::Vector3 hitPos = Math::Vector3::Zero;
+
+	for (auto& ret : retRayList)
+	{
+		if (maxOverLap < ret.m_overlapDistance)
+		{
+			maxOverLap = ret.m_overlapDistance;
+			hitPos = ret.m_hitPos;
+			hit = true;
+		}
+	}
+
+	if (hit)
+	{
+		m_nowPos.y = hitPos.y;
+		m_gravity = 0.0f;
+		m_isGround = true;
+	}
+	else
+	{
+		m_isGround = false;
 	}
 }

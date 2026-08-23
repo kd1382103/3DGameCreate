@@ -1,133 +1,250 @@
 ﻿#pragma once
 
-#include"../BaseScene/BaseScene.h"
+#include "../BaseScene/BaseScene.h"
 
 class CameraBase;
 class TPSCamera;
-class FPSCamera;
+
 class Player;
 class Enemy1;
 class Enemy2;
 class TutorialEnemy;
+class Boss;
+
+class Stage;
+
 class SkillGauge;
 class HPGauge;
 class GameClearButton;
-class Boss;
-class Stage;
 class FontText;
 class SettingUI;
-class SwordTrail;
+//class SwordTrail;
 
 class GameScene : public BaseScene
 {
-public :
+public:
 
-	GameScene()  { Init(); }
+	GameScene() { Init(); }
 	~GameScene() {}
 
-	void AddKillCount() { m_killCount++; }
-	int GetKillCount() const { return m_killCount; }
+	//========================================
+	// UI表示
+	//========================================
 	void SetGameUIVisible(bool visible);
 
-
+	//========================================
+	// ゲームフェーズ
+	//========================================
 	enum class GamePhase
 	{
-		Tutorial,
-		TutorialComplete,
-		Prepare,
-		Battle,	
-		Boss,			
-		Clear,
-		GameOver
+		Tutorial,			// チュートリアル
+		TutorialComplete,	// チュートリアル完了演出
+		Prepare,			// 戦闘準備
+		Battle,				// 通常戦闘
+		Boss,				// ボス戦
+		Clear,				// ゲームクリア
+		GameOver			// ゲームオーバー
 	};
 
+
+	//========================================
+	// チュートリアルステップ
+	//========================================
 	enum class TutorialStep
 	{
-		Move,
-		Dash,
-		Attack,
-		Skill,
-		Ultimate,
-		Dodge,
-		LockOn,
-		Finish
+		Move,		// 移動
+		Dash,		// ダッシュ
+		Attack,		// 通常攻撃
+		Skill,		// スキル
+		Ultimate,	// 必殺技
+		Dodge,		// 回避
+		LockOn,		// ロックオン
+		Finish		// 終了
 	};
+
 
 private:
 
+	//========================================
+	// BaseScene
+	//========================================
 	void Event() override;
-	void Init()  override;
+	void Init() override;
 
-	//カメラ
-	std::shared_ptr<CameraBase>m_camera;
-	std::shared_ptr<TPSCamera>tpsCamera;
-	std::shared_ptr<FPSCamera>fpsCamera;
+	//========================================
+	// 初期化
+	//========================================
+	void InitSetting();
+	void InitAudio();
+	void InitCamera();
+	void InitStage();
+	void InitPlayer();
+	void InitTutorialEnemy();
+	void InitUI();
 
-	//キャラクター
-	std::shared_ptr<Player>player;
-	std::shared_ptr<Enemy1>enemy1;
-	std::shared_ptr<Enemy2>enemy2;
-	std::shared_ptr<TutorialEnemy> tutorialEnemy;
-	std::shared_ptr<Boss>boss;
+	//========================================
+	// ゲーム進行
+	//========================================
+	void UpdateGameFlow();
 
-	//ステージ
-	std::shared_ptr<Stage>stage;
+	//========================================
+	// チュートリアル
+	//========================================
+	void UpdateTutorial();
 
-	//UI
-	std::shared_ptr<SkillGauge>skillGauge;
-	std::shared_ptr<HPGauge>hpGauge;
+	void UpdateTutorialComplete();
+	void UpdatePrepare();
+	void UpdateBattle();
+	void UpdateBoss();
+	void UpdateGameEnd();
+
+	//========================================
+	// ゲーム終了
+	//========================================
+	void GameClear();
+	void GameOver();
+
+	void StopGameObjects();
+
+	//========================================
+	// チュートリアル文字
+	//========================================
+	void UpdateTutorialText();
+
+	//========================================
+	// 設定
+	//========================================
+	void UpdateSetting();
+
+	void OpenSetting();
+	void CloseSetting();
+
+	//========================================
+	// 音量
+	//========================================
+	void UpdateAudioVolume();
+
+private:
+
+	//========================================
+	// カメラ
+	//========================================
+	std::shared_ptr<CameraBase> m_camera;
+	std::shared_ptr<TPSCamera> m_tpsCamera;
+
+	//========================================
+	// キャラクター
+	//========================================
+	std::shared_ptr<Player> m_player;
+
+	std::shared_ptr<Enemy1> m_enemy1;
+	std::shared_ptr<Enemy2> m_enemy2;
+
+	std::shared_ptr<TutorialEnemy> m_tutorialEnemy;
+
+	std::shared_ptr<Boss> m_boss;
+
+	//========================================
+	// ステージ
+	//========================================
+	std::shared_ptr<Stage> m_stage;
+
+
+	//========================================
+	// UI
+	//========================================
+	std::shared_ptr<SkillGauge> m_skillGauge;
+	std::shared_ptr<HPGauge> m_hpGauge;
+
 	std::shared_ptr<GameClearButton> m_gameClearButton;
 
-	//テキスト
-	std::shared_ptr<FontText>m_tutorialText;
-	
-	//設定
+
+	//========================================
+	// テキスト
+	//========================================
+	std::shared_ptr<FontText> m_tutorialText;
+
+
+	//========================================
+	// 設定
+	//========================================
 	std::shared_ptr<SettingUI> m_settingUI;
-	
+
+
 	//========================================
 	// BGM
 	//========================================
 	std::shared_ptr<KdSoundInstance> m_gameBGM;
 
+
 	//========================================
 	// ゲーム進行
 	//========================================
+
+	// 現在のゲームフェーズ
 	GamePhase m_gamePhase = GamePhase::Tutorial;
+
 
 	//========================================
 	// チュートリアル進行
 	//========================================
+
+	// 現在のチュートリアル
 	TutorialStep m_tutorialStep = TutorialStep::Move;
+
+	// 前回のチュートリアル
+	// 文字更新の判定に使用
 	TutorialStep m_prevTutorialStep = TutorialStep::Finish;
 
+
 	//========================================
-	// チュートリアル完了演出
+	// ゲームフェーズ用タイマー
 	//========================================
-	float m_tutorialFinishTimer = 0.0f;
+
+	// TutorialCompleteなどで使用
+	float m_phaseTimer = 0.0f;
+
+	// チュートリアル完了からPrepareへ移行する時間
 	const float m_tutorialFinishTime = 2.0f;
 
-	//キルカウント
-	int m_killCount = 0;
-	static const int m_bossSpawnKillCount = 2;
+	//========================================
+	// ボス出現
+	//========================================
 
-	//ボス出現
+	// Bossをすでに出現させたか
 	bool m_isBossSpawned = false;
 
-	//ゲームクリア or ゲームオーバー
+	//========================================
+	// ゲーム終了
+	//========================================
+
+	// ゲームクリアしたか
 	bool m_isGameClear = false;
+
+	// ゲームオーバーしたか
 	bool m_isGameOver = false;
 
-	float m_phaseTimer = 0.0f;
+
+	//========================================
+	// 戦闘開始
+	//========================================
+
+	// 戦闘開始地点
 	Math::Vector3 m_battleStartPos = { 0, 0, 10 };
+
+	// Enemy1・Enemy2を生成済みか
 	bool m_battleStarted = false;
 
-	//設定画面用
-	bool m_isSetting = false;
-	float m_savedTimeScale = 1.0f;
+
+	//========================================
+	// 設定画面用
+	//========================================
+	
+	// TABキーの前フレーム状態
 	bool m_settingKeyPrev = false;
 
+	//========================================
 	// エフェクト
-	std::shared_ptr<SwordTrail> m_swordTrail;
-
-	void UpdateTutorialText();
+	//========================================
+	//std::shared_ptr<SwordTrail> m_swordTrail;
 };
