@@ -151,7 +151,32 @@ void BGMVolume::DrawSprite()
 
 	sprite.DrawFontEx(
 		param,
-		"BGM VOLUME"
+		"音楽音量"
+	);
+
+	//---------------------------------------
+	// BGM音量パーセント
+	//---------------------------------------
+	KdSpriteShader::FontParam percentParam;
+
+	percentParam.pos =
+	{
+		static_cast<float>(m_barX + m_barWidth + 30.0f),
+		static_cast<float>(m_barY + m_barHeight * 0.5f)
+	};
+
+	percentParam.scale = 1.0f;
+
+	percentParam.pivot =
+	{
+		0.0f,
+		0.5f
+	};
+
+	sprite.DrawFontEx(
+		percentParam,
+		"%d%%",
+		static_cast<int>(s_volume * 100.0f + 0.5f)
 	);
 }
 

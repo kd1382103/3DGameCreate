@@ -161,7 +161,32 @@ void SEVolume::DrawSprite()
 
 	sprite.DrawFontEx(
 		param,
-		"SE VOLUME"
+		"効果音 音量"
+	);
+
+	//---------------------------------------
+	// SE音量パーセント
+	//---------------------------------------
+	KdSpriteShader::FontParam percentParam;
+
+	percentParam.pos =
+	{
+		m_barX + m_barWidth + 30.0f,
+		m_barY + m_barHeight * 0.5f
+	};
+
+	percentParam.scale = 1.0f;
+
+	percentParam.pivot =
+	{
+		0.0f,
+		0.5f
+	};
+
+	sprite.DrawFontEx(
+		percentParam,
+		"%d%%",
+		static_cast<int>(s_volume * 100.0f + 0.5f)
 	);
 }
 
