@@ -34,11 +34,11 @@ public:
 
 	void UpdateInput();
 	void UpdateMovementInput();
-	void UpdateAnimation(float dt);
-	void UpdateGravity(float dt);
-	void UpdateSkillGauge(float dt);
+	void UpdateAnimation(float frameScale);
+	void UpdateGravity(float frameScale);
+	void UpdateSkillGauge(float frameScale);
 	void UpdatePendingDamage();
-	void UpdateDodgeSlow();
+	void UpdateDodgeSlow(float frameScale);
 	void UpdateDebug();
 
 	void PostUpdate() override;

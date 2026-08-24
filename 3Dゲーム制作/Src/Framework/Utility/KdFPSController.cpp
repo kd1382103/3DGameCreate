@@ -15,12 +15,26 @@ void KdFPSController::SetMaxFPS(int fps)
 	m_maxFps = fps;
 }
 
+float KdFPSController::GetFrameScale() const
+{
+	//============================================================
+	// 60FPSを基準とする
+	//============================================================
+	constexpr float kBaseFPS = 60.0f;
+
+	return kBaseFPS * m_DeltaTime;
+}
+
 //============================================================
 // FPSの制御コントローラー
 //============================================================
 void KdFPSController::Init()
 {
-	m_fpsMonitorBeginTime = timeGetTime();
+	DWORD now = timeGetTime();
+	m_frameStartTime = now;
+	m_fpsMonitorBeginTime = now;
+
+	m_DeltaTime = 1.0f / 60.0f;
 }
 
 //============================================================
@@ -44,6 +58,11 @@ void KdFPSController::Update()
 	m_DeltaTime =
 		(currentTime - m_frameStartTime)
 		/ static_cast<float>(kSecond);
+
+	if (m_DeltaTime > 0.1f)
+	{
+		m_DeltaTime = 1.0f / 60.0f;
+	}
 
 	Monitoring();
 }

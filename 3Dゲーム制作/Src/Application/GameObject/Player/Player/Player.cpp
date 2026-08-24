@@ -35,9 +35,21 @@ void Player::Update()
 	if (m_isGameEnd) return;
 
 	//========================================
+	// 60FPS基準のフレーム倍率
+	//========================================
+	const float frameScale =
+		Application::Instance().GetFPSController().GetFrameScale();
+
+	//========================================
 	// ゲーム全体の速度
 	//========================================
-	float timeScale = SceneManager::Instance().GetTimeScale();
+	const float timeScale =
+		SceneManager::Instance().GetTimeScale();
+
+	const float scaledFrameScale = frameScale * timeScale;
+
+	const float deltaTime =
+		Application::Instance().GetFPSController().GetDeltaTime();
 
 	//========================================
 	// 入力
@@ -52,17 +64,17 @@ void Player::Update()
 	//========================================
 	// アニメーション
 	//========================================
-	UpdateAnimation(timeScale);
+	UpdateAnimation(scaledFrameScale);
 
 	//========================================
 	// 重力
 	//========================================
-	UpdateGravity(timeScale);
+	UpdateGravity(scaledFrameScale);
 
 	//========================================
 	// スキルゲージ
 	//========================================
-	UpdateSkillGauge(timeScale);
+	UpdateSkillGauge(scaledFrameScale);
 
 	//========================================
 	// 遅延ダメージ
@@ -72,13 +84,11 @@ void Player::Update()
 	//========================================
 	// 回避スロー
 	//========================================
-	UpdateDodgeSlow();
+	UpdateDodgeSlow(scaledFrameScale);
 
 	//========================================
 	// 必殺技ポイント加算
 	//========================================
-
-	//攻撃が当たった時
 	if (m_canGainUltimate && m_attackContact)
 	{
 		AddUltimateEnergy(1.0f);
@@ -89,8 +99,14 @@ void Player::Update()
 	//========================================
 	if (m_hitStopTimer > 0.0f)
 	{
-		m_hitStopTimer -= 0.016f;
-		return;
+		m_hitStopTimer -= scaledFrameScale;
+
+		if (m_hitStopTimer > 0.0f)
+		{
+			return;
+		}
+
+		m_hitStopTimer = 0.0f;
 	}
 
 	//========================================
@@ -426,15 +442,14 @@ void Player::UpdatePendingDamage()
 	m_pendingDamage = 0.0f;
 }
 
-void Player::UpdateDodgeSlow()
+void Player::UpdateDodgeSlow(float frameScale)
 {
 	if (m_slowTimer <= 0.0f)
 	{
 		return;
 	}
 
-	m_slowTimer -=
-		Application::Instance().GetDeltaTime();
+	m_slowTimer -= frameScale;
 
 	if (m_slowTimer > 0.0f)
 	{

@@ -1,7 +1,9 @@
 ﻿#include "PlayerState.h"
+
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
+#include <Application/main.h>
 
 //==============================================================
 // Idle
@@ -13,36 +15,70 @@ void PlayerStateIdle::Enter(Player& owner)
 
 void PlayerStateIdle::Update(Player& owner)
 {
-	if (owner.IsSkillInput() && owner.m_skillGauge >= owner.m_skillCost)
+	//========================================
+	// スキル
+	//========================================
+	if (owner.IsSkillInput() &&
+		owner.m_skillGauge >= owner.m_skillCost)
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateSkill>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateSkill>()
+		);
 		return;
 	}
 
-	if (owner.IsUltimateInput() && owner.m_ultimateEnergy >= owner.m_ultimateEnergyMax)
+	//========================================
+	// 必殺技
+	//========================================
+	if (owner.IsUltimateInput() &&
+		owner.m_ultimateEnergy >= owner.m_ultimateEnergyMax)
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerUltimate>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerUltimate>()
+		);
 		return;
 	}
 
+	//========================================
+	// 攻撃
+	//========================================
 	if (owner.IsAttackInput())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack1>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateAttack1>()
+		);
 		return;
 	}
 
+	//========================================
+	// 回避
+	//========================================
 	if (owner.IsDodgeInput())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateDodge>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateDodge>()
+		);
 		return;
 	}
 
+	//========================================
+	// 移動
+	//========================================
 	if (owner.IsMoveInput())
 	{
 		if (owner.m_running)
-			owner.stateMachine->ChangeState(std::make_unique<PlayerStateDash>());
+		{
+			owner.stateMachine->ChangeState(
+				std::make_unique<PlayerStateDash>()
+			);
+		}
 		else
-			owner.stateMachine->ChangeState(std::make_unique<PlayerStateWalk>());
+		{
+			owner.stateMachine->ChangeState(
+				std::make_unique<PlayerStateWalk>()
+			);
+		}
+
 		return;
 	}
 }
@@ -52,64 +88,143 @@ void PlayerStateIdle::Update(Player& owner)
 //==============================================================
 void PlayerStateMove::Update(Player& owner)
 {
+	//========================================
 	// 移動入力が消えたら Idle
+	//========================================
 	if (!owner.IsMoveInput())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>()
+		);
 		return;
 	}
 
+	//========================================
 	// スキル
-	if (owner.IsSkillInput() && owner.m_skillGauge >= owner.m_skillCost)
+	//========================================
+	if (owner.IsSkillInput() &&
+		owner.m_skillGauge >= owner.m_skillCost)
 	{
-		owner.stateMachine->ChangeStateImmediate(std::make_unique<PlayerStateSkill>(), owner);
+		owner.stateMachine->ChangeStateImmediate(
+			std::make_unique<PlayerStateSkill>(),
+			owner
+		);
 		return;
 	}
 
+	//========================================
 	// 必殺技
-	if (owner.IsUltimateInput() && owner.m_ultimateEnergy >= owner.m_ultimateEnergyMax)
+	//========================================
+	if (owner.IsUltimateInput() &&
+		owner.m_ultimateEnergy >= owner.m_ultimateEnergyMax)
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerUltimate>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerUltimate>()
+		);
 		return;
 	}
 
+	//========================================
 	// 攻撃
+	//========================================
 	if (owner.IsAttackInput())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateAttack1>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateAttack1>()
+		);
 		return;
 	}
 
+	//========================================
 	// 回避
+	//========================================
 	if (owner.IsDodgeInput())
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateDodge>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateDodge>()
+		);
 		return;
 	}
 
-	// キャラ回転処理（そのまま）
+	//========================================
+	// 60FPS基準のフレーム倍率
+	//========================================
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
+	//========================================
+	// ゲーム全体の速度
+	//========================================
+	const float timeScale =
+		SceneManager::Instance().GetTimeScale();
+
+	const float scaledFrameScale =
+		frameScale * timeScale;
+
+	//========================================
+	// キャラ回転
+	//========================================
 	{
 		Math::Vector3 nowDir = owner.GetForward();
 		Math::Vector3 targetDir = owner.m_dir;
 
-		nowDir.Normalize();
-		targetDir.Normalize();
+		nowDir.y = 0.0f;
+		targetDir.y = 0.0f;
 
-		float dot = std::clamp(nowDir.Dot(targetDir), -1.0f, 1.0f);
-		float angle = acos(dot);
+		if (nowDir.LengthSquared() > 0.0001f &&
+			targetDir.LengthSquared() > 0.0001f)
+		{
+			nowDir.Normalize();
+			targetDir.Normalize();
 
-		Math::Vector3 cross = nowDir.Cross(targetDir);
-		if (cross.y < 0) angle = -angle;
+			float dot =
+				std::clamp(
+					nowDir.Dot(targetDir),
+					-1.0f,
+					1.0f
+				);
 
-		float rotSpeed = DirectX::XMConvertToRadians(owner.m_rotationSpeedDeg);
-		angle = std::clamp(angle, -rotSpeed, rotSpeed);
+			float angle = acos(dot);
 
-		owner.m_angleY += angle;
+			Math::Vector3 cross =
+				nowDir.Cross(targetDir);
+
+			if (cross.y < 0)
+			{
+				angle = -angle;
+			}
+
+			float rotSpeed =
+				DirectX::XMConvertToRadians(
+					owner.m_rotationSpeedDeg
+				);
+
+			// FPSに依存しないようにする
+			angle =
+				std::clamp(
+					angle,
+					-rotSpeed * scaledFrameScale,
+					rotSpeed * scaledFrameScale
+				);
+
+			owner.m_angleY += angle;
+		}
 	}
 
+	//========================================
 	// 移動
-	float moveSpeed = owner.m_running ? owner.m_runSpeed : owner.m_walkSpeed;
-	owner.m_nowPos += owner.m_dir * moveSpeed * SceneManager::Instance().GetTimeScale();
+	//========================================
+	float moveSpeed =
+		owner.m_running
+		? owner.m_runSpeed
+		: owner.m_walkSpeed;
+
+	owner.m_nowPos +=
+		owner.m_dir *
+		moveSpeed *
+		scaledFrameScale;
 }
 
 //==============================================================
@@ -122,10 +237,11 @@ void PlayerStateWalk::Enter(Player& owner)
 
 void PlayerStateWalk::Update(Player& owner)
 {
-
 	if (owner.m_running)
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateDash>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateDash>()
+		);
 		return;
 	}
 
@@ -144,7 +260,9 @@ void PlayerStateDash::Update(Player& owner)
 {
 	if (!owner.m_running)
 	{
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateWalk>());
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateWalk>()
+		);
 		return;
 	}
 
@@ -163,32 +281,34 @@ void PlayerStateAttack1::Enter(Player& owner)
 
 void PlayerStateAttack1::Update(Player& owner)
 {
-	float t = owner.m_animator.GetAnimeCurrentTime();
+	float t =
+		owner.m_animator.GetAnimeCurrentTime();
 
-	//// 剣の軌跡
-	//if (t > 25.0f && t < 45.0f)
-	//{
-	//	owner.StartSwordTrail();
-	//}
-	//else
-	//{
-	//	owner.StopSwordTrail();
-	//}
-
+	//========================================
+	// 攻撃処理
+	//========================================
 	UpdateAttack(owner, t, 15);
-	
-	if (t > 40 && t < 85)
+
+	//========================================
+	// 次の攻撃
+	//========================================
+	if (t > 40.0f && t < 85.0f)
 	{
 		if (owner.IsAttackInput())
 		{
 			owner.m_canGainUltimate = false;
+
 			owner.stateMachine->ChangeState(
 				std::make_unique<PlayerStateAttack2>()
 			);
+
 			return;
 		}
 	}
 
+	//========================================
+	// アニメーション終了
+	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.stateMachine->ChangeState(
@@ -209,20 +329,17 @@ void PlayerStateAttack2::Enter(Player& owner)
 
 void PlayerStateAttack2::Update(Player& owner)
 {
-	float t = owner.m_animator.GetAnimeCurrentTime();
+	float t =
+		owner.m_animator.GetAnimeCurrentTime();
 
-	//// 剣の軌跡
-	//if (t > 25.0f && t < 45.0f)
-	//{
-	//	owner.StartSwordTrail();
-	//}
-	//else
-	//{
-	//	owner.StopSwordTrail();
-	//}
-
+	//========================================
+	// 攻撃処理
+	//========================================
 	UpdateAttack(owner, t, 20);
 
+	//========================================
+	// 次の攻撃
+	//========================================
 	if (t > 40.0f && t < 85.0f)
 	{
 		if (owner.IsAttackInput())
@@ -232,10 +349,14 @@ void PlayerStateAttack2::Update(Player& owner)
 			owner.stateMachine->ChangeState(
 				std::make_unique<PlayerStateAttack3>()
 			);
+
 			return;
 		}
 	}
 
+	//========================================
+	// アニメーション終了
+	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.stateMachine->ChangeState(
@@ -258,20 +379,17 @@ void PlayerStateAttack3::Enter(Player& owner)
 
 void PlayerStateAttack3::Update(Player& owner)
 {
-	float t = owner.m_animator.GetAnimeCurrentTime();
+	float t =
+		owner.m_animator.GetAnimeCurrentTime();
 
-	//// 剣の軌跡
-	//if (t > 25.0f && t < 45.0f)
-	//{
-	//	owner.StartSwordTrail();
-	//}
-	//else
-	//{
-	//	owner.StopSwordTrail();
-	//}
-
+	//========================================
+	// 攻撃処理
+	//========================================
 	UpdateAttack(owner, t, 30);
 
+	//========================================
+	// 次の攻撃
+	//========================================
 	if (t > 40.0f && t < 85.0f)
 	{
 		if (owner.IsAttackInput())
@@ -281,10 +399,14 @@ void PlayerStateAttack3::Update(Player& owner)
 			owner.stateMachine->ChangeState(
 				std::make_unique<PlayerStateAttack1>()
 			);
+
 			return;
 		}
 	}
 
+	//========================================
+	// アニメーション終了
+	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.m_canGainUltimate = false;
@@ -301,7 +423,11 @@ void PlayerStateAttack3::Update(Player& owner)
 void PlayerStateSkill::Enter(Player& owner)
 {
 	owner.SetAnim(20, false);
+
+	// スキルゲージ消費
 	owner.m_skillGauge -= owner.m_skillCost;
+
+	// 初期化
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_attackHitOnce = false;
 	owner.m_attackContact = false;
@@ -310,22 +436,35 @@ void PlayerStateSkill::Enter(Player& owner)
 
 void PlayerStateSkill::Update(Player& owner)
 {
-	float t = owner.m_animator.GetAnimeCurrentTime();
+	float t =
+		owner.m_animator.GetAnimeCurrentTime();
 
-	//個々の数値は変更予定
+	//========================================
+	// スキル攻撃判定
+	//========================================
 	if (t > 3.0f && t < 8.0f)
 	{
-		owner.DoAttackHitCheckMulti(2.5f, 120.0f, 40);
+		owner.DoAttackHitCheckMulti(
+			2.5f,
+			120.0f,
+			40
+		);
 	}
 	else
 	{
 		owner.m_attackContact = false;
 	}
 
+	//========================================
+	// アニメーション終了
+	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.m_canGainUltimate = false;
-		owner.stateMachine->ChangeState(std::make_unique<PlayerStateIdle>());
+
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>()
+		);
 	}
 }
 
@@ -335,53 +474,91 @@ void PlayerStateSkill::Update(Player& owner)
 void PlayerStateDodge::Enter(Player& owner)
 {
 	owner.SetAnim(27, false);
-	SceneManager::Instance().SetTimeScale(0.2f);
-	owner.m_slowTimer = 0.5f;   
-	owner.m_isInvincible = true;
-	bool justDodge = false;
 
-	if (auto cam = std::dynamic_pointer_cast<TPSCamera>(owner.m_wpCamera.lock()))
+	//========================================
+	// スロー
+	//========================================
+	SceneManager::Instance().SetTimeScale(0.2f);
+
+	owner.m_slowTimer = 0.5f;
+
+	//========================================
+	// 無敵
+	//========================================
+	owner.m_isInvincible = true;
+
+	//========================================
+	// 回避カメラ
+	//========================================
+	if (auto cam =
+		std::dynamic_pointer_cast<TPSCamera>(
+			owner.m_wpCamera.lock()))
 	{
 		cam->StartDodgeCamera();
 	}
 
-	Math::Vector3 dodgeDir = owner.m_dir;
+	//========================================
+	// 回避方向
+	//========================================
+	Math::Vector3 dodgeDir =
+		owner.m_dir;
 
 	if (dodgeDir.LengthSquared() < 0.0001f)
 	{
-		dodgeDir = owner.GetForward();
+		dodgeDir =
+			owner.GetForward();
 	}
 
 	dodgeDir.Normalize();
-	owner.m_dodgeDir = dodgeDir;
 
-	owner.m_dir = Math::Vector3::Zero;
+	owner.m_dodgeDir =
+		dodgeDir;
 
+	owner.m_dir =
+		Math::Vector3::Zero;
 }
 
 void PlayerStateDodge::Update(Player& owner)
 {
-	//---------------------------------------
+	//========================================
 	// 回避中は無敵
-	//---------------------------------------
+	//========================================
 	owner.m_isInvincible = true;
 
-	float t = owner.m_animator.GetAnimeCurrentTime();
+	float t =
+		owner.m_animator.GetAnimeCurrentTime();
 
-	//---------------------------------------
+	//========================================
+	// 60FPS基準のフレーム倍率
+	//========================================
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
+	//========================================
+	// ゲーム全体の速度
+	//========================================
+	const float timeScale =
+		SceneManager::Instance().GetTimeScale();
+
+	const float scaledFrameScale =
+		frameScale * timeScale;
+
+	//========================================
 	// 回避移動
-	//---------------------------------------
+	//========================================
 	if (t > 0.0f && t < 40.0f)
 	{
 		owner.m_nowPos +=
 			owner.m_dodgeDir *
 			0.1f *
-			SceneManager::Instance().GetTimeScale();
+			scaledFrameScale;
 	}
 
-	//---------------------------------------
+	//========================================
 	// 回避終了
-	//---------------------------------------
+	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.m_isInvincible = false;
@@ -392,9 +569,13 @@ void PlayerStateDodge::Update(Player& owner)
 	}
 }
 
+//==============================================================
+// Ultimate
+//==============================================================
 void PlayerUltimate::Enter(Player& owner)
 {
-	//※現状、必殺技アニメ-ションはないため攻撃一段目のアニメーションを流す（変更予定）
+	// 現状、必殺技アニメーションがないため
+	// 攻撃1段目のアニメーションを使用
 	owner.SetAnim(39, false);
 
 	owner.m_dir = Math::Vector3::Zero;
@@ -403,72 +584,124 @@ void PlayerUltimate::Enter(Player& owner)
 	owner.m_canGainUltimate = false;
 	owner.m_ultimateActivated = true;
 
+	//========================================
 	// ゲージ消費
+	//========================================
 	owner.m_ultimateEnergy = 0;
+
+	//========================================
+	// 必殺技ヒット情報リセット
+	//========================================
 	owner.m_ultimateHitTimer = 0;
 	owner.m_ultimateHitCount = 0;
 }
 
 void PlayerUltimate::Update(Player& owner)
 {
-	float t = owner.m_animator.GetAnimeCurrentTime();
+	float t =
+		owner.m_animator.GetAnimeCurrentTime();
 
-	if (t > 30 && t < 60)
+	//========================================
+	// 必殺技攻撃
+	//========================================
+	if (t > 30.0f && t < 60.0f)
 	{
 		owner.m_ultimateHitTimer++;
-		if (owner.m_ultimateHitTimer >= owner.m_ultimateHitInterval)
+
+		if (owner.m_ultimateHitTimer >=
+			owner.m_ultimateHitInterval)
 		{
 			owner.m_ultimateHitTimer = 0;
+
 			owner.m_ultimateHitCount++;
-			owner.DoUltimateHitCheck(2.5f, 50.0f, 40);
+
+			owner.DoUltimateHitCheck(
+				2.5f,
+				50.0f,
+				40
+			);
 		}
 	}
 
+	//========================================
+	// アニメーション終了
+	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.stateMachine->ChangeState(
-			std::make_unique<PlayerStateIdle>());
+			std::make_unique<PlayerStateIdle>()
+		);
 	}
 }
 
+//==============================================================
+// Attack State 共通 Enter
+//==============================================================
 void PlayerAttackStateBase::EnterAttack(Player& owner)
 {
 	owner.m_dir = Math::Vector3::Zero;
+
 	owner.m_canNextAttack = false;
+
 	owner.m_attackHitOnce = false;
+
 	owner.m_attackContact = false;
+
 	owner.m_canGainUltimate = true;
+
 	owner.m_attackSEPlayed = false;
 }
 
+//==============================================================
+// Attack State 共通 Update
+//==============================================================
 void PlayerAttackStateBase::UpdateAttack(
 	Player& owner,
 	float t,
 	int damage
 )
 {
-	//---------------------------------------
+	//========================================
+	// 60FPS基準のフレーム倍率
+	//========================================
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
+	//========================================
+	// ゲーム全体の速度
+	//========================================
+	const float timeScale =
+		SceneManager::Instance().GetTimeScale();
+
+	const float scaledFrameScale =
+		frameScale * timeScale;
+
+	//========================================
 	// 踏み込み
-	//---------------------------------------
+	//========================================
 	if (t > 20.0f && t < 30.0f)
 	{
-		Math::Vector3 f = owner.GetForward();
+		Math::Vector3 f =
+			owner.GetForward();
+
 		f.Normalize();
 
 		owner.m_nowPos +=
 			f *
 			0.05f *
-			SceneManager::Instance().GetTimeScale();
+			scaledFrameScale;
 	}
 
-	//---------------------------------------
+	//========================================
 	// 攻撃判定
-	//---------------------------------------
+	//========================================
 	if (t > 35.0f && t < 40.0f)
 	{
-		//-----------------------------------
+		//====================================
 		// 攻撃SE
-		//-----------------------------------
+		//====================================
 		if (!owner.m_attackSEPlayed)
 		{
 			KdAudioManager::Instance().Play(
@@ -479,9 +712,9 @@ void PlayerAttackStateBase::UpdateAttack(
 			owner.m_attackSEPlayed = true;
 		}
 
-		//-----------------------------------
+		//====================================
 		// 攻撃判定
-		//-----------------------------------
+		//====================================
 		owner.DoAttackHitCheckMulti(
 			owner.m_attackDist,
 			90.0f,

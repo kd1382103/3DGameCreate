@@ -18,7 +18,8 @@ struct KdFPSController
 	// 現在のFPS上限を取得
 	int GetMaxFPS() const { return m_maxFps; }
 
-
+	// 現在のFPS設定を基準にしたフレーム倍率
+	float GetFrameScale() const;
 
 	// FPS制御
 	int		m_nowfps = 0;		// 現在のFPS値
