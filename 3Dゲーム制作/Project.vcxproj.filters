@@ -178,6 +178,9 @@
     <Filter Include="Src\Application\GameObject\Effect\SwordTrail">
       <UniqueIdentifier>{d3712fc2-d446-4a5d-9752-4361b8015577}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\UI\TitleImage">
+      <UniqueIdentifier>{14b6bbfd-7531-4cda-b000-e98de7a50920}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -432,6 +435,9 @@
     <ClInclude Include="Src\Application\GameObject\Effect\SwordTrail\SwordTrail.h">
       <Filter>Src\Application\GameObject\Effect\SwordTrail</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\TitleImage\TitleImage.h">
+      <Filter>Src\Application\GameObject\UI\TitleImage</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -652,6 +658,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Effect\SwordTrail\SwordTrail.cpp">
       <Filter>Src\Application\GameObject\Effect\SwordTrail</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\TitleImage\TitleImage.cpp">
+      <Filter>Src\Application\GameObject\UI\TitleImage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

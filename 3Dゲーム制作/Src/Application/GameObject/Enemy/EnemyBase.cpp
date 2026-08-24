@@ -167,7 +167,7 @@ void EnemyBase::DrawLit()
 {
 	if (m_model)
 	{
-		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
+		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld, { 0.6f, 0.8f, 1.0f, 1.0f });
 	}
 }
 

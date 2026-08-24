@@ -219,7 +219,7 @@ bool Application::Init(int w, int h)
 	// ゲーム固有の初期化
 	//===================================================================
 	// 例えばカーソルを消したい場合
-	ShowCursor(true);
+	ShowCursor(false);
 
 	//===================================================================
 	//トグルキー登録
@@ -337,7 +337,7 @@ void Application::Execute()
 		//=========================================
 
 		m_fpsController.Update();
-		std::string titleBar = "ゲーム名 FPS : " + std::to_string(m_fpsController.m_nowfps);
+		std::string titleBar = "アイアンフロンティア:DEMO FPS : " + std::to_string(m_fpsController.m_nowfps);
 		SetWindowTextA(m_window.GetWndHandle(), titleBar.c_str());
 
 	}
