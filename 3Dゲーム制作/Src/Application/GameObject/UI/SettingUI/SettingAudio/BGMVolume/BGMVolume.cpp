@@ -151,7 +151,7 @@ void BGMVolume::DrawSprite()
 
 	sprite.DrawFontEx(
 		param,
-		"音楽音量"
+		"背景音楽 音量"
 	);
 
 	//---------------------------------------

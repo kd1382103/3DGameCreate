@@ -297,6 +297,7 @@
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume\BGMVolume.h" />
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SettingAudio.h" />
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume\SEVolume.h" />
+    <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingDisplay\SettingDisplay.h" />
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingUI.h" />
     <ClInclude Include="Src\Application\GameObject\UI\TitleImage\TitleImage.h" />
     <ClInclude Include="Src\Application\main.h" />
@@ -377,6 +378,7 @@
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume\BGMVolume.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SettingAudio.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume\SEVolume.cpp" />
+    <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingDisplay\SettingDisplay.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingUI.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\TitleImage\TitleImage.cpp" />
     <ClCompile Include="Src\Application\main.cpp" />

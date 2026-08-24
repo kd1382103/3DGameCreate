@@ -21,6 +21,10 @@ public:
 	int		GetNowFPS()			const	{ return m_fpsController.m_nowfps; }
 	int		GetMaxFPS()			const	{ return m_fpsController.m_maxFps; }
 	float	GetDeltaTime()		const	{ return m_fpsController.GetDeltaTime(); }
+
+	//8/24追加
+	KdFPSController& GetFPSController() { return m_fpsController; }
+
 private:
 
 	void KdBeginUpdate();

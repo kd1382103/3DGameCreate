@@ -438,6 +438,9 @@
     <ClInclude Include="Src\Application\GameObject\UI\TitleImage\TitleImage.h">
       <Filter>Src\Application\GameObject\UI\TitleImage</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingDisplay\SettingDisplay.h">
+      <Filter>Src\Application\GameObject\UI\SettingUI\SettingDisplay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -661,6 +664,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\TitleImage\TitleImage.cpp">
       <Filter>Src\Application\GameObject\UI\TitleImage</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingDisplay\SettingDisplay.cpp">
+      <Filter>Src\Application\GameObject\UI\SettingUI\SettingDisplay</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
