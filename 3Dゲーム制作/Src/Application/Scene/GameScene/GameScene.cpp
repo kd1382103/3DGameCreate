@@ -685,10 +685,6 @@ void GameScene::OpenSetting()
 		m_tpsCamera->m_mouseFree = true;
 	}
 
-	//---------------------------------------
-	// マウスカーソル表示
-	//---------------------------------------
-	ShowCursor(TRUE);
 	ClipCursor(nullptr);
 }
 
@@ -730,10 +726,6 @@ void GameScene::CloseSetting()
 		m_tpsCamera->m_mouseFree = false;
 	}
 
-	//---------------------------------------
-	// マウスカーソル非表示
-	//---------------------------------------
-	ShowCursor(FALSE);
 	ClipCursor(nullptr);
 }
 

@@ -129,9 +129,11 @@ float SettingUI::GetSEVolume() const
 void SettingUI::Open()
 {
 	m_visible = true;
+	ShowCursor(TRUE);
 }
 
 void SettingUI::Close()
 {
 	m_visible = false;
+	ShowCursor(FALSE);
 }

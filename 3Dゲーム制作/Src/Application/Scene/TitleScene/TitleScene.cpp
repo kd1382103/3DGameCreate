@@ -3,9 +3,42 @@
 
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/GameObject/UI/TitleImage/TitleImage.h>
+#include <Application/GameObject/UI/SettingUI/SettingUI.h>
+
 
 void TitleScene::Event()
 {
+	//========================================
+	// 設定画面 開閉
+	// TABキー
+	//========================================
+	if (GetAsyncKeyState(VK_TAB) & 0x0001)
+	{
+		if (m_settingUI)
+		{
+			if (m_settingUI->IsVisible())
+			{
+				m_settingUI->Close();
+			}
+			else
+			{
+				m_settingUI->Open();
+			}
+		}
+
+		return;
+	}
+
+	//========================================
+	// 設定画面を開いている間
+	//========================================
+	if (m_settingUI && m_settingUI->IsVisible())
+	{
+		// 設定中はAny Keyを無効にする
+		return;
+	}
+
+
 	//---------------------------------------
 	// Any Key
 	//---------------------------------------
@@ -31,6 +64,16 @@ void TitleScene::Init()
 	auto titleImage = std::make_shared<TitleImage>();
 	titleImage->Init();
 	AddObject(titleImage);
+
+	//---------------------------------------
+	// 設定UI
+	//---------------------------------------
+	m_settingUI =
+		std::make_shared<SettingUI>();
+
+	m_settingUI->Init();
+
+	AddObject(m_settingUI);
 
 	//auto titleText = std::make_shared<FontText>();
 	//titleText->InitMessage(
