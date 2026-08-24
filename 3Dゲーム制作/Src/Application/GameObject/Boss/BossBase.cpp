@@ -350,12 +350,7 @@ void BossBase::DrawLit()
 {
 	if (m_model)
 	{
-		KdShaderManager::Instance()
-			.m_StandardShader
-			.DrawModel(
-				*m_model,
-				m_mWorld
-			);
+		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld, { 0.6f, 0.35f, 1.0f, 1.0f });
 	}
 }
 
@@ -503,6 +498,12 @@ void BossBase::DrawSprite()
 			{ 0, 0 }
 		);
 	}
+}
+
+void BossBase::GenerateDepthMapFromLight()
+{
+	if (!m_model) return;
+	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
 //==============================================================

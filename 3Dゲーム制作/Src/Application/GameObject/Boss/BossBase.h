@@ -20,6 +20,7 @@ public:
 	void PostUpdate() override;
 	void DrawLit() override;
 	void DrawSprite() override;
+	void GenerateDepthMapFromLight() override;
 
 	virtual Math::Vector3 GetHitCenter() const
 	{
