@@ -12,11 +12,11 @@ int SettingDisplay::s_fpsIndex = 1;
 //============================================================
 void SettingDisplay::Init()
 {
-	s_fpsIndex = 1;
+	//s_fpsIndex = 1;
 
-	Application::Instance()
-		.GetFPSController()
-		.SetMaxFPS(kFPSList[s_fpsIndex]);
+	//Application::Instance()
+	//	.GetFPSController()
+	//	.SetMaxFPS(kFPSList[s_fpsIndex]);
 }
 
 //============================================================
