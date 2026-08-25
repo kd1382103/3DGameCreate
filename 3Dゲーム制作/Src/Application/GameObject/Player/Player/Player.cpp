@@ -163,6 +163,25 @@ void Player::UpdateInput()
 
 				AddUltimateEnergy(10.0f);
 
+				//========================================
+				// 回避スロー
+				//========================================
+				m_slowTimer = 10.0f;
+				SceneManager::Instance().SetTimeScale(0.2f);
+
+				//========================================
+				// 回避カメラ演出
+				//========================================
+				if (auto cam =
+					std::dynamic_pointer_cast<TPSCamera>(
+						m_wpCamera.lock()))
+				{
+					cam->StartDodgeCamera();
+				}
+
+				//========================================
+				// 攻撃中の敵をスロー
+				//========================================
 				for (auto& obj : SceneManager::Instance().GetObjList())
 				{
 					auto enemy =

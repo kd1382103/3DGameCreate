@@ -33,13 +33,21 @@ void EnemyBaseStateIdle::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void EnemyBaseStateMove::Update(EnemyBase& owner)
 {
-	float dt = SceneManager::Instance().GetTimeScale() * owner.GetTimeScale();
+	const float frameScale =
+		Application::Instance().GetFPSController().GetFrameScale();
+
+	const float dt =
+		frameScale *
+		SceneManager::Instance().GetTimeScale() *
+		owner.GetTimeScale();
 
 	auto player = owner.m_wpPlayer.lock();
 	if (!player) return;
 
 	// プレイヤー方向
-	Math::Vector3 dir = player->GetPos() - owner.m_nowPos;
+	Math::Vector3 dir =
+		player->GetPos() - owner.m_nowPos;
+
 	dir.y = 0;
 	dir.Normalize();
 
@@ -48,13 +56,24 @@ void EnemyBaseStateMove::Update(EnemyBase& owner)
 		Math::Vector3 nowDir = owner.GetForward();
 		nowDir.Normalize();
 
-		float dot = std::clamp(nowDir.Dot(dir), -1.0f, 1.0f);
+		float dot =
+			std::clamp(
+				nowDir.Dot(dir),
+				-1.0f,
+				1.0f
+			);
+
 		float angle = acos(dot);
 
 		Math::Vector3 cross = nowDir.Cross(dir);
-		if (cross.y < 0) angle = -angle;
+
+		if (cross.y < 0)
+		{
+			angle = -angle;
+		}
 
 		float rotSpeed = DirectX::XMConvertToRadians(owner.m_rotationSpeedDeg) * dt;
+
 		angle = std::clamp(angle, -rotSpeed, rotSpeed);
 
 		owner.m_angleY += angle;
@@ -138,8 +157,11 @@ void EnemyBaseStateAttack::Enter(EnemyBase& owner)
 
 void EnemyBaseStateAttack::Update(EnemyBase& owner)
 {
-	float dt =
-		Application::Instance().GetDeltaTime() *
+	const float frameScale =
+		Application::Instance().GetFPSController().GetFrameScale();
+
+	const float dt =
+		frameScale *
 		SceneManager::Instance().GetTimeScale() *
 		owner.GetTimeScale();
 

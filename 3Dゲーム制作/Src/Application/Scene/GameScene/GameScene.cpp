@@ -25,6 +25,11 @@
 void GameScene::Event()
 {
 	//=======================================
+	// デバッグ
+	//=======================================
+	UpdateDebug();
+
+	//=======================================
 	// ゲーム進行
 	//=======================================
 	UpdateGameFlow();
@@ -752,6 +757,66 @@ void GameScene::UpdateAudioVolume()
 	float seVolume = m_settingUI->GetSEVolume();
 
 	KdAudioManager::Instance().SetSEVolume(seVolume);
+}
+
+void GameScene::UpdateDebug()
+{
+	//========================================
+	// F1：チュートリアルスキップ
+	//========================================
+	static bool prevF1 = false;
+
+	bool nowF1 =
+		(GetAsyncKeyState(VK_F1) & 0x8000) != 0;
+
+	// 押した瞬間だけ
+	if (nowF1 && !prevF1)
+	{
+		// チュートリアル中のみ有効
+		if (m_gamePhase == GamePhase::Tutorial ||
+			m_gamePhase == GamePhase::TutorialComplete ||
+			m_gamePhase == GamePhase::Prepare)
+		{
+			//========================================
+			// チュートリアル敵を削除
+			//========================================
+			if (m_tutorialEnemy)
+			{
+				m_tutorialEnemy->SetExpired();
+				m_tutorialEnemy = nullptr;
+			}
+
+			//========================================
+			// チュートリアル文字を削除
+			//========================================
+			if (m_tutorialText)
+			{
+				m_tutorialText->SetExpired();
+				m_tutorialText = nullptr;
+			}
+
+			//========================================
+			// チュートリアル完了
+			//========================================
+			m_tutorialStep = TutorialStep::Finish;
+
+			//========================================
+			// 準備フェーズへ
+			//========================================
+			m_gamePhase = GamePhase::Prepare;
+
+			m_phaseTimer = 0.0f;
+
+			//========================================
+			// デバッグ表示
+			//========================================
+			KdDebugGUI::Instance().AddLog(
+				"Tutorial Skip\n"
+			);
+		}
+	}
+
+	prevF1 = nowF1;
 }
 
 void GameScene::SetGameUIVisible(bool visible)

@@ -30,7 +30,7 @@ public:
 	void SetTarget(const std::shared_ptr<Player>& target) { m_wpPlayer = target; }
 	void SetCamera(std::shared_ptr<CameraBase> cam) { m_wpCamera = cam; }
 
-	void Damage(float dmg,bool isUltimate,bool finalHit)override;
+	void Damage(float dmg, bool isUltimate = false, bool finalHit = false)override;
 
 	// 攻撃判定（ステート側が呼ぶ）
 	void DoAttackHitCheck(float range);

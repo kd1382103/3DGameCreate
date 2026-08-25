@@ -34,37 +34,88 @@ void BossStateIdle::Update(BossBase& owner)
 
 void BossStateMove::Update(BossBase& owner)
 {
-	float dt = SceneManager::Instance().GetTimeScale() * owner.GetTimeScale();
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
+	const float dt =
+		frameScale *
+		SceneManager::Instance().GetTimeScale() *
+		owner.GetTimeScale();
 
 	auto player = owner.m_wpPlayer.lock();
 	if (!player) return;
 
+	//========================================
 	// プレイヤー方向
-	Math::Vector3 dir = player->GetPos() - owner.m_nowPos;
+	//========================================
+	Math::Vector3 dir =
+		player->GetPos() -
+		owner.m_nowPos;
+
 	dir.y = 0;
-	dir.Normalize();
 
-	// キャラ回転処理
+	if (dir.LengthSquared() < 0.00001f)
 	{
-		Math::Vector3 nowDir = owner.GetForward();
-		nowDir.Normalize();
-
-		float dot = std::clamp(nowDir.Dot(dir), -1.0f, 1.0f);
-		float angle = acos(dot);
-
-		Math::Vector3 cross = nowDir.Cross(dir);
-		if (cross.y < 0) angle = -angle;
-
-		float rotSpeed =
-			DirectX::XMConvertToRadians(owner.m_rotationSpeedDeg) * dt;
-
-		angle = std::clamp(angle, -rotSpeed, rotSpeed);
-
-		owner.m_angleY += angle;
+		return;
 	}
 
+	dir.Normalize();
+
+	//========================================
+	// キャラクター回転
+	//========================================
+	{
+		Math::Vector3 nowDir =
+			owner.GetForward();
+
+		nowDir.y = 0;
+
+		if (nowDir.LengthSquared() > 0.00001f)
+		{
+			nowDir.Normalize();
+
+			float dot =
+				std::clamp(
+					nowDir.Dot(dir),
+					-1.0f,
+					1.0f
+				);
+
+			float angle = acos(dot);
+
+			Math::Vector3 cross =
+				nowDir.Cross(dir);
+
+			if (cross.y < 0)
+			{
+				angle = -angle;
+			}
+
+			float rotSpeed =
+				DirectX::XMConvertToRadians(
+					owner.m_rotationSpeedDeg
+				) * dt;
+
+			angle =
+				std::clamp(
+					angle,
+					-rotSpeed,
+					rotSpeed
+				);
+
+			owner.m_angleY += angle;
+		}
+	}
+
+	//========================================
 	// 移動
-	owner.m_nowPos += dir * owner.m_moveSpeed * dt;
+	//========================================
+	owner.m_nowPos +=
+		dir *
+		owner.m_moveSpeed *
+		dt;
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -202,13 +253,14 @@ void BossStateAttack1::Enter(BossBase& owner)
 	owner.m_preAttackActive = true;
 	owner.m_preAttackAlpha = 1.0f;
 	owner.m_preAttackTimer = 0.0f;
+	owner.m_preAttackScale = 1.0f;
 
 	owner.m_preAttackPos =
 		owner.m_nowPos +
 		Math::Vector3(0, 2.0f, 0);
 
 	//---------------------------------------
-	// 回避可能
+	// 回避受付開始
 	//---------------------------------------
 	auto player = owner.m_wpPlayer.lock();
 
@@ -220,17 +272,22 @@ void BossStateAttack1::Enter(BossBase& owner)
 
 void BossStateAttack1::Update(BossBase& owner)
 {
-	float dt =
-		Application::Instance().GetDeltaTime() *
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
+	const float dt =
+		frameScale *
 		SceneManager::Instance().GetTimeScale() *
 		owner.GetTimeScale();
 
 	float t =
 		owner.m_animator.GetAnimeCurrentTime();
 
-	//---------------------------------------
+	//========================================
 	// 攻撃予知
-	//---------------------------------------
+	//========================================
 	if (owner.m_preAttackActive)
 	{
 		owner.m_preAttackTimer += dt;
@@ -251,26 +308,20 @@ void BossStateAttack1::Update(BossBase& owner)
 				1.0f
 			);
 
-		//---------------------------------------
-		// 1 → 0
-		//---------------------------------------
 		owner.m_preAttackAlpha =
 			1.0f - progress;
 
-		//---------------------------------------
-		// 徐々に拡大
-		//---------------------------------------
 		owner.m_preAttackScale =
 			1.0f +
-			(1.0f - owner.m_preAttackAlpha)
-			* 0.5f;
+			(1.0f - owner.m_preAttackAlpha) * 0.5f;
 	}
 
-	if (t >= 14.0f && owner.m_preAttackActive)
+	//========================================
+	// 攻撃予知終了
+	//========================================
+	if (t >= 14.0f &&
+		owner.m_preAttackActive)
 	{
-		//---------------------------------------
-		// 予知終了
-		//---------------------------------------
 		owner.m_preAttackActive = false;
 
 		auto player =
@@ -278,32 +329,23 @@ void BossStateAttack1::Update(BossBase& owner)
 
 		if (player)
 		{
-			//---------------------------------------
 			// ジャスト回避成功
-			//---------------------------------------
 			if (player->m_justDodgeSuccess)
 			{
 				owner.StartSlow(2.0f);
 
-				// 成功フラグをリセット
 				player->m_justDodgeSuccess = false;
 			}
 
-			//---------------------------------------
-			// 回避受付終了
-			//---------------------------------------
 			player->m_canDodge = false;
 		}
 	}
 
-	//---------------------------------------
+	//========================================
 	// 攻撃判定
-	//---------------------------------------
+	//========================================
 	if (t > 15.0f && t < 25.0f)
 	{
-		//-----------------------------------
-		// 攻撃SE
-		//-----------------------------------
 		if (!owner.m_attackSEPlayed)
 		{
 			if (owner.GetTimeScale() >= 0.99f)
@@ -312,24 +354,25 @@ void BossStateAttack1::Update(BossBase& owner)
 					"Asset/Sounds/SE/Attack.wav",
 					SoundType::SE
 				);
+
 				owner.m_attackSEPlayed = true;
 			}
 		}
-		owner.DoAttackHitCheck(owner.m_attackDist);
+
+		owner.DoAttackHitCheck(
+			owner.m_attackDist
+		);
 	}
 
-	//---------------------------------------
+	//========================================
 	// 攻撃終了
-	//---------------------------------------
-	if (
-		owner.m_animator.IsAnimationEnd()
-		)
+	//========================================
+	if (owner.m_animator.IsAnimationEnd())
 	{
 		GoNextAttack(owner);
 		return;
 	}
 }
-
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // 攻撃2ステート
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -349,6 +392,8 @@ void BossStateAttack2::Enter(BossBase& owner)
 	owner.m_preAttackActive = true;
 	owner.m_preAttackAlpha = 1.0f;
 	owner.m_preAttackTimer = 0.0f;
+	owner.m_preAttackScale = 1.0f;
+
 
 	owner.m_preAttackPos =
 		owner.m_nowPos +
@@ -367,8 +412,13 @@ void BossStateAttack2::Enter(BossBase& owner)
 
 void BossStateAttack2::Update(BossBase& owner)
 {
-	float dt =
-		Application::Instance().GetDeltaTime() *
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
+	const float dt =
+		frameScale *
 		SceneManager::Instance().GetTimeScale() *
 		owner.GetTimeScale();
 
@@ -490,6 +540,8 @@ void BossStateAttack3::Enter(BossBase& owner)
 	owner.m_preAttackActive = true;
 	owner.m_preAttackAlpha = 1.0f;
 	owner.m_preAttackTimer = 0.0f;
+	owner.m_preAttackScale = 1.0f;
+
 
 	owner.m_preAttackPos =
 		owner.m_nowPos +
@@ -508,8 +560,13 @@ void BossStateAttack3::Enter(BossBase& owner)
 
 void BossStateAttack3::Update(BossBase& owner)
 {
-	float dt =
-		Application::Instance().GetDeltaTime() *
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
+	const float dt =
+		frameScale *
 		SceneManager::Instance().GetTimeScale() *
 		owner.GetTimeScale();
 

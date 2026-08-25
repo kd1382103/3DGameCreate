@@ -32,7 +32,7 @@ void TPSCamera::PostUpdate()
 	// カメラの回転
 	if (!m_mouseFree) { UpdateRotateByMouse(); }
 
-	m_nowFov += (m_targetFov - m_nowFov) * 0.15f;
+	m_nowFov += (m_targetFov - m_nowFov);
 
 	m_spCamera->SetProjectionMatrix(m_nowFov);
 
