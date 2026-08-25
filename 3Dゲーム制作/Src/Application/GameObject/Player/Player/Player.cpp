@@ -48,9 +48,6 @@ void Player::Update()
 
 	const float scaledFrameScale = frameScale * timeScale;
 
-	const float deltaTime =
-		Application::Instance().GetFPSController().GetDeltaTime();
-
 	//========================================
 	// 入力
 	//========================================

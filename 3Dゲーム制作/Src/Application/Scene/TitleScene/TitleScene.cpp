@@ -5,9 +5,18 @@
 #include <Application/GameObject/UI/TitleImage/TitleImage.h>
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
 
+#include <Application/main.h>
 
+//============================================================
+// イベント
+//============================================================
 void TitleScene::Event()
 {
+	//========================================
+	// 音量更新
+	//========================================
+	UpdateAudioVolume();
+
 	//========================================
 	// 設定画面 開閉
 	// TABキー
@@ -38,7 +47,6 @@ void TitleScene::Event()
 		return;
 	}
 
-
 	//---------------------------------------
 	// Any Key
 	//---------------------------------------
@@ -46,8 +54,19 @@ void TitleScene::Event()
 	{
 		if (GetAsyncKeyState(key) & 0x0001)
 		{
-			SceneManager::Instance().SetNextScene
-			(
+			//=======================================
+			// タイトルBGM停止
+			//=======================================
+			if (m_titleBGM)
+			{
+				m_titleBGM->Stop();
+				m_titleBGM = nullptr;
+			}
+
+			//=======================================
+			// ゲームシーンへ
+			//=======================================
+			SceneManager::Instance().SetNextScene(
 				SceneManager::SceneType::Game
 			);
 
@@ -56,6 +75,9 @@ void TitleScene::Event()
 	}
 }
 
+//============================================================
+// 初期化
+//============================================================
 void TitleScene::Init()
 {
 	//---------------------------------------
@@ -75,11 +97,63 @@ void TitleScene::Init()
 
 	AddObject(m_settingUI);
 
-	//auto titleText = std::make_shared<FontText>();
-	//titleText->InitMessage(
-	//	"ゲーム名\nタイトル画面",
-	//	{ 0.0f, 0.0f },
-	//	2.0f
-	//);
-	//AddObject(titleText);
+	//---------------------------------------
+	// 音声
+	//---------------------------------------
+	InitAudio();
+}
+
+//============================================================
+// 音声初期化
+//============================================================
+void TitleScene::InitAudio()
+{
+	//---------------------------------------
+	// 保存されている音量を取得
+	//---------------------------------------
+	float bgmVolume = m_settingUI->GetBGMVolume();
+	float seVolume = m_settingUI->GetSEVolume();
+
+	//---------------------------------------
+	// BGM・SE音量を設定
+	//---------------------------------------
+	KdAudioManager::Instance().SetBGMVolume(bgmVolume);
+	KdAudioManager::Instance().SetSEVolume(seVolume);
+
+	//---------------------------------------
+	// タイトルBGM開始
+	//---------------------------------------
+	m_titleBGM = KdAudioManager::Instance().Play(
+		"Asset/Sounds/BGM/TitleBGM.wav",
+		SoundType::BGM,
+		true
+	);
+}
+
+//============================================================
+// 音量更新
+//============================================================
+void TitleScene::UpdateAudioVolume()
+{
+	if (!m_settingUI)
+	{
+		return;
+	}
+
+	//---------------------------------------
+	// BGM音量
+	//---------------------------------------
+	float bgmVolume = m_settingUI->GetBGMVolume();
+
+	if (m_titleBGM)
+	{
+		m_titleBGM->SetVolume(bgmVolume);
+	}
+
+	//---------------------------------------
+	// SE音量
+	//---------------------------------------
+	float seVolume = m_settingUI->GetSEVolume();
+
+	KdAudioManager::Instance().SetSEVolume(seVolume);
 }
