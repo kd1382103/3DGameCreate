@@ -166,6 +166,11 @@ private:
 	//void UpdateWallCollision();
 	//void UpdateWorldMatrix();
 	//void UpdateUIWorldPosition();
+
+	//==============================================================
+	// 死亡時の状態リセット
+	//==============================================================
+	void ResetBattleState();
    
 public:
 

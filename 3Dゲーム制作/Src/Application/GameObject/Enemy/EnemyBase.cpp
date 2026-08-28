@@ -327,8 +327,10 @@ void EnemyBase::Damage(float dmg, bool isUltimate , bool finalHit )
 
 	m_hp = after;
 
+	//死亡処理
 	if (m_hp <= 0)
 	{
+		ResetBattleState();
 		m_isExpired = true;
 		return;
 	}
@@ -670,5 +672,53 @@ void EnemyBase::UpdateGroundCollision()
 	else
 	{
 		m_isGround = false;
+	}
+}
+
+void EnemyBase::ResetBattleState()
+{
+	//---------------------------------------
+	// 攻撃関連
+	//---------------------------------------
+	m_isAttacking = false;
+	m_attackHitOnce = false;
+	m_attackSEPlayed = false;
+
+	//---------------------------------------
+	// 攻撃予知
+	//---------------------------------------
+	m_preAttackActive = false;
+	m_preAttackAlpha = 0.0f;
+	m_preAttackTimer = 0.0f;
+
+	//---------------------------------------
+	// チュートリアル攻撃
+	//---------------------------------------
+	m_isTutorialAttack = false;
+	m_tutorialAttackFinished = false;
+	m_canAttack = false;
+
+	//---------------------------------------
+	// ロックオン
+	//---------------------------------------
+	m_lockOnActive = false;
+
+	//---------------------------------------
+	// スロー
+	//---------------------------------------
+	m_isSlow = false;
+	m_slowTimer = 0.0f;
+
+	//---------------------------------------
+	// 攻撃音
+	//---------------------------------------
+	StopAttackSound();
+
+	//---------------------------------------
+	// プレイヤー側のジャスト回避受付を解除
+	//---------------------------------------
+	if (auto player = m_wpPlayer.lock())
+	{
+		player->m_canDodge = false;
 	}
 }
