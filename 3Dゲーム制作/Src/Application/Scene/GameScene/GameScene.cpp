@@ -12,6 +12,7 @@
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
 #include <Application/GameObject/UI/FontText/FontText.h>
+#include <Application/GameObject/UI/BattolPin/BattlePin.h>
 #include <Application/GameObject/UI/GameClearBotton/GameClearButton.h>
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
 
@@ -56,6 +57,7 @@ void GameScene::Init()
 	InitPlayer();
 	InitTutorialEnemy();
 	InitUI();
+	InitBattleStartPin();
 
 	//=======================================
 	// 剣の軌跡
@@ -220,10 +222,10 @@ void GameScene::UpdateGameFlow()
 
 	case GamePhase::Battle:
 		UpdateBattle();
-		UpdateBoss();
 		break;
 
 	case GamePhase::Boss:
+		UpdateBoss();
 		UpdateGameEnd();
 		break;
 
@@ -233,7 +235,6 @@ void GameScene::UpdateGameFlow()
 		break;
 	}
 }
-
 void GameScene::UpdateTutorial()
 {
 	if (m_gamePhase != GamePhase::Tutorial) { return; }
@@ -393,91 +394,158 @@ void GameScene::UpdatePrepare()
 	if (m_gamePhase != GamePhase::Prepare) { return; }
 	if (!m_player) { return; }
 
-	// プレイヤーと戦闘開始地点との距離
 	float distance =
 		(m_player->GetPos() - m_battleStartPos).Length();
 
-	// 戦闘開始地点に近づいたら
-	if (distance < 2.0f)
+	if (distance >= 2.0f)
 	{
-		m_gamePhase = GamePhase::Battle;
+		return;
 	}
+
+	//---------------------------------------
+	// 次の戦闘開始
+	//---------------------------------------
+	m_battleStarted = false;
+	
+	//=======================================
+	// 戦闘エリアに入ったのでピンを消す
+	//=======================================
+	if (m_battlePin)
+	{
+		m_battlePin->SetVisible(false);
+	}
+
+	//---------------------------------------
+	// ボス戦
+	//---------------------------------------
+	if (m_battleNo >= 2)
+	{
+		m_gamePhase = GamePhase::Boss;
+		m_isBossSpawned = false;
+		return;
+	}
+
+	//---------------------------------------
+	// 通常戦闘
+	//---------------------------------------
+	m_gamePhase = GamePhase::Battle;
 }
 
 void GameScene::UpdateBattle()
 {
-	if (m_gamePhase != GamePhase::Battle)
+	if (m_gamePhase != GamePhase::Battle) { return; }
+
+	//---------------------------------------
+	// Battle開始
+	//---------------------------------------
+	if (!m_battleStarted)
 	{
+		m_battleStarted = true;
+
+		//---------------------------------------
+		// Enemy1生成
+		//---------------------------------------
+		m_enemy1 = std::make_shared<Enemy1>();
+		m_enemy1->Init();
+
+		if (m_battleNo == 0)
+		{
+			m_enemy1->SetPos({ -3, 0, 30 });
+		}
+		else if (m_battleNo == 1)
+		{
+			m_enemy1->SetPos({ -3, 0, 60 });
+		}
+
+		m_enemy1->SetTarget(m_player);
+		m_enemy1->SetCamera(m_camera);
+		m_enemy1->SetGameScene(this);
+
+		AddObject(m_enemy1);
+
+		//---------------------------------------
+		// Enemy2生成
+		//---------------------------------------
+		m_enemy2 = std::make_shared<Enemy2>();
+		m_enemy2->Init();
+
+		if (m_battleNo == 0)
+		{
+			m_enemy2->SetPos({ 3, 0, 30 });
+		}
+		else if (m_battleNo == 1)
+		{
+			m_enemy2->SetPos({ 3, 0, 60 });
+		}
+
+		m_enemy2->SetTarget(m_player);
+		m_enemy2->SetCamera(m_camera);
+		m_enemy2->SetGameScene(this);
+
+		AddObject(m_enemy2);
+
 		return;
 	}
 
-	if (m_battleStarted)
+	//---------------------------------------
+	// 敵の生存確認
+	//---------------------------------------
+	bool enemy1Dead =
+		!m_enemy1 || !m_enemy1->IsAlive();
+
+	bool enemy2Dead =
+		!m_enemy2 || !m_enemy2->IsAlive();
+
+	//---------------------------------------
+	// 全滅したら探索へ戻る
+	//---------------------------------------
+	if (enemy1Dead && enemy2Dead)
 	{
-		return;
+		m_battleStarted = false;
+
+		m_battleNo++;
+
+		//---------------------------------------
+		// 次の探索地点へ
+		//---------------------------------------
+		if (m_battleNo == 1)
+		{
+			m_battleStartPos = { 0, 0, 60 };
+		}
+		else if (m_battleNo == 2)
+		{
+			m_battleStartPos = { 0, 0, 100 };
+		}
+
+		// ピンも次の戦闘地点へ移動
+		if (m_battlePin)
+		{
+			m_battlePin->SetPos(m_battleStartPos);
+			m_battlePin->SetVisible(true);
+		}
+		m_gamePhase = GamePhase::Prepare;
 	}
-
-	m_battleStarted = true;
-
-	//---------------------------------------
-	// Enemy1生成
-	//---------------------------------------
-	m_enemy1 = std::make_shared<Enemy1>();
-	m_enemy1->Init();
-	
-	m_enemy1->SetPos({ -3, 0, 15 });
-	
-	m_enemy1->SetTarget(m_player);
-	m_enemy1->SetCamera(m_camera);
-	m_enemy1->SetGameScene(this);
-
-	AddObject(m_enemy1);
-
-	//---------------------------------------
-	// Enemy2生成
-	//---------------------------------------
-	m_enemy2 = std::make_shared<Enemy2>();
-	m_enemy2->Init();
-	
-	m_enemy2->SetPos({ 3, 0, 15 });
-	
-	m_enemy2->SetTarget(m_player);
-	m_enemy2->SetCamera(m_camera);
-	m_enemy2->SetGameScene(this);
-
-	AddObject(m_enemy2);
 }
-
 void GameScene::UpdateBoss()
 {
-	if (m_gamePhase != GamePhase::Battle)
-	{
-		return;
-	}
+	if (m_gamePhase != GamePhase::Boss) { return; }
+	if (m_isBossSpawned) { return; }
 
-	if (m_battleStarted && !m_isBossSpawned)
-	{
-		bool enemy1Dead = !m_enemy1 || !m_enemy1->IsAlive();
-		bool enemy2Dead = !m_enemy2 || !m_enemy2->IsAlive();
+	m_isBossSpawned = true;
 
-		// Enemy1とEnemy2が両方死亡
-		if (enemy1Dead && enemy2Dead)
-		{
-			m_isBossSpawned = true;
+	//---------------------------------------
+	// Boss生成
+	//---------------------------------------
+	m_boss = std::make_shared<Boss>();
+	m_boss->Init();
 
-			m_gamePhase = GamePhase::Boss;
+	m_boss->SetPos({ -200, 0, 100 });
 
-			m_boss = std::make_shared<Boss>();
-			m_boss->Init();
-			
-			m_boss->SetPos({ 0, 0, 0 });
-			
-			m_boss->SetTarget(m_player);
-			m_boss->SetCamera(m_camera);
-			m_boss->SetGameScene(this);
+	m_boss->SetTarget(m_player);
+	m_boss->SetCamera(m_camera);
+	m_boss->SetGameScene(this);
 
-			AddObject(m_boss);
-		}
-	}
+	AddObject(m_boss);
 }
 
 void GameScene::UpdateGameEnd()
@@ -670,6 +738,27 @@ void GameScene::OpenSetting()
 	SetGameUIVisible(false);
 
 	//---------------------------------------
+	// 必殺技ポイント非表示
+	//---------------------------------------
+	if (m_player)
+	{
+		m_player->SetUltimatePointVisible(false);
+	}
+
+	//---------------------------------------
+	// 戦闘エリアピン非表示
+	//---------------------------------------
+	if (m_battlePin)
+	{
+		m_battlePin->SetVisible(false);
+	}
+
+	//---------------------------------------
+	// フライテキスト非表示
+	//---------------------------------------
+	SetFlyTextVisible(false);
+
+	//---------------------------------------
 	// プレイヤー入力をロック
 	//---------------------------------------
 	if (m_player)
@@ -709,6 +798,27 @@ void GameScene::CloseSetting()
 	// ゲームUI表示
 	//---------------------------------------
 	SetGameUIVisible(true);
+
+	//---------------------------------------
+	// 必殺技ポイント再表示
+	//---------------------------------------
+	if (m_player)
+	{
+		m_player->SetUltimatePointVisible(true);
+	}
+
+	//---------------------------------------
+	// 戦闘エリアピン再表示
+	//---------------------------------------
+	if (m_battlePin)
+	{
+		m_battlePin->SetVisible(true);
+	}
+
+	//---------------------------------------
+	// フライテキスト表示
+	//---------------------------------------
+	SetFlyTextVisible(true);
 
 	//---------------------------------------
 	// プレイヤー入力解除
@@ -819,6 +929,19 @@ void GameScene::UpdateDebug()
 	prevF1 = nowF1;
 }
 
+void GameScene::InitBattleStartPin()
+{
+	m_battlePin =
+		std::make_shared<BattlePin>();
+
+	m_battlePin->Init();
+
+	m_battlePin->SetPos(m_battleStartPos);
+	m_battlePin->SetCamera(m_camera);
+
+	AddObject(m_battlePin);
+}
+
 void GameScene::SetGameUIVisible(bool visible)
 {
 	if (m_tutorialText)
@@ -866,6 +989,24 @@ void GameScene::SetGameUIVisible(bool visible)
 	{
 		m_boss->SetHPGaugeVisible(visible);
 	}
+}
+
+void GameScene::SetFlyTextVisible(bool visible)
+{
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		auto fly = std::dynamic_pointer_cast<FontText>(obj);
+
+		if (fly)
+		{
+			fly->SetVisible(visible);
+		}
+	}
+}
+
+bool GameScene::IsSettingOpen() const
+{
+	return m_settingUI && m_settingUI->IsVisible();
 }
 
 void GameScene::UpdateTutorialText()

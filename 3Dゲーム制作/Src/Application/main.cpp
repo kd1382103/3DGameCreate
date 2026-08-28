@@ -231,8 +231,7 @@ bool Application::Init(int w, int h)
 	input.AddDevice("Keyboard", keyboard);
 
 	// トグルキー登録（初回のみ）
-	keyboard->AddButton("ToggleKey", new KdInputButtonForWindows('M'));
-	keyboard->AddButton("ChangeKey", new KdInputButtonForWindows('F'));
+	keyboard->AddButton("ToggleKey", new KdInputButtonForWindows(VK_F2));
 
 	//↑一番最初に実行したいものはここより上に書く
 	return true;

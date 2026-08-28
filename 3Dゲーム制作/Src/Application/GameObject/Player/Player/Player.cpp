@@ -88,7 +88,7 @@ void Player::Update()
 	//========================================
 	if (m_canGainUltimate && m_attackContact)
 	{
-		AddUltimateEnergy(1.0f);
+		AddUltimateEnergy(1.0f * frameScale);
 	}
 
 	//========================================
@@ -691,27 +691,31 @@ void Player::DrawSprite()
 		ui->DrawSprite();
 
 	// 必殺技ポイント表示
-	KdSpriteShader::FontParam param;
-	param.pos = { -500,180 };
-	param.scale = 2.0f;
-	param.pivot = { 0,0 };
-	param.angle = 0;
-	param.spacing = 0;
-
-	if (m_ultimateEnergy >= m_ultimateEnergyMax)
+	if (m_ultimatePointVisible)
 	{
-		param.color = { 1.0f,0.85f,0.0f,1.0f }; // 金色
-	}
-	else
-	{
-		param.color = { 0,0,0,1 };
-	}
+		KdSpriteShader::FontParam param;
 
-	KdShaderManager::Instance().m_spriteShader.DrawFontEx(
-		param,
-		"%d",
-		(int)m_ultimateEnergy
-	);
+		param.pos = { -500,180 };
+		param.scale = 2.0f;
+		param.pivot = { 0,0 };
+		param.angle = 0;
+		param.spacing = 0;
+
+		if (m_ultimateEnergy >= m_ultimateEnergyMax)
+		{
+			param.color = { 1.0f,0.85f,0.0f,1.0f };
+		}
+		else
+		{
+			param.color = { 0,0,0,1 };
+		}
+
+		KdShaderManager::Instance().m_spriteShader.DrawFontEx(
+			param,
+			"%d",
+			(int)m_ultimateEnergy
+		);
+	}
 }
 
 void Player::GenerateDepthMapFromLight()
@@ -873,10 +877,13 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 void Player::DoUltimateHitCheck(float range, float width, int damage)
 {
 	if (m_isInvincible) return;
+	if (m_ultimateHitCount >= 5) { return; }
 
 	Math::Vector3 forward = GetForward();
 	forward.y = 0;
 	forward.Normalize();
+
+	bool hit = false;
 
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
@@ -909,6 +916,7 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 		toTarget.y = 0;
 
 		float dist = toTarget.Length();
+
 		if (dist > range) continue;
 		if (dist < 0.0001f) continue;
 
@@ -919,8 +927,8 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 
 		if (angle > DirectX::XMConvertToRadians(width)) continue;
 
-		// 5回目のヒットならフィニッシュ判定
-		bool finalHit = (m_ultimateHitCount >= 5);
+		// 5回目ならフィニッシュ
+		bool finalHit = (m_ultimateHitCount == 4);
 
 		// ダメージ
 		if (enemy)
@@ -931,6 +939,15 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 		{
 			boss->Damage(damage, true, finalHit);
 		}
+		hit = true;
+	}
+
+	//========================================
+	// 必殺技ヒット回数
+	//========================================
+	if (hit)
+	{
+		++m_ultimateHitCount;
 	}
 }
 

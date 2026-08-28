@@ -132,6 +132,11 @@ public:
 		m_ultimateActivated = false;
 	}
 
+	void SetUltimatePointVisible(bool visible)
+	{
+		m_ultimatePointVisible = visible;
+	}
+
 	//========================================
 	// アニメーション
 	//========================================
@@ -292,6 +297,7 @@ public:
 	const float m_ultimateHitInterval = 5.0f;
 
 	int m_ultimateHitCount = 0;
+	const int m_ultimateMaxHitCount = 5;
 
 	bool m_ultimateActivated = false;
 
@@ -358,6 +364,11 @@ private:
 	//========================================
 	float m_collisionRadius = 0.5f;
 	float m_collisionHeight = 1.0f;
+
+	//========================================
+	// 必殺技ポイント表示
+	//========================================
+	bool m_ultimatePointVisible = true;
 
 	//========================================
 	// 剣の軌跡

@@ -216,7 +216,9 @@ void EnemyBase::DrawSprite()
 	// 攻撃予知
 	//==========================================================	
 		
-	if (m_preAttackActive && m_preAttackPoly)
+	if (m_preAttackActive &&
+		m_preAttackPoly &&
+		(!m_pGameScene || !m_pGameScene->IsSettingOpen())) 
 	{
 		// 背面判定（HPと同じ）
 		Math::Vector3 camForward = cam->GetCameraDir();
@@ -253,7 +255,8 @@ void EnemyBase::DrawSprite()
 	}
 
 	//ロックオン
-	if (m_lockOnActive && m_lockOnIcon)
+	if (m_lockOnActive && m_lockOnIcon &&
+		(!m_pGameScene || !m_pGameScene->IsSettingOpen()))
 	{
 		//===========================
 		// ① 背面判定（HPGauge と同じ）
@@ -596,6 +599,28 @@ void EnemyBase::UpdateHPGauge()
 
 void EnemyBase::UpdateDebug()
 {
+	KdDebugGUI::Instance().ClearLog();
+
+	//========================================
+	// アニメーション一覧
+	//========================================
+	for (int i = 0; ; i++)
+	{
+		auto anim = m_model->GetAnimation(i);
+
+		if (!anim)
+		{
+			break;
+		}
+
+		KdDebugGUI::Instance().AddLog(
+			"%d : %s\n",
+			i,
+			anim->m_name.c_str()
+		);
+	}
+
+
 	if (GetAsyncKeyState('3') & 0x8000)
 	{
 		m_hp = 1;

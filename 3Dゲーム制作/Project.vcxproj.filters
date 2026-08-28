@@ -181,6 +181,18 @@
     <Filter Include="Src\Application\GameObject\UI\TitleImage">
       <UniqueIdentifier>{14b6bbfd-7531-4cda-b000-e98de7a50920}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Enemy\Enemy3">
+      <UniqueIdentifier>{1595c2f0-b645-419e-a9f3-ec489e44bfd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Enemy\Enemy4">
+      <UniqueIdentifier>{2ff7bd76-2b40-4641-b6d9-fef9a4d0665b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Enemy\Enemy5">
+      <UniqueIdentifier>{498d562d-d4ea-435e-8b71-73a1623555c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\UI\BattlePin">
+      <UniqueIdentifier>{017df5c6-b2ef-47b7-a027-a987026862af}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -441,6 +453,18 @@
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingDisplay\SettingDisplay.h">
       <Filter>Src\Application\GameObject\UI\SettingUI\SettingDisplay</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Enemy\Enemy5\Enemy5.h">
+      <Filter>Src\Application\GameObject\Enemy\Enemy5</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Enemy\Enemy4\Enemy4.h">
+      <Filter>Src\Application\GameObject\Enemy\Enemy4</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Enemy\Enemy3\Enemy3.h">
+      <Filter>Src\Application\GameObject\Enemy\Enemy3</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\BattolPin\BattlePin.h">
+      <Filter>Src\Application\GameObject\UI\BattlePin</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -667,6 +691,18 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingDisplay\SettingDisplay.cpp">
       <Filter>Src\Application\GameObject\UI\SettingUI\SettingDisplay</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Enemy\Enemy5\Enemy5.cpp">
+      <Filter>Src\Application\GameObject\Enemy\Enemy5</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Enemy\Enemy4\Enemy4.cpp">
+      <Filter>Src\Application\GameObject\Enemy\Enemy4</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Enemy\Enemy3\Enemy3.cpp">
+      <Filter>Src\Application\GameObject\Enemy\Enemy3</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\BattolPin\BattlePin.cpp">
+      <Filter>Src\Application\GameObject\UI\BattlePin</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

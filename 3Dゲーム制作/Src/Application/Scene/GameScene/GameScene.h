@@ -18,6 +18,7 @@ class HPGauge;
 class GameClearButton;
 class FontText;
 class SettingUI;
+class BattlePin;
 //class SwordTrail;
 
 class GameScene : public BaseScene
@@ -31,6 +32,16 @@ public:
 	// UI表示
 	//========================================
 	void SetGameUIVisible(bool visible);
+
+	//========================================
+	// フライテキスト表示
+	//========================================
+	void SetFlyTextVisible(bool visible);
+
+	//========================================
+	// 設定画面
+	//========================================
+	bool IsSettingOpen() const;
 
 	//========================================
 	// ゲームフェーズ
@@ -115,7 +126,6 @@ private:
 	// 設定
 	//========================================
 	void UpdateSetting();
-
 	void OpenSetting();
 	void CloseSetting();
 
@@ -128,6 +138,24 @@ private:
 	// デバッグ
 	//========================================
 	void UpdateDebug();
+
+	Math::Vector3 GetBattleStartPos(int battleNo)
+	{
+		switch (battleNo)
+		{
+		case 0:
+			return { 0, 0, 10 };
+
+		case 1:
+			return { 0, 0, 60 };
+
+		case 2:
+			return { 0, 0, 100 };
+
+		default:
+			return { 0, 0, 0 };
+		}
+	}
 
 private:
 
@@ -154,6 +182,10 @@ private:
 	//========================================
 	std::shared_ptr<Stage> m_stage;
 
+	//========================================
+	// バトル開始位置表示ピン
+	//========================================
+	std::shared_ptr<BattlePin> m_battlePin;
 
 	//========================================
 	// UI
@@ -213,13 +245,6 @@ private:
 	const float m_tutorialFinishTime = 2.0f;
 
 	//========================================
-	// ボス出現
-	//========================================
-
-	// Bossをすでに出現させたか
-	bool m_isBossSpawned = false;
-
-	//========================================
 	// ゲーム終了
 	//========================================
 
@@ -233,18 +258,23 @@ private:
 	//========================================
 	// 戦闘開始
 	//========================================
-
+	
+	int m_battleNo = 0;
+	 
 	// 戦闘開始地点
-	Math::Vector3 m_battleStartPos = { 0, 0, 10 };
+	Math::Vector3 m_battleStartPos = GetBattleStartPos(m_battleNo);
+	void InitBattleStartPin();
 
 	// Enemy1・Enemy2を生成済みか
 	bool m_battleStarted = false;
 
+	// Bossをすでに出現させたか
+	bool m_isBossSpawned = false;
 
 	//========================================
 	// 設定画面用
 	//========================================
-	
+
 	// TABキーの前フレーム状態
 	bool m_settingKeyPrev = false;
 

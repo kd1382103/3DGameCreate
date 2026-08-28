@@ -598,22 +598,32 @@ void PlayerUltimate::Enter(Player& owner)
 
 void PlayerUltimate::Update(Player& owner)
 {
-	float t =
-		owner.m_animator.GetAnimeCurrentTime();
+	float t = owner.m_animator.GetAnimeCurrentTime();
 
 	//========================================
 	// 必殺技攻撃
 	//========================================
 	if (t > 30.0f && t < 60.0f)
 	{
-		owner.m_ultimateHitTimer++;
+		//========================================
+		// 60FPS基準のフレーム倍率
+		//========================================
+		const float frameScale =
+			Application::Instance()
+			.GetFPSController()
+			.GetFrameScale();
 
-		if (owner.m_ultimateHitTimer >=
+		//========================================
+		// 必殺技ヒットタイマー
+		//========================================
+		owner.m_ultimateHitTimer += frameScale;
+
+		if (owner.m_ultimateHitCount < 5 &&
+			owner.m_ultimateHitTimer >=
 			owner.m_ultimateHitInterval)
 		{
-			owner.m_ultimateHitTimer = 0;
-
-			owner.m_ultimateHitCount++;
+			owner.m_ultimateHitTimer -=
+				owner.m_ultimateHitInterval;
 
 			owner.DoUltimateHitCheck(
 				2.5f,
