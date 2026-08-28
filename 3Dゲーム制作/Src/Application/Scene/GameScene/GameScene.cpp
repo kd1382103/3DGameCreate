@@ -386,6 +386,14 @@ void GameScene::UpdateTutorialComplete()
 	{
 		m_gamePhase = GamePhase::Prepare;
 		m_phaseTimer = 0.0f;
+
+		//---------------------------------------
+		// 戦闘準備になったらPinを表示
+		//---------------------------------------
+		if (m_battlePin)
+		{
+			m_battlePin->SetVisible(true);
+		}
 	}
 }
 
@@ -393,14 +401,12 @@ void GameScene::UpdatePrepare()
 {
 	if (m_gamePhase != GamePhase::Prepare) { return; }
 	if (!m_player) { return; }
+	if (!m_battlePin) { return; }
 
-	float distance =
-		(m_player->GetPos() - m_battleStartPos).Length();
-
-	if (distance >= 2.0f)
-	{
-		return;
-	}
+	//---------------------------------------
+	// 戦闘エリア内に入ったか
+	//---------------------------------------
+	if (!m_battlePin->IsInsideRange(m_player->GetPos())) { return; }
 
 	//---------------------------------------
 	// 次の戦闘開始
@@ -410,10 +416,7 @@ void GameScene::UpdatePrepare()
 	//=======================================
 	// 戦闘エリアに入ったのでピンを消す
 	//=======================================
-	if (m_battlePin)
-	{
-		m_battlePin->SetVisible(false);
-	}
+	m_battlePin->SetVisible(false);
 
 	//---------------------------------------
 	// ボス戦
@@ -748,7 +751,7 @@ void GameScene::OpenSetting()
 	//---------------------------------------
 	// 戦闘エリアピン非表示
 	//---------------------------------------
-	if (m_battlePin)
+	if (m_battlePin && m_gamePhase == GamePhase::Prepare)
 	{
 		m_battlePin->SetVisible(false);
 	}
@@ -810,7 +813,7 @@ void GameScene::CloseSetting()
 	//---------------------------------------
 	// 戦闘エリアピン再表示
 	//---------------------------------------
-	if (m_battlePin)
+	if (m_battlePin && m_gamePhase == GamePhase::Prepare)
 	{
 		m_battlePin->SetVisible(true);
 	}
@@ -876,8 +879,7 @@ void GameScene::UpdateDebug()
 	//========================================
 	static bool prevF1 = false;
 
-	bool nowF1 =
-		(GetAsyncKeyState(VK_F1) & 0x8000) != 0;
+	bool nowF1 = (GetAsyncKeyState(VK_F1) & 0x8000) != 0;
 
 	// 押した瞬間だけ
 	if (nowF1 && !prevF1)
@@ -917,6 +919,14 @@ void GameScene::UpdateDebug()
 
 			m_phaseTimer = 0.0f;
 
+			//---------------------------------------
+			// Prepareへ移行したのでPinを表示
+			//---------------------------------------
+			if (m_battlePin)
+			{
+				m_battlePin->SetVisible(true);
+			}
+
 			//========================================
 			// デバッグ表示
 			//========================================
@@ -938,6 +948,16 @@ void GameScene::InitBattleStartPin()
 
 	m_battlePin->SetPos(m_battleStartPos);
 	m_battlePin->SetCamera(m_camera);
+
+	//---------------------------------------
+	// 戦闘開始範囲
+	//---------------------------------------
+	m_battlePin->SetBattleRange(5.0f);
+
+	//---------------------------------------
+	// チュートリアル中は非表示
+	//---------------------------------------
+	m_battlePin->SetVisible(false);
 
 	AddObject(m_battlePin);
 }
