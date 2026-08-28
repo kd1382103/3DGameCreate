@@ -601,26 +601,26 @@ void EnemyBase::UpdateHPGauge()
 
 void EnemyBase::UpdateDebug()
 {
-	KdDebugGUI::Instance().ClearLog();
+	//KdDebugGUI::Instance().ClearLog();
 
-	//========================================
-	// アニメーション一覧
-	//========================================
-	for (int i = 0; ; i++)
-	{
-		auto anim = m_model->GetAnimation(i);
+	////========================================
+	//// アニメーション一覧
+	////========================================
+	//for (int i = 0; ; i++)
+	//{
+	//	auto anim = m_model->GetAnimation(i);
 
-		if (!anim)
-		{
-			break;
-		}
+	//	if (!anim)
+	//	{
+	//		break;
+	//	}
 
-		KdDebugGUI::Instance().AddLog(
-			"%d : %s\n",
-			i,
-			anim->m_name.c_str()
-		);
-	}
+	//	KdDebugGUI::Instance().AddLog(
+	//		"%d : %s\n",
+	//		i,
+	//		anim->m_name.c_str()
+	//	);
+	//}
 
 
 	if (GetAsyncKeyState('3') & 0x8000)

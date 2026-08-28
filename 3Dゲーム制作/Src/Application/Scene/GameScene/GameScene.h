@@ -139,6 +139,7 @@ private:
 	//========================================
 	void UpdateDebug();
 
+	//戦闘開始ピンの位置設定
 	Math::Vector3 GetBattleStartPos(int battleNo)
 	{
 		switch (battleNo)
@@ -147,10 +148,10 @@ private:
 			return { 0, 0, 10 };
 
 		case 1:
-			return { 0, 0, 60 };
+			return { -2, 0, 80 };
 
 		case 2:
-			return { 0, 0, 100 };
+			return { -60, 0, 80 };
 
 		default:
 			return { 0, 0, 0 };

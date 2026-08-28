@@ -506,26 +506,27 @@ void GameScene::UpdateBattle()
 	{
 		m_battleStarted = false;
 
+		//---------------------------------------
+		// 次の戦闘番号へ
+		//---------------------------------------
 		m_battleNo++;
 
 		//---------------------------------------
-		// 次の探索地点へ
+		// 次の戦闘地点を取得
 		//---------------------------------------
-		if (m_battleNo == 1)
-		{
-			m_battleStartPos = { 0, 0, 60 };
-		}
-		else if (m_battleNo == 2)
-		{
-			m_battleStartPos = { 0, 0, 100 };
-		}
+		m_battleStartPos = GetBattleStartPos(m_battleNo);
 
-		// ピンも次の戦闘地点へ移動
+		//---------------------------------------
+		// ピンを次の戦闘地点へ移動
+		//---------------------------------------
 		if (m_battlePin)
 		{
 			m_battlePin->SetPos(m_battleStartPos);
 			m_battlePin->SetVisible(true);
 		}
+		//---------------------------------------
+		// 準備フェーズへ
+		//---------------------------------------
 		m_gamePhase = GamePhase::Prepare;
 	}
 }

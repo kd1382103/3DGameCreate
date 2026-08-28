@@ -74,7 +74,7 @@ private:
 	Math::Vector3 m_pos = Math::Vector3::Zero;
 
 	// 戦闘開始範囲
-	float m_battleRange = 5.0f;
+	float m_battleRange = 1.0f;
 
 	std::shared_ptr<CameraBase> m_camera;
 

@@ -486,7 +486,7 @@ void Player::UpdateDodgeSlow(float frameScale)
 
 void Player::UpdateDebug()
 {
-	//KdDebugGUI::Instance().ClearLog();
+	KdDebugGUI::Instance().ClearLog();
 
 	////========================================
 	//// アニメーション一覧
@@ -507,7 +507,7 @@ void Player::UpdateDebug()
 	//	);
 	//}
 
-	/*
+	
 	KdDebugGUI::Instance().AddLog(
 		"%f\n",
 		m_nowPos.x
@@ -518,31 +518,21 @@ void Player::UpdateDebug()
 		m_nowPos.z
 	);
 
-	KdDebugGUI::Instance().AddLog(
-		"%f\n",
-		m_nowPos.y
-	);
+	//KdDebugGUI::Instance().AddLog(
+	//	"%f\n",
+	//	m_nowPos.y
+	//);
 
-	KdDebugGUI::Instance().AddLog(
-		"Gravity : %f\n",
-		m_gravity
-	);
+	//KdDebugGUI::Instance().AddLog(
+	//	"Gravity : %f\n",
+	//	m_gravity
+	//);
 
-	KdDebugGUI::Instance().AddLog(
-		"m_isLanding : %s\n",
-		m_isLanding ? "true" : "false"
-	);
-
-	KdDebugGUI::Instance().AddLog(
-		"m_isAttacking : %s\n",
-		m_attacking ? "true" : "false"
-	);
-
-	KdDebugGUI::Instance().AddLog(
-		"m_skillGauge : %f\n",
-		m_skillGauge
-	);
-	*/
+	//KdDebugGUI::Instance().AddLog(
+	//	"m_skillGauge : %f\n",
+	//	m_skillGauge
+	//);
+	
 
 	//========================================
 	// デバッグキー
