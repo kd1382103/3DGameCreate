@@ -1,6 +1,6 @@
 ﻿#include "Enemy2.h"
 
-void Enemy2::Init()
+void Enemy2::Init(int battleNo)
 {
 
 	m_model = std::make_shared<KdModelWork>();
@@ -26,4 +26,55 @@ void Enemy2::Init()
 	//コライダー
 	m_pCollider = std::make_unique<KdCollider>();
 	m_pCollider->RegisterCollisionShape("Enemy2", m_model, KdCollider::TypeDamage);
+
+	//---------------------------------------
+	// 戦闘番号ごとの初期位置
+	//---------------------------------------
+	switch (battleNo)
+	{
+	case 0:
+		SetPos({ 3, 0, 30 });
+		break;
+
+	case 1:
+		SetPos({ -4, 0, 75 });
+		break;
+
+	case 2:
+		//SetPos({ -4, 0, 75 });
+		break;
+
+	case 3:
+		break;
+
+	case 4:
+		break;
+
+	default:
+		break;
+	}
+}
+
+bool Enemy2::ShouldSpawn(int battleNo)
+{
+	switch (battleNo)
+	{
+	case 0:
+		return true;
+
+	case 1:
+		return true;
+
+	case 2:
+		return true;
+
+	case 3:
+		return false;
+
+	case 4:
+		return false;
+
+	default:
+		return false;
+	}
 }

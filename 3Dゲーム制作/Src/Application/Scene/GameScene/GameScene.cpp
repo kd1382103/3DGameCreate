@@ -4,6 +4,9 @@
 #include<Application/GameObject/Player/Player/Player.h>
 #include<Application/GameObject/Enemy/Enemy1/Enemy1.h>
 #include<Application/GameObject/Enemy/Enemy2/Enemy2.h>
+#include<Application/GameObject/Enemy/Enemy3/Enemy3.h>
+#include<Application/GameObject/Enemy/Enemy4/Enemy4.h>
+#include<Application/GameObject/Enemy/Enemy5/Enemy5.h>
 #include <Application/GameObject/Enemy/TutorialEnemy/TutorialEnemy.h>
 #include<Application/GameObject/Boss/Boss/Boss.h>
 
@@ -448,48 +451,75 @@ void GameScene::UpdateBattle()
 		//---------------------------------------
 		// Enemy1生成
 		//---------------------------------------
-		m_enemy1 = std::make_shared<Enemy1>();
-		m_enemy1->Init();
-
-		if (m_battleNo == 0)
+		if (Enemy1::ShouldSpawn(m_battleNo))
 		{
-			m_enemy1->SetPos({ -3, 0, 30 });
-		}
-		else if (m_battleNo == 1)
-		{
-			m_enemy1->SetPos({ -3, 0, 60 });
-		}
+			m_enemy1 = std::make_shared<Enemy1>();
+			m_enemy1->Init(m_battleNo);
+			m_enemy1->SetTarget(m_player);
+			m_enemy1->SetCamera(m_camera);
+			m_enemy1->SetGameScene(this);
 
-		m_enemy1->SetTarget(m_player);
-		m_enemy1->SetCamera(m_camera);
-		m_enemy1->SetGameScene(this);
-
-		AddObject(m_enemy1);
+			AddObject(m_enemy1);
+		}
 
 		//---------------------------------------
 		// Enemy2生成
 		//---------------------------------------
-		m_enemy2 = std::make_shared<Enemy2>();
-		m_enemy2->Init();
-
-		if (m_battleNo == 0)
+		if (Enemy2::ShouldSpawn(m_battleNo))
 		{
-			m_enemy2->SetPos({ 3, 0, 30 });
+			m_enemy2 = std::make_shared<Enemy2>();
+			m_enemy2->Init(m_battleNo);
+			m_enemy2->SetTarget(m_player);
+			m_enemy2->SetCamera(m_camera);
+			m_enemy2->SetGameScene(this);
+
+			AddObject(m_enemy2);
 		}
-		else if (m_battleNo == 1)
+
+		//---------------------------------------
+		// Enemy3生成
+		//---------------------------------------
+		if (Enemy3::ShouldSpawn(m_battleNo))
 		{
-			m_enemy2->SetPos({ 3, 0, 60 });
+			m_enemy3 = std::make_shared<Enemy3>();
+			m_enemy3->Init(m_battleNo);
+			m_enemy3->SetTarget(m_player);
+			m_enemy3->SetCamera(m_camera);
+			m_enemy3->SetGameScene(this);
+
+			AddObject(m_enemy3);
 		}
 
-		m_enemy2->SetTarget(m_player);
-		m_enemy2->SetCamera(m_camera);
-		m_enemy2->SetGameScene(this);
+		//---------------------------------------
+		// Enemy4生成
+		//---------------------------------------
+		if (Enemy4::ShouldSpawn(m_battleNo))
+		{
+			m_enemy4 = std::make_shared<Enemy4>();
+			m_enemy4->Init(m_battleNo);
+			m_enemy4->SetTarget(m_player);
+			m_enemy4->SetCamera(m_camera);
+			m_enemy4->SetGameScene(this);
 
-		AddObject(m_enemy2);
+			AddObject(m_enemy4);
+		}
+
+		//---------------------------------------
+		// Enemy5生成
+		//---------------------------------------
+		if (Enemy5::ShouldSpawn(m_battleNo))
+		{
+			m_enemy5 = std::make_shared<Enemy5>();
+			m_enemy5->Init(m_battleNo);
+			m_enemy5->SetTarget(m_player);
+			m_enemy5->SetCamera(m_camera);
+			m_enemy5->SetGameScene(this);
+
+			AddObject(m_enemy5);
+		}
 
 		return;
 	}
-
 	//---------------------------------------
 	// 敵の生存確認
 	//---------------------------------------
@@ -499,10 +529,42 @@ void GameScene::UpdateBattle()
 	bool enemy2Dead =
 		!m_enemy2 || !m_enemy2->IsAlive();
 
+	bool enemy3Dead =
+		!m_enemy3 || !m_enemy3->IsAlive();
+
+	bool enemy4Dead =
+		!m_enemy4 || !m_enemy4->IsAlive();
+
+	bool enemy5Dead =
+		!m_enemy5 || !m_enemy5->IsAlive();
+
+	bool allEnemiesDead = false;
+
+	//---------------------------------------
+	// 戦闘ごとに出現した敵だけ確認
+	//---------------------------------------
+	if (m_battleNo == 0)
+	{
+		// Battle 0
+		// Enemy1・Enemy2が出現
+		allEnemiesDead =
+			enemy1Dead &&
+			enemy2Dead;
+	}
+	else if (m_battleNo == 1)
+	{
+		// Battle 1
+		// Enemy1・Enemy2・Enemy3が出現
+		allEnemiesDead =
+			enemy1Dead &&
+			enemy2Dead &&
+			enemy3Dead;
+	}
+
 	//---------------------------------------
 	// 全滅したら探索へ戻る
 	//---------------------------------------
-	if (enemy1Dead && enemy2Dead)
+	if (allEnemiesDead)
 	{
 		m_battleStarted = false;
 

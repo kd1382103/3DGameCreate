@@ -1,8 +1,7 @@
 ﻿#include "Enemy1.h"
 
-void Enemy1::Init()
+void Enemy1::Init(int battleNo)
 {
-
 	m_model = std::make_shared<KdModelWork>();
 	m_model->SetModelData("Asset/Models/Enemy/manModel/Enemy.gltf");
 
@@ -26,4 +25,51 @@ void Enemy1::Init()
 	//コライダー
 	m_pCollider = std::make_unique<KdCollider>();
 	m_pCollider->RegisterCollisionShape("Enemy1", m_model, KdCollider::TypeDamage);
+
+	// 戦闘フェイズごとの出現位置
+	switch (battleNo)
+	{
+	case 0:
+		SetPos({ -3, 0, 30 });
+		break;
+
+	case 1:
+		SetPos({ -4, 0, 85 });
+		break;
+
+	case 2:
+		break;
+
+	case 3:
+		break;
+
+	case 4:
+		//SetPos({ -4, 0, 85 });
+		break;
+
+	default:
+		break;
+	}
+}
+
+bool Enemy1::ShouldSpawn(int battleNo)
+{
+	switch (battleNo)
+	{
+	case 0:
+		return true;
+
+	case 1:
+		return true;
+
+	case 2:
+		return false;
+	case 3:
+		return false;
+	case 4:
+		return true;
+
+	default:
+		return false;
+	}
 }

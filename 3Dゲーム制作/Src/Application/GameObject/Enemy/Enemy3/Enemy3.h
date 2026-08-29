@@ -4,5 +4,6 @@
 class Enemy3 : public EnemyBase
 {
 public:
-	void Init() override;
+	void Init(int battleNo);
+	static bool ShouldSpawn(int battleNo);
 };

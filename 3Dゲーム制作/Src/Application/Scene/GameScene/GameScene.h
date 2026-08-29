@@ -8,6 +8,9 @@ class TPSCamera;
 class Player;
 class Enemy1;
 class Enemy2;
+class Enemy3;
+class Enemy4;
+class Enemy5;
 class TutorialEnemy;
 class Boss;
 
@@ -173,6 +176,9 @@ private:
 
 	std::shared_ptr<Enemy1> m_enemy1;
 	std::shared_ptr<Enemy2> m_enemy2;
+	std::shared_ptr<Enemy3> m_enemy3;
+	std::shared_ptr<Enemy4> m_enemy4;
+	std::shared_ptr<Enemy5> m_enemy5;
 
 	std::shared_ptr<TutorialEnemy> m_tutorialEnemy;
 
