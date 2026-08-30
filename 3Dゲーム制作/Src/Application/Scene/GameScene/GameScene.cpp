@@ -424,7 +424,7 @@ void GameScene::UpdatePrepare()
 	//---------------------------------------
 	// ボス戦
 	//---------------------------------------
-	if (m_battleNo >= 2)
+	if (m_battleNo >= 5)
 	{
 		m_gamePhase = GamePhase::Boss;
 		m_isBossSpawned = false;
@@ -449,149 +449,102 @@ void GameScene::UpdateBattle()
 		m_battleStarted = true;
 
 		//---------------------------------------
-		// Enemy1生成
+		// 出現する敵だけ生成
 		//---------------------------------------
-		if (Enemy1::ShouldSpawn(m_battleNo))
-		{
-			m_enemy1 = std::make_shared<Enemy1>();
-			m_enemy1->Init(m_battleNo);
-			m_enemy1->SetTarget(m_player);
-			m_enemy1->SetCamera(m_camera);
-			m_enemy1->SetGameScene(this);
-
-			AddObject(m_enemy1);
-		}
-
-		//---------------------------------------
-		// Enemy2生成
-		//---------------------------------------
-		if (Enemy2::ShouldSpawn(m_battleNo))
-		{
-			m_enemy2 = std::make_shared<Enemy2>();
-			m_enemy2->Init(m_battleNo);
-			m_enemy2->SetTarget(m_player);
-			m_enemy2->SetCamera(m_camera);
-			m_enemy2->SetGameScene(this);
-
-			AddObject(m_enemy2);
-		}
-
-		//---------------------------------------
-		// Enemy3生成
-		//---------------------------------------
-		if (Enemy3::ShouldSpawn(m_battleNo))
-		{
-			m_enemy3 = std::make_shared<Enemy3>();
-			m_enemy3->Init(m_battleNo);
-			m_enemy3->SetTarget(m_player);
-			m_enemy3->SetCamera(m_camera);
-			m_enemy3->SetGameScene(this);
-
-			AddObject(m_enemy3);
-		}
-
-		//---------------------------------------
-		// Enemy4生成
-		//---------------------------------------
-		if (Enemy4::ShouldSpawn(m_battleNo))
-		{
-			m_enemy4 = std::make_shared<Enemy4>();
-			m_enemy4->Init(m_battleNo);
-			m_enemy4->SetTarget(m_player);
-			m_enemy4->SetCamera(m_camera);
-			m_enemy4->SetGameScene(this);
-
-			AddObject(m_enemy4);
-		}
-
-		//---------------------------------------
-		// Enemy5生成
-		//---------------------------------------
-		if (Enemy5::ShouldSpawn(m_battleNo))
-		{
-			m_enemy5 = std::make_shared<Enemy5>();
-			m_enemy5->Init(m_battleNo);
-			m_enemy5->SetTarget(m_player);
-			m_enemy5->SetCamera(m_camera);
-			m_enemy5->SetGameScene(this);
-
-			AddObject(m_enemy5);
-		}
+		SpawnEnemy(m_enemy1, m_battleNo);
+		SpawnEnemy(m_enemy2, m_battleNo);
+		SpawnEnemy(m_enemy3, m_battleNo);
+		SpawnEnemy(m_enemy4, m_battleNo);
+		SpawnEnemy(m_enemy5, m_battleNo);
 
 		return;
 	}
-	//---------------------------------------
-	// 敵の生存確認
-	//---------------------------------------
-	bool enemy1Dead =
-		!m_enemy1 || !m_enemy1->IsAlive();
-
-	bool enemy2Dead =
-		!m_enemy2 || !m_enemy2->IsAlive();
-
-	bool enemy3Dead =
-		!m_enemy3 || !m_enemy3->IsAlive();
-
-	bool enemy4Dead =
-		!m_enemy4 || !m_enemy4->IsAlive();
-
-	bool enemy5Dead =
-		!m_enemy5 || !m_enemy5->IsAlive();
-
-	bool allEnemiesDead = false;
 
 	//---------------------------------------
-	// 戦闘ごとに出現した敵だけ確認
+	// この戦闘で出現する敵の全滅確認
 	//---------------------------------------
-	if (m_battleNo == 0)
+	bool allEnemiesDead = true;
+
+	if (Enemy1::ShouldSpawn(m_battleNo))
 	{
-		// Battle 0
-		// Enemy1・Enemy2が出現
 		allEnemiesDead =
-			enemy1Dead &&
-			enemy2Dead;
+			allEnemiesDead &&
+			(!m_enemy1 || !m_enemy1->IsAlive());
 	}
-	else if (m_battleNo == 1)
+
+	if (Enemy2::ShouldSpawn(m_battleNo))
 	{
-		// Battle 1
-		// Enemy1・Enemy2・Enemy3が出現
 		allEnemiesDead =
-			enemy1Dead &&
-			enemy2Dead &&
-			enemy3Dead;
+			allEnemiesDead &&
+			(!m_enemy2 || !m_enemy2->IsAlive());
 	}
 
-	//---------------------------------------
-	// 全滅したら探索へ戻る
-	//---------------------------------------
-	if (allEnemiesDead)
+	if (Enemy3::ShouldSpawn(m_battleNo))
 	{
-		m_battleStarted = false;
-
-		//---------------------------------------
-		// 次の戦闘番号へ
-		//---------------------------------------
-		m_battleNo++;
-
-		//---------------------------------------
-		// 次の戦闘地点を取得
-		//---------------------------------------
-		m_battleStartPos = GetBattleStartPos(m_battleNo);
-
-		//---------------------------------------
-		// ピンを次の戦闘地点へ移動
-		//---------------------------------------
-		if (m_battlePin)
-		{
-			m_battlePin->SetPos(m_battleStartPos);
-			m_battlePin->SetVisible(true);
-		}
-		//---------------------------------------
-		// 準備フェーズへ
-		//---------------------------------------
-		m_gamePhase = GamePhase::Prepare;
+		allEnemiesDead =
+			allEnemiesDead &&
+			(!m_enemy3 || !m_enemy3->IsAlive());
 	}
+
+	if (Enemy4::ShouldSpawn(m_battleNo))
+	{
+		allEnemiesDead =
+			allEnemiesDead &&
+			(!m_enemy4 || !m_enemy4->IsAlive());
+	}
+
+	if (Enemy5::ShouldSpawn(m_battleNo))
+	{
+		allEnemiesDead =
+			allEnemiesDead &&
+			(!m_enemy5 || !m_enemy5->IsAlive());
+	}
+
+	//---------------------------------------
+	// 全滅したか
+	//---------------------------------------
+	if (!allEnemiesDead) { return; }
+
+	//---------------------------------------
+	// 戦闘終了
+	//---------------------------------------
+	m_battleStarted = false;
+
+	//---------------------------------------
+	// 最後の戦闘終了 → Boss戦
+	//---------------------------------------
+	if (m_battleNo >= 4)
+	{
+		m_gamePhase = GamePhase::Boss;
+		m_isBossSpawned = false;
+		return;
+	}
+
+	//---------------------------------------
+	// 次の戦闘番号へ
+	//---------------------------------------
+	m_battleNo++;
+
+	//---------------------------------------
+	// 次の戦闘地点を取得
+	//---------------------------------------
+	m_battleStartPos = GetBattleStartPos(m_battleNo);
+
+	//---------------------------------------
+	// ピンを次の戦闘地点へ移動
+	//---------------------------------------
+	if (m_battlePin)
+	{
+		m_battlePin->SetPos(m_battleStartPos);
+		m_battlePin->SetVisible(true);
+	}
+
+	//---------------------------------------
+	// 準備フェーズへ
+	//---------------------------------------
+	m_gamePhase = GamePhase::Prepare;
 }
+
 void GameScene::UpdateBoss()
 {
 	if (m_gamePhase != GamePhase::Boss) { return; }

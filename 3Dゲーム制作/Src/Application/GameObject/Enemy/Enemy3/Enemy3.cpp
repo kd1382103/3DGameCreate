@@ -30,7 +30,7 @@ void Enemy3::Init(int battleNo)
 	switch (battleNo)
 	{
 	case 0:
-		// Battle 0では出現させない
+		// 出現しない
 		break;
 
 	case 1:
@@ -38,14 +38,15 @@ void Enemy3::Init(int battleNo)
 		break;
 
 	case 2:
-		SetPos({ 10, 0, 100 });
+		SetPos({ -80, 0, 80 });
 		break;
 
 	case 3:
-		//SetPos({ 10, 0, 100 });
+		SetPos({ -75, 0, 125 });
 		break;
 
 	case 4:
+		// 出現しない
 		break;
 
 	default:
@@ -57,20 +58,10 @@ bool Enemy3::ShouldSpawn(int battleNo)
 {
 	switch (battleNo)
 	{
-	case 0:
-		return false;
-
 	case 1:
-		return true;
-
 	case 2:
-		return true;
-
 	case 3:
 		return true;
-
-	case 4:
-		return false;
 
 	default:
 		return false;

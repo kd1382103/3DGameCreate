@@ -41,13 +41,7 @@ void Enemy2::Init(int battleNo)
 		break;
 
 	case 2:
-		//SetPos({ -4, 0, 75 });
-		break;
-
-	case 3:
-		break;
-
-	case 4:
+		SetPos({ -80, 0, 85 });
 		break;
 
 	default:
@@ -60,19 +54,9 @@ bool Enemy2::ShouldSpawn(int battleNo)
 	switch (battleNo)
 	{
 	case 0:
-		return true;
-
 	case 1:
-		return true;
-
 	case 2:
 		return true;
-
-	case 3:
-		return false;
-
-	case 4:
-		return false;
 
 	default:
 		return false;

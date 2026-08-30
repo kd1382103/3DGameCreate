@@ -625,7 +625,7 @@ void EnemyBase::UpdateDebug()
 
 	if (GetAsyncKeyState('3') & 0x8000)
 	{
-		m_hp = 1;
+		Damage(m_hpMax);
 	}
 }
 

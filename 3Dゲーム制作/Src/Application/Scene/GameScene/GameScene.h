@@ -155,9 +155,13 @@ private:
 
 		case 2:
 			return { -60, 0, 80 };
+		
+		case 3:
+			return { -80,0,120 };
 
-		default:
-			return { 0, 0, 0 };
+		case 4:
+			return { -80,0,30 };
+
 		}
 	}
 
@@ -279,6 +283,12 @@ private:
 	bool m_isBossSpawned = false;
 
 	//========================================
+	// 敵生成
+	//========================================
+	template<class T>
+	void SpawnEnemy(std::shared_ptr<T>& enemy, int battleNo);
+
+	//========================================
 	// 設定画面用
 	//========================================
 
@@ -290,3 +300,28 @@ private:
 	//========================================
 	//std::shared_ptr<SwordTrail> m_swordTrail;
 };
+
+template<class T>
+void GameScene::SpawnEnemy(
+	std::shared_ptr<T>& enemy,
+	int battleNo)
+{
+
+	// この戦闘で出現しない敵
+	if (!T::ShouldSpawn(battleNo))
+	{
+		return;
+	}
+
+
+	enemy = std::make_shared<T>();
+
+	enemy->Init(battleNo);
+
+	enemy->SetTarget(m_player);
+	enemy->SetCamera(m_camera);
+	enemy->SetGameScene(this);
+
+	AddObject(enemy);
+
+}

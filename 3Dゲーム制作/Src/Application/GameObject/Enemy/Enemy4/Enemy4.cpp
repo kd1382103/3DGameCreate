@@ -29,23 +29,16 @@ void Enemy4::Init(int battleNo)
 	// 戦闘フェイズごとの出現位置
 	switch (battleNo)
 	{
-	case 0:
-		// Battle 0では出現させない
-		break;
-
-	case 1:
-		break;
-
 	case 2:
-		//SetPos({ 10, 0, 100 });
+		SetPos({ -80, 0, 75 });
 		break;
 
 	case 3:
-		//SetPos({ 10, 0, 100 });
+		SetPos({ -85, 0, 125 });
 		break;
 
 	case 4:
-		//SetPos({ 10, 0, 100 });
+		SetPos({ -82, 0, 20 });
 		break;
 
 	default:
@@ -58,17 +51,8 @@ bool Enemy4::ShouldSpawn(int battleNo)
 {
 	switch (battleNo)
 	{
-	case 0:
-		return false;
-
-	case 1:
-		return false;
-
 	case 2:
-		return true;
-
 	case 3:
-		return true;
 	case 4:
 		return true;
 
