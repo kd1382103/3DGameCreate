@@ -162,6 +162,11 @@ private:
 		case 4:
 			return { -80,0,30 };
 
+		case 5:
+			return { -35,0,0 };
+
+		default:
+			return { 0, 0, 0 };
 		}
 	}
 

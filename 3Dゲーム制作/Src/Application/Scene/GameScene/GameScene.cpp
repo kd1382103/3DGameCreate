@@ -412,10 +412,10 @@ void GameScene::UpdatePrepare()
 	if (!m_battlePin->IsInsideRange(m_player->GetPos())) { return; }
 
 	//---------------------------------------
-	// 次の戦闘開始
+	// 戦闘開始
 	//---------------------------------------
 	m_battleStarted = false;
-	
+
 	//=======================================
 	// 戦闘エリアに入ったのでピンを消す
 	//=======================================
@@ -434,6 +434,7 @@ void GameScene::UpdatePrepare()
 	//---------------------------------------
 	// 通常戦闘
 	//---------------------------------------
+
 	m_gamePhase = GamePhase::Battle;
 }
 
@@ -501,7 +502,7 @@ void GameScene::UpdateBattle()
 	}
 
 	//---------------------------------------
-	// 全滅したか
+	// 全滅していなければ終了
 	//---------------------------------------
 	if (!allEnemiesDead) { return; }
 
@@ -509,16 +510,6 @@ void GameScene::UpdateBattle()
 	// 戦闘終了
 	//---------------------------------------
 	m_battleStarted = false;
-
-	//---------------------------------------
-	// 最後の戦闘終了 → Boss戦
-	//---------------------------------------
-	if (m_battleNo >= 4)
-	{
-		m_gamePhase = GamePhase::Boss;
-		m_isBossSpawned = false;
-		return;
-	}
 
 	//---------------------------------------
 	// 次の戦闘番号へ
@@ -540,7 +531,16 @@ void GameScene::UpdateBattle()
 	}
 
 	//---------------------------------------
-	// 準備フェーズへ
+	// まだ通常戦闘が残っている
+	//---------------------------------------
+	if (m_battleNo < 5)
+	{
+		m_gamePhase = GamePhase::Prepare;
+		return;
+	}
+	//---------------------------------------
+	// Battle 4終了後
+	// Boss開始地点へ向かう
 	//---------------------------------------
 	m_gamePhase = GamePhase::Prepare;
 }
@@ -558,7 +558,7 @@ void GameScene::UpdateBoss()
 	m_boss = std::make_shared<Boss>();
 	m_boss->Init();
 
-	m_boss->SetPos({ -200, 0, 100 });
+	m_boss->SetPos({ -35, 0, 20 });
 
 	m_boss->SetTarget(m_player);
 	m_boss->SetCamera(m_camera);
