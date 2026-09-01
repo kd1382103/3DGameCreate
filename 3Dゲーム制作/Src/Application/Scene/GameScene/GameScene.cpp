@@ -116,10 +116,16 @@ void GameScene::InitCamera()
 	m_tpsCamera = std::make_shared<TPSCamera>();
 	m_tpsCamera->Init();
 	m_tpsCamera->SetActive(true);
+
+	//=======================================
+	// カメラのめり込み判定対象
+	//=======================================
+	m_tpsCamera->RegistHitObject(m_stage);
+
 	AddObject(m_tpsCamera);
 
 	m_camera = m_tpsCamera;
-	
+
 	//=======================================
 	// エフェクトマネージャーにカメラを設定
 	//=======================================

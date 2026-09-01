@@ -1115,18 +1115,9 @@
 			"alphaMode":"BLEND",
 			"doubleSided":true,
 			"name":"Road.002",
-			"pbrMetallicRoughness":{
-				"baseColorTexture":{
-					"index":0
-				},
-				"metallicFactor":0,
-				"roughnessFactor":0.5
-			}
-		},
-		{
-			"alphaMode":"BLEND",
-			"doubleSided":true,
-			"name":"Building_Factory.002",
+			"normalTexture":{
+				"index":0
+			},
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":1
@@ -1138,10 +1129,22 @@
 		{
 			"alphaMode":"BLEND",
 			"doubleSided":true,
-			"name":"Vehicle_Taxi.002",
+			"name":"Building_Factory.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":2
+				},
+				"metallicFactor":0,
+				"roughnessFactor":0.5
+			}
+		},
+		{
+			"alphaMode":"BLEND",
+			"doubleSided":true,
+			"name":"Vehicle_Taxi.002",
+			"pbrMetallicRoughness":{
+				"baseColorTexture":{
+					"index":3
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1190,7 +1193,7 @@
 			"name":"b4.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":3
+					"index":4
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1202,7 +1205,7 @@
 			"name":"Props_Props_01.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":4
+					"index":5
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1214,7 +1217,7 @@
 			"name":"Vehicle_Pick_up_Truck_color03.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":5
+					"index":6
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1226,7 +1229,7 @@
 			"name":"Vehicle_SUV_color03.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":6
+					"index":7
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1238,7 +1241,7 @@
 			"name":"Props_TrafficProps.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":7
+					"index":8
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1250,7 +1253,7 @@
 			"name":"Building_Sky_big_color03",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":8
+					"index":9
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1262,7 +1265,7 @@
 			"name":"Building_Sky_small_color01.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":9
+					"index":10
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1274,7 +1277,7 @@
 			"name":"Natures.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":10
+					"index":11
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1286,7 +1289,7 @@
 			"name":"Building_House_01_color01.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":11
+					"index":12
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1298,7 +1301,7 @@
 			"name":"Building_Sky_big_color02.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":12
+					"index":13
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1310,7 +1313,7 @@
 			"name":"Building_Sky_small_color03.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":13
+					"index":14
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1322,7 +1325,7 @@
 			"name":"Building_Sky_big_color01",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":14
+					"index":15
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1334,7 +1337,7 @@
 			"name":"Building_Music_Store.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":15
+					"index":16
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1346,7 +1349,7 @@
 			"name":"Building_House_01_color02.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":16
+					"index":17
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1358,7 +1361,7 @@
 			"name":"Building_House_03_color01.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":17
+					"index":18
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1392,7 +1395,7 @@
 			"name":"Building_Restaurant.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":18
+					"index":19
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1434,7 +1437,7 @@
 			"name":"Building_House_02_color01.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":19
+					"index":20
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1446,7 +1449,7 @@
 			"name":"Building_Clothing.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":20
+					"index":21
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1458,7 +1461,7 @@
 			"name":"Building_Residential_color02.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":21
+					"index":22
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1470,7 +1473,7 @@
 			"name":"Building_Gas_Station.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":22
+					"index":23
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1481,7 +1484,7 @@
 			"name":"b8.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":23
+					"index":24
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1500,7 +1503,7 @@
 			"name":"b7.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":24
+					"index":25
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1512,7 +1515,7 @@
 			"name":"Building_Auto_Service.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":25
+					"index":26
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1524,7 +1527,7 @@
 			"name":"Vehicle_Container_color03.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":26
+					"index":27
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1536,7 +1539,7 @@
 			"name":"Building_Shoes_Shop.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":27
+					"index":28
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1548,7 +1551,7 @@
 			"name":"Building_Bar.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":28
+					"index":29
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1559,7 +1562,7 @@
 			"name":"Building_Sky_big_color02.004",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":29
+					"index":30
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -1571,7 +1574,7 @@
 			"name":"Building_Drug_Store.002",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":30
+					"index":31
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.5
@@ -3031,14 +3034,23 @@
 		},
 		{
 			"sampler":0,
-			"source":12
+			"source":29
 		},
 		{
 			"sampler":0,
-			"source":29
+			"source":13
+		},
+		{
+			"sampler":0,
+			"source":30
 		}
 	],
 	"images":[
+		{
+			"mimeType":"image/png",
+			"name":"Road_NormalMap",
+			"uri":"Road_NormalMap.png"
+		},
 		{
 			"mimeType":"image/png",
 			"name":"Road",
