@@ -193,6 +193,18 @@
     <Filter Include="Src\Application\GameObject\UI\BattlePin">
       <UniqueIdentifier>{017df5c6-b2ef-47b7-a027-a987026862af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Effect\EffectType">
+      <UniqueIdentifier>{ae0fd743-dda7-4643-806f-d5811fcc58d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Effect\EffectBase">
+      <UniqueIdentifier>{3c668cbb-c608-4fba-a96a-08310b17fd47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Effect\HitEffect">
+      <UniqueIdentifier>{9f8b7681-24fa-47b2-a4b7-7e5b1317c1cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Effect\SparkEffect">
+      <UniqueIdentifier>{94a8ba19-30d1-400c-acd3-c000a15a80c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -465,6 +477,21 @@
     <ClInclude Include="Src\Application\GameObject\UI\BattolPin\BattlePin.h">
       <Filter>Src\Application\GameObject\UI\BattlePin</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\EffectType\EffectType.h">
+      <Filter>Src\Application\GameObject\Effect\EffectType</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\EffectBase\EffectBase.h">
+      <Filter>Src\Application\GameObject\Effect\EffectBase</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\EffectManager.h">
+      <Filter>Src\Application\GameObject\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\HitEffect\HitEffect.h">
+      <Filter>Src\Application\GameObject\Effect\HitEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.h">
+      <Filter>Src\Application\GameObject\Effect\SparkEffect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -703,6 +730,18 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\BattolPin\BattlePin.cpp">
       <Filter>Src\Application\GameObject\UI\BattlePin</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Effect\EffectBase\EffectBase.cpp">
+      <Filter>Src\Application\GameObject\Effect\EffectBase</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Effect\EffectManager.cpp">
+      <Filter>Src\Application\GameObject\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Effect\HitEffect\HitEffect.cpp">
+      <Filter>Src\Application\GameObject\Effect\HitEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.cpp">
+      <Filter>Src\Application\GameObject\Effect\SparkEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

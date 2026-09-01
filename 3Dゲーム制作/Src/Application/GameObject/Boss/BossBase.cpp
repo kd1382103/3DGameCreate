@@ -10,6 +10,8 @@
 
 #include <Application/GameObject/Boss/BossState/BossState.h>
 #include <Application/Scene/GameScene/GameScene.h>
+#include <Application/GameObject/Effect/EffectManager.h>
+
 
 void BossBase::Init()
 {
@@ -562,6 +564,14 @@ void BossBase::Damage(float dmg, bool isUltimate, bool finalHit)
 	);
 
 	SceneManager::Instance().AddObject(fly);
+
+	//==========================================================
+	// 被弾エフェクト
+	//==========================================================
+	EffectManager::Instance().Play(
+		EffectType::Hit,
+		m_nowPos + Math::Vector3(0, 1.0f, 0)
+	);
 
 	//==========================================================
 	// HP

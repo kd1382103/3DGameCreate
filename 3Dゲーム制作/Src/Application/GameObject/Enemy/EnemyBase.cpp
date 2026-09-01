@@ -5,9 +5,12 @@
 #include <Application/GameObject/UI/FontText/FontText.h>
 
 #include <Application/Scene/SceneManager.h>
+#include <Application/Scene/GameScene/GameScene.h>
 #include <Application/main.h>
 #include <Application/GameObject/Enemy/EnemyState/EnemyState.h>
-#include <Application/Scene/GameScene/GameScene.h>
+#include <Application/GameObject/Effect/EffectManager.h>
+#include <Application/GameObject/Effect/EffectType/EffectType.h>
+
 //==============================================================
 // Init
 //==============================================================
@@ -308,16 +311,57 @@ void EnemyBase::DrawSprite()
 //==============================================================
 // Damage
 //==============================================================
-void EnemyBase::Damage(float dmg, bool isUltimate , bool finalHit )
+void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit)
 {
+	//==========================================================
+	// ダメージ表示
+	//==========================================================
 	auto fly = std::make_shared<FontText>();
-	fly->Init(m_nowPos + Math::Vector3(0, 2.0f, 0), (int)dmg);
+
+	fly->Init(
+		m_nowPos + Math::Vector3(0, 2.0f, 0),
+		(int)dmg
+	);
+
 	fly->SetCamera(m_wpCamera.lock());
 
 	SceneManager::Instance().AddObject(fly);
 
+	//==========================================================
+	// 被弾エフェクト（VS人想定）
+	//==========================================================
+	EffectManager::Instance().Play(
+		EffectType::Hit,
+		m_nowPos + Math::Vector3(0, 1.0f, 0)
+	);
+
+	//==========================================================
+	// 火花エフェクト(VS機械想定)
+	//==========================================================
+	//if (auto player = m_wpPlayer.lock())
+	//{
+	//	Math::Vector3 attackDir =
+	//		m_nowPos - player->GetPos();
+
+	//	attackDir.y = 0.0f;
+
+	//	if (attackDir.LengthSquared() > 0.0001f)
+	//	{
+	//		attackDir.Normalize();
+	//	}
+
+	//	EffectManager::Instance().Play(
+	//		EffectType::Spark,
+	//		m_nowPos + Math::Vector3(0, 1.0f, 0),
+	//		attackDir
+	//	);
+	//}
+
+	//==========================================================
+	// HP
+	//==========================================================
 	float before = m_hp;
-	float after = std::max(0.0f, before - dmg);	
+	float after = std::max(0.0f, before - dmg);
 
 	if (m_hpGauge)
 	{
@@ -327,7 +371,9 @@ void EnemyBase::Damage(float dmg, bool isUltimate , bool finalHit )
 
 	m_hp = after;
 
-	//死亡処理
+	//==========================================================
+	// 死亡処理
+	//==========================================================
 	if (m_hp <= 0)
 	{
 		ResetBattleState();
@@ -335,25 +381,33 @@ void EnemyBase::Damage(float dmg, bool isUltimate , bool finalHit )
 		return;
 	}
 
-	//ヒットストップ
+	//==========================================================
+	// ヒットストップ
+	//==========================================================
 	m_hitStopTimer = 0.35f;
 
-	//攻撃予知解除
+	//==========================================================
+	// 攻撃予知解除
+	//==========================================================
 	m_preAttackActive = false;
 	m_preAttackAlpha = 0.0f;
 	m_preAttackTimer = 0.0f;
 
+	//==========================================================
 	// プレイヤーのジャスト回避受付も終了
+	//==========================================================
 	if (auto player = m_wpPlayer.lock())
 	{
 		player->m_canDodge = false;
 
-		//=========================
+		//======================================================
 		// ノックバック
-		//=========================
+		//======================================================
 		if (m_canKnockBack)
 		{
-			Math::Vector3 knockDir = m_nowPos - player->GetPos();
+			Math::Vector3 knockDir =
+				m_nowPos - player->GetPos();
+
 			knockDir.y = 0.0f;
 
 			if (knockDir.LengthSquared() > 0.00001f)
@@ -364,19 +418,20 @@ void EnemyBase::Damage(float dmg, bool isUltimate , bool finalHit )
 				{
 					if (finalHit)
 					{
-						// 最後の一撃だけ大きく吹き飛ばす
-						m_nowPos += knockDir * m_knockBackPower;
+						m_nowPos +=
+							knockDir * m_knockBackPower;
 					}
 					else
 					{
-						// 多段中はほとんど動かさない
-						m_nowPos += knockDir * (m_knockBackPower * 0.2f);
+						m_nowPos +=
+							knockDir *
+							(m_knockBackPower * 0.2f);
 					}
 				}
 				else
 				{
-					// 通常攻撃
-					m_nowPos += knockDir * m_knockBackPower;
+					m_nowPos +=
+						knockDir * m_knockBackPower;
 				}
 			}
 		}

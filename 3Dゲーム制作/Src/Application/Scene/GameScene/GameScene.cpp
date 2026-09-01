@@ -14,10 +14,12 @@
 
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
+
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/GameObject/UI/BattolPin/BattlePin.h>
 #include <Application/GameObject/UI/GameClearBotton/GameClearButton.h>
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
+#include <Application/GameObject/Effect/EffectManager.h>
 
 //#include <Application/GameObject/Effect/SwordTrail/SwordTrail.h>
 
@@ -55,8 +57,8 @@ void GameScene::Init()
 
 	InitSetting();
 	InitAudio();
-	InitCamera();
 	InitStage();
+	InitCamera();
 	InitPlayer();
 	InitTutorialEnemy();
 	InitUI();
@@ -114,10 +116,14 @@ void GameScene::InitCamera()
 	m_tpsCamera = std::make_shared<TPSCamera>();
 	m_tpsCamera->Init();
 	m_tpsCamera->SetActive(true);
-
 	AddObject(m_tpsCamera);
 
 	m_camera = m_tpsCamera;
+	
+	//=======================================
+	// エフェクトマネージャーにカメラを設定
+	//=======================================
+	EffectManager::Instance().SetCamera(m_camera);
 }
 
 void GameScene::InitStage()

@@ -9,6 +9,7 @@
 #include <Application/main.h>
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
 #include <Application/Scene/SceneManager.h>
+#include <Application/GameObject/Effect/EffectManager.h>
 
 void Player::Init()
 {
@@ -721,6 +722,14 @@ void Player::Damage(float dmg, bool isUltimate, bool finalHit)
 	fly->SetCamera(m_wpCamera.lock());
 
 	SceneManager::Instance().AddObject(fly);
+
+	//==========================================================
+	// 被弾エフェクト
+	//==========================================================
+	EffectManager::Instance().Play(
+		EffectType::Hit,
+		m_nowPos + Math::Vector3(0, 1.0f, 0)
+	);
 
 	// 食らった瞬間のHPを保存
 	m_pendingBeforeHP = m_nowHp;
