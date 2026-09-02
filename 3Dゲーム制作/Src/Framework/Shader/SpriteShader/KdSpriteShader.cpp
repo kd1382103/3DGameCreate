@@ -84,7 +84,8 @@ void KdSpriteShader::Begin(bool linear, bool disableZBuffer)
 	UINT pNumVierports = 1;
 	D3D11_VIEWPORT vp;
 	KdDirect3D::Instance().WorkDevContext()->RSGetViewports(&pNumVierports, &vp);
-	m_mProj2D = DirectX::XMMatrixOrthographicLH(vp.Width, vp.Height, 0, 1);
+	//m_mProj2D = DirectX::XMMatrixOrthographicLH(vp.Width, vp.Height, 0, 1);
+	m_mProj2D = DirectX::XMMatrixOrthographicLH(1280, 720, 0, 1);
 
 	// 定数バッファ書き込み
 	m_cb1.Work().mProj = m_mProj2D;

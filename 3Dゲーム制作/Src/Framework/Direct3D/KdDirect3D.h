@@ -92,6 +92,9 @@ public:
 	// ・errMsg			… (出力)エラーメッセージが入ってくる
 	bool Init(HWND hWnd, int w, int h, bool deviceDebug, std::string& errMsg);
 
+	// 解像度変更(9/2追加)
+	bool Resize(int w, int h);
+
 	// 解放
 	void Release();
 

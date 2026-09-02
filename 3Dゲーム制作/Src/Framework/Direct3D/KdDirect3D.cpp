@@ -320,6 +320,166 @@ bool KdDirect3D::Init(HWND hWnd, int w, int h, bool deviceDebug, std::string& er
 	return true;
 }
 
+bool KdDirect3D::Resize(int w, int h)
+{
+	//============================================================
+	// 不正なサイズを防止
+	//============================================================
+	if (w <= 0 || h <= 0)
+	{
+		return false;
+	}
+
+	if (m_pGISwapChain == nullptr ||
+		m_pDeviceContext == nullptr)
+	{
+		return false;
+	}
+
+	//============================================================
+	// 現在のRenderTargetを解除
+	//============================================================
+	m_pDeviceContext->OMSetRenderTargets(
+		0,
+		nullptr,
+		nullptr
+	);
+
+	//============================================================
+	// バックバッファとZバッファを解放
+	//============================================================
+	m_backBuffer = nullptr;
+	m_zBuffer = nullptr;
+
+	//============================================================
+	// SwapChainのバッファサイズを変更
+	//============================================================
+	HRESULT hr =
+		m_pGISwapChain->ResizeBuffers(
+			0,
+			static_cast<UINT>(w),
+			static_cast<UINT>(h),
+			DXGI_FORMAT_UNKNOWN,
+			0
+		);
+
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	//============================================================
+	// バックバッファ再取得
+	//============================================================
+	ID3D11Texture2D* pBackBuffer = nullptr;
+
+	hr =
+		m_pGISwapChain->GetBuffer(
+			0,
+			__uuidof(ID3D11Texture2D),
+			reinterpret_cast<void**>(&pBackBuffer)
+		);
+
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	//============================================================
+	// バックバッファ作成
+	//============================================================
+	m_backBuffer = std::make_shared<KdTexture>();
+
+	if (!m_backBuffer->Create(pBackBuffer))
+	{
+		pBackBuffer->Release();
+		m_backBuffer = nullptr;
+
+		return false;
+	}
+
+	pBackBuffer->Release();
+
+	//============================================================
+	// Zバッファ再作成
+	//============================================================
+	{
+		D3D11_TEXTURE2D_DESC desc = {};
+
+		desc.Usage = D3D11_USAGE_DEFAULT;
+		desc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+
+		desc.BindFlags =
+			D3D11_BIND_DEPTH_STENCIL |
+			D3D11_BIND_SHADER_RESOURCE;
+
+		desc.Width = static_cast<UINT>(w);
+		desc.Height = static_cast<UINT>(h);
+
+		desc.CPUAccessFlags = 0;
+
+		desc.MipLevels = 1;
+		desc.ArraySize = 1;
+
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+
+		m_zBuffer = std::make_shared<KdTexture>();
+
+		if (!m_zBuffer->Create(desc))
+		{
+			m_zBuffer = nullptr;
+
+			return false;
+		}
+	}
+
+	//============================================================
+	// RenderTarget + ZBufferを再設定
+	//============================================================
+	{
+		ID3D11RenderTargetView* rtvs[] =
+		{
+			m_backBuffer->WorkRTView()
+		};
+
+		m_pDeviceContext->OMSetRenderTargets(
+			1,
+			rtvs,
+			m_zBuffer->WorkDSView()
+		);
+	}
+
+	//============================================================
+	// ビューポートを再設定
+	//============================================================
+	{
+		D3D11_VIEWPORT vp = {};
+
+		vp.Width = static_cast<float>(w);
+		vp.Height = static_cast<float>(h);
+
+		vp.MinDepth = 0.0f;
+		vp.MaxDepth = 1.0f;
+
+		vp.TopLeftX = 0.0f;
+		vp.TopLeftY = 0.0f;
+
+		m_pDeviceContext->RSSetViewports(
+			1,
+			&vp
+		);
+	}
+
+	//============================================================
+	// 現在解像度を更新
+	//============================================================
+	m_windowWidth = w;
+	m_windowHeight = h;
+
+	return true;
+}
+
 HRESULT KdDirect3D::SetFullscreenState(bool isFullscreen, IDXGIOutput* pTarget)
 {
 	m_isFullScreen = isFullscreen;

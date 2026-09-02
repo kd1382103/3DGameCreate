@@ -107,11 +107,15 @@ void KdCamera::ConvertWorldToScreenDetail(const Math::Vector3& pos, Math::Vector
 	Math::Viewport vp;
 	KdDirect3D::Instance().CopyViewportInfo(vp);
 
-	// ①ワールド変換行列×ビュー行列×射影行列
+	//========================================
+	// ワールド × ビュー × 射影
+	//========================================	
 	Math::Matrix world = Math::Matrix::CreateTranslation(pos);
 	Math::Matrix wvp = world * GetCameraViewMatrix() * GetProjMatrix();
 
-	// ②奥行情報(w = ._44で割る必要がある)
+	//========================================
+	// 射影後の座標を正規化
+	//========================================
 	wvp._41 /= wvp._44;
 	wvp._42 /= wvp._44;
 	wvp._43 /= wvp._44;
@@ -121,7 +125,13 @@ void KdCamera::ConvertWorldToScreenDetail(const Math::Vector3& pos, Math::Vector
 	Math::Vector3 localPos = wvp.Translation();
 
 	// ここで幅や高さを考慮して計算する(これで正確なスクリーン座標になる)
-	result.x = localPos.x * (vp.width * 0.5f);
-	result.y = localPos.y * (vp.height * 0.5f);
+	//result.x = localPos.x * (vp.width * 0.5f);
+	//result.y = localPos.y * (vp.height * 0.5f);
+
+	//========================================
+	// 1280 × 720 のUI座標へ変換
+	//========================================
+	result.x = localPos.x * 640.0f;
+	result.y = localPos.y * 360.0f;
 	result.z = wvp._44;
 }

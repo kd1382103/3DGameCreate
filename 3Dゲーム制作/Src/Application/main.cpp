@@ -33,6 +33,173 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_  HINSTANCE, _In_ LPSTR , _In_ int)
 	return 0;
 }
 
+//============================================================
+// 表示モード変更(9/2追加)
+//============================================================
+void Application::SetDisplayMode(DisplayMode mode)
+{
+	//============================================================
+	// 1280 x 720 ウィンドウ
+	//============================================================
+	if (mode == DisplayMode::Window1280x720)
+	{
+		//---------------------------------------
+		// すでに1280x720ウィンドウなら何もしない
+		//---------------------------------------
+		if (m_displayMode == DisplayMode::Window1280x720)
+		{
+			return;
+		}
+
+		//---------------------------------------
+		// フルスクリーン解除
+		//---------------------------------------
+		if (m_displayMode == DisplayMode::Fullscreen)
+		{
+			KdDirect3D::Instance()
+				.SetFullscreenState(FALSE, nullptr);
+		}
+
+		//---------------------------------------
+		// ウィンドウサイズ変更
+		//---------------------------------------
+		m_window.SetClientSize(
+			1280,
+			720
+		);
+
+		//---------------------------------------
+		// Direct3Dの描画サイズ変更
+		//---------------------------------------
+		if (!KdDirect3D::Instance().Resize(
+			1280,
+			720))
+		{
+			return;
+		}
+
+		m_resolutionWidth = 1280;
+		m_resolutionHeight = 720;
+
+		m_displayMode =
+			DisplayMode::Window1280x720;
+
+		return;
+	}
+
+	//============================================================
+	// 1920 x 1080 ウィンドウ
+	//============================================================
+	if (mode == DisplayMode::Window1920x1080)
+	{
+		//---------------------------------------
+		// すでに1920x1080ウィンドウなら何もしない
+		//---------------------------------------
+		if (m_displayMode == DisplayMode::Window1920x1080)
+		{
+			return;
+		}
+
+		//---------------------------------------
+		// フルスクリーン解除
+		//---------------------------------------
+		if (m_displayMode == DisplayMode::Fullscreen)
+		{
+			KdDirect3D::Instance()
+				.SetFullscreenState(FALSE, nullptr);
+		}
+
+		//---------------------------------------
+		// ウィンドウサイズ変更
+		//---------------------------------------
+		m_window.SetClientSize(
+			1920,
+			1080
+		);
+
+		//---------------------------------------
+		// Direct3Dの描画サイズ変更
+		//---------------------------------------
+		if (!KdDirect3D::Instance().Resize(
+			1920,
+			1080))
+		{
+			return;
+		}
+
+		m_resolutionWidth = 1920;
+		m_resolutionHeight = 1080;
+
+		m_displayMode =
+			DisplayMode::Window1920x1080;
+
+		return;
+	}
+
+	//============================================================
+	// フルスクリーン
+	//============================================================
+	if (mode == DisplayMode::Fullscreen)
+	{
+		//---------------------------------------
+		// すでにフルスクリーンなら何もしない
+		//---------------------------------------
+		if (m_displayMode == DisplayMode::Fullscreen)
+		{
+			return;
+		}
+
+		//---------------------------------------
+		// フルスクリーン化
+		//---------------------------------------
+		HRESULT hr =
+			KdDirect3D::Instance()
+			.SetFullscreenState(
+				TRUE,
+				nullptr
+			);
+
+		if (FAILED(hr))
+		{
+			return;
+		}
+
+		//---------------------------------------
+		// モニターサイズを取得
+		//---------------------------------------
+		int width =
+			GetSystemMetrics(SM_CXSCREEN);
+
+		int height =
+			GetSystemMetrics(SM_CYSCREEN);
+
+		//---------------------------------------
+		// Direct3Dの描画サイズ変更
+		//---------------------------------------
+		if (!KdDirect3D::Instance().Resize(
+			width,
+			height))
+		{
+			//---------------------------------------
+			// 失敗した場合はフルスクリーン解除
+			//---------------------------------------
+			KdDirect3D::Instance()
+				.SetFullscreenState(
+					FALSE,
+					nullptr
+				);
+
+			return;
+		}
+
+		m_resolutionWidth = width;
+		m_resolutionHeight = height;
+
+		m_displayMode =
+			DisplayMode::Fullscreen;
+	}
+}
+
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // アプリケーション更新開始
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -233,6 +400,18 @@ bool Application::Init(int w, int h)
 	// トグルキー登録（初回のみ）
 	keyboard->AddButton("ToggleKey", new KdInputButtonForWindows(VK_F2));
 
+	//============================================================
+	// 初期表示モード
+	//============================================================
+	m_displayMode =
+		DisplayMode::Window1280x720;
+
+	//============================================================
+	// 現在の画面サイズを保存
+	//============================================================
+	m_resolutionWidth = w;
+	m_resolutionHeight = h;
+
 	//↑一番最初に実行したいものはここより上に書く
 	return true;
 }
@@ -242,45 +421,36 @@ bool Application::Init(int w, int h)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void Application::Execute()
 {
-	KdCSVData windowData("Asset/Data/WindowSettings.csv");
-	const std::vector<std::string>& sizeData = windowData.GetLine(0);
+	int width = 1280;
+	int height = 720;
 
-	//===================================================================
-	// 初期設定(ウィンドウ作成、Direct3D初期化など)
-	//===================================================================
-	if (Application::Instance().Init(atoi(sizeData[0].c_str()), atoi(sizeData[1].c_str())) == false) {
+	//============================================================
+	// 初期化
+	//============================================================
+	if (Application::Instance().Init(
+		width,
+		height) == false)
+	{
 		return;
 	}
 
-	//===================================================================
+	//============================================================
 	// ゲームループ
-	//===================================================================
+	//============================================================
 
-	// 時間
 	m_fpsController.Init();
 
-	// ループ
 	while (1)
 	{
-		// 処理開始時間Get
 		m_fpsController.UpdateStartTime();
 
-		// ゲーム終了指定があるときはループ終了
 		if (m_endFlag)
 		{
 			break;
 		}
 
-		//=========================================
-		//
-		// ウィンドウ関係の処理
-		//
-		//=========================================
-
-		// ウィンドウのメッセージを処理する
 		m_window.ProcessMessage();
 
-		// ウィンドウが破棄されてるならループ終了
 		if (m_window.IsCreated() == false)
 		{
 			break;
@@ -288,18 +458,8 @@ void Application::Execute()
 
 		if (GetAsyncKeyState(VK_ESCAPE))
 		{
-//			if (MessageBoxA(m_window.GetWndHandle(), "本当にゲームを終了しますか？",
-//				"終了確認", MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
-			{
-				End();
-			}
+			End();
 		}
-
-		//=========================================
-		//
-		// アプリケーション更新処理
-		//
-		//=========================================
 
 		KdBeginUpdate();
 		{
@@ -309,13 +469,8 @@ void Application::Execute()
 
 			PostUpdate();
 		}
-		KdPostUpdate();
 
-		//=========================================
-		//
-		// アプリケーション描画処理
-		//
-		//=========================================
+		KdPostUpdate();
 
 		KdBeginDraw();
 		{
@@ -327,26 +482,25 @@ void Application::Execute()
 
 			DrawSprite();
 		}
+
 		KdPostDraw();
 
-		//=========================================
-		//
-		// フレームレート制御
-		//
-		//=========================================
-
 		m_fpsController.Update();
-		std::string titleBar = "アイアンフロンティア:DEMO FPS : " + std::to_string(m_fpsController.m_nowfps);
-		SetWindowTextA(m_window.GetWndHandle(), titleBar.c_str());
 
+		std::string titleBar =
+			"アイアンフロンティア:DEMO FPS : "
+			+ std::to_string(
+				m_fpsController.m_nowfps
+			);
+
+		SetWindowTextA(
+			m_window.GetWndHandle(),
+			titleBar.c_str()
+		);
 	}
 
-	//===================================================================
-	// アプリケーション解放
-	//===================================================================
 	Release();
 }
-
 // アプリケーション終了
 void Application::Release()
 {

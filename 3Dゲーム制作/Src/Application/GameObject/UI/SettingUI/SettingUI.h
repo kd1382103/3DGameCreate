@@ -115,8 +115,8 @@ private:
 	// 左側メニュー
 	//============================================================
 	float m_menuX = -430.0f;
-	float m_menuStartY = 120.0f;
-	float m_menuSpacing = 90.0f;
+	float m_menuStartY = 100.0f;
+	float m_menuSpacing = 100.0f;
 
 	float m_menuWidth = 300.0f;
 	float m_menuHeight = 65.0f;

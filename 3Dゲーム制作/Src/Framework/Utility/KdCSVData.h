@@ -5,7 +5,24 @@ struct KdCSVData
 	KdCSVData() {}
 	KdCSVData(const std::string_view filename) { Load(filename); }
 
+	//============================================================
+	// 読み込み
+	//============================================================
 	bool Load(const std::string_view filename);
+
+	//============================================================
+	// 保存(9/2追加)
+	//============================================================
+	bool Save() const;
+
+	//============================================================
+	// データ変更
+	//============================================================
+	bool SetData(
+		size_t lineIndex,
+		size_t dataIndex,
+		const std::string& value
+	);
 
 	const std::vector<std::vector<std::string>>& GetLData() const { return m_dataLines; }
 

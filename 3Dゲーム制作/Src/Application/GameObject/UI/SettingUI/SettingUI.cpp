@@ -120,19 +120,16 @@ void SettingUI::DrawSprite()
 	//---------------------------------------
 	// 背景
 	//---------------------------------------
-	if (m_backgroundTex)
-	{
-		shader.DrawTex(
-			m_backgroundTex,
-			0,
-			0,
-			1280,
-			720
-		);
-	}
+	shader.DrawTex(
+		m_backgroundTex,
+		0,
+		0,
+		1280,
+		720
+	);
 
 	//---------------------------------------
-	// 左側メニュー
+	// メニュー
 	//---------------------------------------
 	DrawMenu();
 
@@ -211,9 +208,6 @@ void SettingUI::DrawMenu()
 			m_menuStartY
 			- i * m_menuSpacing;
 
-		//---------------------------------------
-		// 選択中
-		//---------------------------------------
 		bool selected =
 			(static_cast<int>(m_currentTab) == i);
 
@@ -221,8 +215,8 @@ void SettingUI::DrawMenu()
 
 		param.pos =
 		{
-			m_menuX,
-			y
+		m_menuX,
+		y
 		};
 
 		param.scale = 1.0f;
@@ -235,7 +229,6 @@ void SettingUI::DrawMenu()
 
 		if (selected)
 		{
-			// 選択中は少し明るくする
 			param.color =
 			{
 				0.0f,
@@ -314,21 +307,51 @@ bool SettingUI::IsMouseOver(
 	GetCursorPos(&mousePos);
 
 	HWND hWnd =
-		Application::Instance().GetWindowHandle();
+		Application::Instance()
+		.GetWindowHandle();
 
 	ScreenToClient(
 		hWnd,
 		&mousePos
 	);
 
+	//========================================================
+	// 現在の解像度
+	//========================================================
+	float screenWidth =
+		static_cast<float>(
+			Application::Instance()
+			.GetResolutionWidth()
+			);
+
+	float screenHeight =
+		static_cast<float>(
+			Application::Instance()
+			.GetResolutionHeight()
+			);
+
+	//========================================================
+	// 実画面 → 1280x720の論理座標へ変換
+	//========================================================
+	float scaleX =
+		screenWidth / 1280.0f;
+
+	float scaleY =
+		screenHeight / 720.0f;
+
 	float mouseX =
 		static_cast<float>(mousePos.x)
+		/ scaleX
 		- 640.0f;
 
 	float mouseY =
 		360.0f
-		- static_cast<float>(mousePos.y);
+		- static_cast<float>(mousePos.y)
+		/ scaleY;
 
+	//========================================================
+	// UI座標は1280x720基準のまま
+	//========================================================
 	return
 		mouseX >= x - width * 0.5f &&
 		mouseX <= x + width * 0.5f &&
