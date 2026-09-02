@@ -592,7 +592,7 @@ void Player::DrawDebug()
 	//---------------------------------------
 	if (m_debugUltimateRange > 0.0f)
 	{
-		DrawDebugAttackRange(
+		DrawDebugUltimateRange(
 			m_debugUltimateRange,
 			m_debugUltimateWidth);
 	}
@@ -928,6 +928,73 @@ void Player::DrawDebugSkillRange(float range)
 	}
 }
 
+void Player::DrawDebugUltimateRange(float range, float width)
+{
+	Math::Vector3 center = m_nowPos;
+	center.y += 0.05f;
+
+	Math::Vector3 forward = GetForward();
+	forward.y = 0.0f;
+
+	if (forward.LengthSquared() < 0.0001f)
+	{
+		return;
+	}
+
+	forward.Normalize();
+
+	Math::Vector3 right =
+		forward.Cross(Math::Vector3::Up);
+
+	if (right.LengthSquared() < 0.0001f)
+	{
+		return;
+	}
+
+	right.Normalize();
+
+	// 横幅の半分
+	float halfWidth = width * 0.5f;
+
+	// 後端
+	Math::Vector3 backLeft =
+		center - right * halfWidth;
+
+	Math::Vector3 backRight =
+		center + right * halfWidth;
+
+	// 正面方向に range 分伸ばす
+	Math::Vector3 frontLeft =
+		backLeft + forward * range;
+
+	Math::Vector3 frontRight =
+		backRight + forward * range;
+
+	// 左側
+	m_pDebugWire->AddDebugLine(
+		backLeft,
+		frontLeft,
+		DebugYellow);
+
+	// 右側
+	m_pDebugWire->AddDebugLine(
+		backRight,
+		frontRight,
+		DebugYellow);
+
+	// 前側
+	m_pDebugWire->AddDebugLine(
+		frontLeft,
+		frontRight,
+		DebugYellow);
+
+	// 正面方向の中心線
+	m_pDebugWire->AddDebugLine(
+		center,
+		center + forward * range,
+		DebugGreen);
+}
+
 bool Player::IsKeyPressedOnce(int vk)
 {
 	bool now = (GetAsyncKeyState(vk) & 0x8000);
@@ -1145,18 +1212,37 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 	m_debugUltimateWidth = width;
 
 	Math::Vector3 forward = GetForward();
-	forward.y = 0;
+	forward.y = 0.0f;
+
+	if (forward.LengthSquared() < 0.0001f)
+	{
+		return;
+	}
+
 	forward.Normalize();
+
+	// 前方向に対して右方向
+	Math::Vector3 right =
+		forward.Cross(Math::Vector3::Up);
+
+	if (right.LengthSquared() < 0.0001f)
+	{
+		return;
+	}
+
+	right.Normalize();
 
 	bool hit = false;
 
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
 		// 通常敵
-		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
+		EnemyBase* enemy =
+			dynamic_cast<EnemyBase*>(obj.get());
 
 		// ボス
-		BossBase* boss = dynamic_cast<BossBase*>(obj.get());
+		BossBase* boss =
+			dynamic_cast<BossBase*>(obj.get());
 
 		// どちらでもなければ対象外
 		if (!enemy && !boss) continue;
@@ -1166,7 +1252,8 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 		if (boss && !boss->IsAlive()) continue;
 
 		// 攻撃対象の座標
-		Math::Vector3 targetPos = Math::Vector3::Zero;
+		Math::Vector3 targetPos =
+			Math::Vector3::Zero;
 
 		if (enemy)
 		{
@@ -1177,33 +1264,52 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 			targetPos = boss->GetHitCenter();
 		}
 
-		Math::Vector3 toTarget = targetPos - m_nowPos;
-		toTarget.y = 0;
+		// プレイヤーから対象へのベクトル
+		Math::Vector3 toTarget =
+			targetPos - m_nowPos;
 
-		float dist = toTarget.Length();
+		// Y方向は無視
+		toTarget.y = 0.0f;
 
-		if (dist > range) continue;
-		if (dist < 0.0001f) continue;
+		// 前後方向の距離
+		float forwardDist =
+			toTarget.Dot(forward);
 
-		toTarget.Normalize();
+		// 後ろ側なら対象外
+		if (forwardDist < 0.0f) continue;
 
-		float dot = std::clamp(forward.Dot(toTarget), -1.0f, 1.0f);
-		float angle = acos(dot);
+		// 前方向の長さを超えていたら対象外
+		if (forwardDist > range) continue;
 
-		if (angle > DirectX::XMConvertToRadians(width)) continue;
+		// 左右方向の距離
+		float sideDist =
+			toTarget.Dot(right);
+
+		// 長方形の幅を超えていたら対象外
+		if (fabsf(sideDist) > width * 0.5f) continue;
 
 		// 5回目ならフィニッシュ
-		bool finalHit = (m_ultimateHitCount == 4);
+		bool finalHit =
+			(m_ultimateHitCount == 4);
 
 		// ダメージ
 		if (enemy)
 		{
-			enemy->Damage(damage, true, finalHit);
+			enemy->Damage(
+				damage,
+				true,
+				finalHit
+			);
 		}
 		else if (boss)
 		{
-			boss->Damage(damage, true, finalHit);
+			boss->Damage(
+				damage,
+				true,
+				finalHit
+			);
 		}
+
 		hit = true;
 	}
 

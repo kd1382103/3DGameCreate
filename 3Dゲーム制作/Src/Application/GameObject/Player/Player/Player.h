@@ -360,6 +360,8 @@ private:
 	// 円形範囲デバッグ
 	void DrawDebugSkillRange(float range);
 
+	//必殺技範囲デバッグ
+	void DrawDebugUltimateRange(float range, float width);
 
 	//========================================
 	// UI
