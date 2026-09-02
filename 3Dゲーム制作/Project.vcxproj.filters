@@ -495,6 +495,9 @@
     <ClInclude Include="Src\Application\GameObject\Stages\Stage\Stage.h">
       <Filter>Src\Application\GameObject\Stages\Stage</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Stages\Sky\Sky.h">
+      <Filter>Src\Application\GameObject\Stages\Sky</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -745,6 +748,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Stages\Stage\Stage.cpp">
       <Filter>Src\Application\GameObject\Stages\Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Stages\Sky\Sky.cpp">
+      <Filter>Src\Application\GameObject\Stages\Sky</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

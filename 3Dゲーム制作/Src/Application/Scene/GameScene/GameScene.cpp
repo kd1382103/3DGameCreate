@@ -12,6 +12,7 @@
 #include<Application/GameObject/Boss/Boss/Boss.h>
 
 #include<Application/GameObject/Stages/Stage/Stage.h>
+#include<Application/GameObject/Stages/Sky/Sky.h>
 
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
@@ -59,6 +60,7 @@ void GameScene::Init()
 	InitSetting();
 	InitAudio();
 	InitStage();
+	InitSky();
 	InitCamera();
 	InitPlayer();
 	InitTutorialEnemy();
@@ -142,6 +144,17 @@ void GameScene::InitStage()
 	m_stage->Init();
 
 	AddObject(m_stage);
+}
+
+void GameScene::InitSky()
+{
+	//=======================================
+	// 空
+	//=======================================
+	m_sky = std::make_shared<Sky>();
+	m_sky->Init();
+	m_sky->SetPos({ 0, 0, 0 });
+	AddObject(m_sky);
 }
 
 void GameScene::InitPlayer()

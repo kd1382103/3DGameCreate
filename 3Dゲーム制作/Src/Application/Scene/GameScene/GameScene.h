@@ -15,6 +15,7 @@ class TutorialEnemy;
 class Boss;
 
 class Stage;
+class Sky;
 
 class SkillGauge;
 class HPGauge;
@@ -92,6 +93,7 @@ private:
 	void InitAudio();
 	void InitCamera();
 	void InitStage();
+	void InitSky();
 	void InitPlayer();
 	void InitTutorialEnemy();
 	void InitUI();
@@ -201,6 +203,7 @@ private:
 	// ステージ
 	//========================================
 	std::shared_ptr<Stage> m_stage;
+	std::shared_ptr<Sky> m_sky;
 
 	//========================================
 	// バトル開始位置表示ピン
