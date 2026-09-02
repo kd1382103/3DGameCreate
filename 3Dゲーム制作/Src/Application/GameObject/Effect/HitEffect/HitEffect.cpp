@@ -37,7 +37,7 @@ void HitEffect::CreateParticles()
 {
 	m_particles.clear();
 
-	const int particleCount = 8;
+	const int particleCount = 10;
 
 	for (int i = 0; i < particleCount; ++i)
 	{

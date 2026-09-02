@@ -7,6 +7,7 @@
 #include<Application/GameObject/Enemy/Enemy3/Enemy3.h>
 #include<Application/GameObject/Enemy/Enemy4/Enemy4.h>
 #include<Application/GameObject/Enemy/Enemy5/Enemy5.h>
+#include <Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/Enemy/TutorialEnemy/TutorialEnemy.h>
 #include<Application/GameObject/Boss/Boss/Boss.h>
 
@@ -464,11 +465,7 @@ void GameScene::UpdateBattle()
 		//---------------------------------------
 		// 出現する敵だけ生成
 		//---------------------------------------
-		SpawnEnemy(m_enemy1, m_battleNo);
-		SpawnEnemy(m_enemy2, m_battleNo);
-		SpawnEnemy(m_enemy3, m_battleNo);
-		SpawnEnemy(m_enemy4, m_battleNo);
-		SpawnEnemy(m_enemy5, m_battleNo);
+		SpawnBattleEnemies();
 
 		return;
 	}
@@ -476,47 +473,10 @@ void GameScene::UpdateBattle()
 	//---------------------------------------
 	// この戦闘で出現する敵の全滅確認
 	//---------------------------------------
-	bool allEnemiesDead = true;
-
-	if (Enemy1::ShouldSpawn(m_battleNo))
+	if (!IsBattleEnemiesDead())
 	{
-		allEnemiesDead =
-			allEnemiesDead &&
-			(!m_enemy1 || !m_enemy1->IsAlive());
+		return;
 	}
-
-	if (Enemy2::ShouldSpawn(m_battleNo))
-	{
-		allEnemiesDead =
-			allEnemiesDead &&
-			(!m_enemy2 || !m_enemy2->IsAlive());
-	}
-
-	if (Enemy3::ShouldSpawn(m_battleNo))
-	{
-		allEnemiesDead =
-			allEnemiesDead &&
-			(!m_enemy3 || !m_enemy3->IsAlive());
-	}
-
-	if (Enemy4::ShouldSpawn(m_battleNo))
-	{
-		allEnemiesDead =
-			allEnemiesDead &&
-			(!m_enemy4 || !m_enemy4->IsAlive());
-	}
-
-	if (Enemy5::ShouldSpawn(m_battleNo))
-	{
-		allEnemiesDead =
-			allEnemiesDead &&
-			(!m_enemy5 || !m_enemy5->IsAlive());
-	}
-
-	//---------------------------------------
-	// 全滅していなければ終了
-	//---------------------------------------
-	if (!allEnemiesDead) { return; }
 
 	//---------------------------------------
 	// 戦闘終了
@@ -542,18 +502,6 @@ void GameScene::UpdateBattle()
 		m_battlePin->SetVisible(true);
 	}
 
-	//---------------------------------------
-	// まだ通常戦闘が残っている
-	//---------------------------------------
-	if (m_battleNo < 5)
-	{
-		m_gamePhase = GamePhase::Prepare;
-		return;
-	}
-	//---------------------------------------
-	// Battle 4終了後
-	// Boss開始地点へ向かう
-	//---------------------------------------
 	m_gamePhase = GamePhase::Prepare;
 }
 
@@ -688,24 +636,19 @@ void GameScene::StopGameObjects()
 	}
 
 	//---------------------------------------
-	// 敵停止
+	// 敵・ボス停止
 	//---------------------------------------
-	if (m_enemy1)
+	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
-		m_enemy1->SetGameEnd(true);
-	}
+		if (auto enemy = std::dynamic_pointer_cast<EnemyBase>(obj))
+		{
+			enemy->SetGameEnd(true);
+		}
 
-	if (m_enemy2)
-	{
-		m_enemy2->SetGameEnd(true);
-	}
-
-	//---------------------------------------
-	// Boss停止
-	//---------------------------------------
-	if (m_boss)
-	{
-		m_boss->SetGameEnd(true);
+		if (auto boss = std::dynamic_pointer_cast<BossBase>(obj))
+		{
+			boss->SetGameEnd(true);
+		}
 	}
 
 	//---------------------------------------
@@ -967,6 +910,63 @@ void GameScene::UpdateDebug()
 	prevF1 = nowF1;
 }
 
+void GameScene::SpawnBattleEnemies()
+{
+	SpawnEnemy(m_enemy1, m_battleNo);
+	SpawnEnemy(m_enemy2, m_battleNo);
+	SpawnEnemy(m_enemy3, m_battleNo);
+	SpawnEnemy(m_enemy4, m_battleNo);
+	SpawnEnemy(m_enemy5, m_battleNo);
+}
+
+bool GameScene::IsBattleEnemiesDead()
+{
+	//---------------------------------------
+	// 出現する敵だけ全滅確認
+	//---------------------------------------
+	if (Enemy1::ShouldSpawn(m_battleNo))
+	{
+		if (m_enemy1 && m_enemy1->IsAlive())
+		{
+			return false;
+		}
+	}
+
+	if (Enemy2::ShouldSpawn(m_battleNo))
+	{
+		if (m_enemy2 && m_enemy2->IsAlive())
+		{
+			return false;
+		}
+	}
+
+	if (Enemy3::ShouldSpawn(m_battleNo))
+	{
+		if (m_enemy3 && m_enemy3->IsAlive())
+		{
+			return false;
+		}
+	}
+
+	if (Enemy4::ShouldSpawn(m_battleNo))
+	{
+		if (m_enemy4 && m_enemy4->IsAlive())
+		{
+			return false;
+		}
+	}
+
+	if (Enemy5::ShouldSpawn(m_battleNo))
+	{
+		if (m_enemy5 && m_enemy5->IsAlive())
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void GameScene::InitBattleStartPin()
 {
 	m_battlePin =
@@ -992,11 +992,9 @@ void GameScene::InitBattleStartPin()
 
 void GameScene::SetGameUIVisible(bool visible)
 {
-	if (m_tutorialText)
-	{
-		m_tutorialText->SetVisible(visible);
-	}
-
+	//---------------------------------------
+	// プレイヤーUI
+	//---------------------------------------
 	if (m_player)
 	{
 		auto hp =
@@ -1018,27 +1016,32 @@ void GameScene::SetGameUIVisible(bool visible)
 		}
 	}
 
-	if (m_enemy1)
+	//---------------------------------------
+	// 敵・ボスのHPゲージ
+	//---------------------------------------
+	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
-		m_enemy1->SetHPGaugeVisible(visible);
+		if (auto enemy =
+			std::dynamic_pointer_cast<EnemyBase>(obj))
+		{
+			enemy->SetHPGaugeVisible(visible);
+		}
+
+		if (auto boss =
+			std::dynamic_pointer_cast<BossBase>(obj))
+		{
+			boss->SetHPGaugeVisible(visible);
+		}
 	}
 
-	if (m_enemy2)
+	//---------------------------------------
+	// チュートリアル文字
+	//---------------------------------------
+	if (m_tutorialText)
 	{
-		m_enemy2->SetHPGaugeVisible(visible);
-	}
-
-	if (m_tutorialEnemy)
-	{
-		m_tutorialEnemy->SetHPGaugeVisible(visible);
-	}
-
-	if (m_boss)
-	{
-		m_boss->SetHPGaugeVisible(visible);
+		m_tutorialText->SetVisible(visible);
 	}
 }
-
 void GameScene::SetFlyTextVisible(bool visible)
 {
 	for (auto& obj : SceneManager::Instance().GetObjList())

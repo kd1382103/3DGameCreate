@@ -536,6 +536,21 @@ void EnemyBase::StopAttackSound()
 	}
 }
 
+void EnemyBase::LookAtPlayer()
+{
+	auto player = m_wpPlayer.lock();
+	if (!player) return;
+
+	Math::Vector3 dir = player->GetPos() - m_nowPos;
+	dir.y = 0.0f;
+
+	if (dir.LengthSquared() < 0.0001f) return;
+
+	dir.Normalize();
+
+	m_angleY = std::atan2f(dir.x, dir.z) + DirectX::XM_PI;
+}
+
 void EnemyBase::InitAttackPrediction()
 {
 	m_preAttackPoly = std::make_shared<KdSquarePolygon>();

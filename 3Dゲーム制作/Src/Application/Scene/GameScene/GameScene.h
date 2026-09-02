@@ -148,7 +148,7 @@ private:
 		switch (battleNo)
 		{
 		case 0:
-			return { 0, 0, 10 };
+			return { 0, 0, 20 };
 
 		case 1:
 			return { -2, 0, 80 };
@@ -169,7 +169,11 @@ private:
 			return { 0, 0, 0 };
 		}
 	}
+	//敵の生成
+	void SpawnBattleEnemies();
 
+	//全ての敵が死んでいるかどうかの判定
+	bool IsBattleEnemiesDead();
 private:
 
 	//========================================
@@ -326,6 +330,7 @@ void GameScene::SpawnEnemy(
 	enemy->SetTarget(m_player);
 	enemy->SetCamera(m_camera);
 	enemy->SetGameScene(this);
+	enemy->LookAtPlayer();
 
 	AddObject(enemy);
 

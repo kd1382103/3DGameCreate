@@ -137,7 +137,7 @@ public:
 	}
 
 	void StopAttackSound();
-
+	void LookAtPlayer();
 	bool IsAttacking() const { return m_isAttacking; }
 
 private:
@@ -163,9 +163,6 @@ private:
 	// 後更新
 	//==============================================================
 	void UpdateGroundCollision();
-	//void UpdateWallCollision();
-	//void UpdateWorldMatrix();
-	//void UpdateUIWorldPosition();
 
 	//==============================================================
 	// 死亡時の状態リセット
