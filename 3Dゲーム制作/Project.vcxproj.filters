@@ -97,9 +97,6 @@
     <Filter Include="Src\Application\GameObject\Stages">
       <UniqueIdentifier>{d196e47f-b7fd-4663-a0be-744308966463}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Src\Application\GameObject\Stages\Floor">
-      <UniqueIdentifier>{f47b2cf3-843c-4308-852c-4542231b7ea5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Src\Application\GameObject\UI">
       <UniqueIdentifier>{1c71f351-afaf-40e4-9326-baacea12143e}</UniqueIdentifier>
     </Filter>
@@ -390,9 +387,6 @@
     <ClInclude Include="Src\Application\GameObject\BaseObject\BaseObject.h">
       <Filter>Src\Application\GameObject\BaseObject</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\Stages\Floor\Stage.h">
-      <Filter>Src\Application\GameObject\Stages\Floor</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.h">
       <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
     </ClInclude>
@@ -491,6 +485,9 @@
     </ClInclude>
     <ClInclude Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.h">
       <Filter>Src\Application\GameObject\Effect\SparkEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Stages\Stage.h">
+      <Filter>Src\Application\GameObject\Stages</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -647,9 +644,6 @@
     <ClCompile Include="Src\Application\GameObject\BaseObject\BaseObject.cpp">
       <Filter>Src\Application\GameObject\BaseObject</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\Stages\Floor\Stage.cpp">
-      <Filter>Src\Application\GameObject\Stages\Floor</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.cpp">
       <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
     </ClCompile>
@@ -742,6 +736,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.cpp">
       <Filter>Src\Application\GameObject\Effect\SparkEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Stages\Stage.cpp">
+      <Filter>Src\Application\GameObject\Stages</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

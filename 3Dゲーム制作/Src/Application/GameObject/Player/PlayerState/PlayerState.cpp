@@ -444,9 +444,8 @@ void PlayerStateSkill::Update(Player& owner)
 	//========================================
 	if (t > 3.0f && t < 8.0f)
 	{
-		owner.DoAttackHitCheckMulti(
+		owner.DoSkillHitCheck(
 			2.5f,
-			120.0f,
 			40
 		);
 	}
@@ -467,7 +466,6 @@ void PlayerStateSkill::Update(Player& owner)
 		);
 	}
 }
-
 //==============================================================
 // Dodge
 //==============================================================

@@ -11,6 +11,13 @@
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Effect/EffectManager.h>
 
+namespace
+{
+	const Math::Vector4 DebugYellow = { 1.0f, 1.0f, 0.0f, 1.0f };
+	const Math::Vector4 DebugGreen = { 0.0f, 1.0f, 0.0f, 1.0f };
+	const Math::Vector4 DebugCyan = { 0.0f, 1.0f, 1.0f, 1.0f };
+}
+
 void Player::Init()
 {
 	if (!m_model)
@@ -558,6 +565,44 @@ void Player::UpdateDebug()
 	*/
 }
 
+void Player::DrawDebug()
+{
+	//---------------------------------------
+	// 通常攻撃
+	//---------------------------------------
+	if (m_debugAttackRange > 0.0f)
+	{
+		DrawDebugAttackRange(
+			m_debugAttackRange,
+			m_debugAttackWidth);
+	}
+
+
+	//---------------------------------------
+	// スキル
+	//---------------------------------------
+	if (m_debugSkillRange > 0.0f)
+	{
+		DrawDebugSkillRange(m_debugSkillRange);
+	}
+
+
+	//---------------------------------------
+	// 必殺技
+	//---------------------------------------
+	if (m_debugUltimateRange > 0.0f)
+	{
+		DrawDebugAttackRange(
+			m_debugUltimateRange,
+			m_debugUltimateWidth);
+	}
+
+	//---------------------------------------
+	// デバッグワイヤー描画
+	//---------------------------------------
+	m_pDebugWire->Draw();
+}
+
 void Player::PostUpdate()
 {
 	//================================================================================
@@ -671,6 +716,9 @@ void Player::DrawLit()
 {
 	if (!m_model) return;
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
+
+	// デバッグ描画
+	DrawDebug();
 }
 
 void Player::DrawSprite()
@@ -749,6 +797,137 @@ void Player::Damage(float dmg, bool isUltimate, bool finalHit)
 	(void)finalHit;
 }
 
+void Player::DrawDebugAttackRange(float range, float width)
+{
+	Math::Vector3 center = m_nowPos;
+	center.y += 0.05f;
+
+	//---------------------------------------
+	// 前方向
+	//---------------------------------------
+	Math::Vector3 forward = GetForward();
+	forward.y = 0.0f;
+
+	if (forward.LengthSquared() < 0.0001f)
+	{
+		return;
+	}
+
+	forward.Normalize();
+
+	//---------------------------------------
+	// 右方向
+	//---------------------------------------
+	Math::Vector3 right =
+		forward.Cross(Math::Vector3::Up);
+
+	right.Normalize();
+
+	//---------------------------------------
+	// 角度
+	//---------------------------------------
+	float angle =
+		DirectX::XMConvertToRadians(width);
+
+	//---------------------------------------
+	// 左端
+	//---------------------------------------
+	Math::Vector3 leftDir =
+		forward * cosf(angle)
+		- right * sinf(angle);
+
+	//---------------------------------------
+	// 右端
+	//---------------------------------------
+	Math::Vector3 rightDir =
+		forward * cosf(angle)
+		+ right * sinf(angle);
+
+	//---------------------------------------
+	// 左右の境界線
+	//---------------------------------------
+	m_pDebugWire->AddDebugLine(
+		center,
+		center + leftDir * range,
+		DebugYellow);
+
+	m_pDebugWire->AddDebugLine(
+		center,
+		center + rightDir * range,
+		DebugYellow);
+
+	//---------------------------------------
+	// 扇形の円弧
+	//---------------------------------------
+	const int detail = 20;
+
+	Math::Vector3 prevPos =
+		center + leftDir * range;
+
+	for (int i = 1; i <= detail; ++i)
+	{
+		float t =
+			static_cast<float>(i) / detail;
+
+		float currentAngle =
+			-angle + (angle * 2.0f) * t;
+
+		Math::Vector3 dir =
+			forward * cosf(currentAngle)
+			+ right * sinf(currentAngle);
+
+		Math::Vector3 currentPos =
+			center + dir * range;
+
+		m_pDebugWire->AddDebugLine(
+			prevPos,
+			currentPos,
+			DebugYellow);
+
+		prevPos = currentPos;
+	}
+
+	//---------------------------------------
+	// 中心線
+	//---------------------------------------
+	m_pDebugWire->AddDebugLine(
+		center,
+		center + forward * range,
+		DebugGreen);
+}
+
+void Player::DrawDebugSkillRange(float range)
+{
+	Math::Vector3 center = m_nowPos;
+	center.y += 0.05f;
+
+	const int detail = 32;
+
+	Math::Vector3 prevPos =
+		center + Math::Vector3(range, 0.0f, 0.0f);
+
+	for (int i = 1; i <= detail; ++i)
+	{
+		float angle =
+			DirectX::XM_2PI *
+			static_cast<float>(i) / detail;
+
+		Math::Vector3 currentPos =
+			center + Math::Vector3(
+				cosf(angle) * range,
+				0.0f,
+				sinf(angle) * range
+			);
+
+		m_pDebugWire->AddDebugLine(
+			prevPos,
+			currentPos,
+			DebugCyan);
+
+		prevPos = currentPos;
+	}
+}
+
 bool Player::IsKeyPressedOnce(int vk)
 {
 	bool now = (GetAsyncKeyState(vk) & 0x8000);
@@ -801,6 +980,10 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 {
 	if (m_attackHitOnce) return;
 	if (m_isInvincible) return;
+
+	// デバッグ用に現在の判定範囲を保存
+	m_debugAttackRange = range;
+	m_debugAttackWidth = width;
 
 	Math::Vector3 forward = GetForward();
 	forward.y = 0;
@@ -873,10 +1056,93 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 
 }
 
+void Player::DoSkillHitCheck(float range, int damage)
+{
+	if (m_attackHitOnce) return;
+	if (m_isInvincible) return;
+
+	// デバッグ用に現在の判定範囲を保存
+	m_debugSkillRange = range;
+
+	bool hit = false;
+
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		// 通常敵
+		EnemyBase* enemy =
+			dynamic_cast<EnemyBase*>(obj.get());
+
+		// Boss
+		BossBase* boss =
+			dynamic_cast<BossBase*>(obj.get());
+
+		// どちらでもなければ対象外
+		if (!enemy && !boss) continue;
+
+		// 生存チェック
+		if (enemy && !enemy->IsAlive()) continue;
+		if (boss && !boss->IsAlive()) continue;
+
+		// 攻撃対象の座標
+		Math::Vector3 targetPos =
+			Math::Vector3::Zero;
+
+		if (enemy)
+		{
+			targetPos = enemy->GetHitCenter();
+		}
+		else if (boss)
+		{
+			targetPos = boss->GetHitCenter();
+		}
+
+		// プレイヤーから対象まで
+		Math::Vector3 toTarget =
+			targetPos - m_nowPos;
+
+		// 高さは無視
+		toTarget.y = 0.0f;
+
+		float dist = toTarget.Length();
+
+		// 範囲外
+		if (dist > range) continue;
+
+		// ダメージ
+		if (enemy)
+		{
+			enemy->Damage(damage, false, false);
+		}
+		else if (boss)
+		{
+			boss->Damage(damage, false, false);
+		}
+
+		// 必殺技ポイント加算
+		if (m_canGainUltimate)
+		{
+			m_attackContact = true;
+		}
+
+		hit = true;
+	}
+
+	// 一度でも当たったら終了
+	if (hit)
+	{
+		m_attackHitOnce = true;
+		m_hitStopTimer = 0.45f;
+	}
+}
+
 void Player::DoUltimateHitCheck(float range, float width, int damage)
 {
 	if (m_isInvincible) return;
 	if (m_ultimateHitCount >= 5) { return; }
+
+	// デバッグ用に現在の判定範囲を保存
+	m_debugUltimateRange = range;
+	m_debugUltimateWidth = width;
 
 	Math::Vector3 forward = GetForward();
 	forward.y = 0;

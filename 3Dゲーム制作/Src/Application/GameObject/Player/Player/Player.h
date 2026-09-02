@@ -39,12 +39,14 @@ public:
 	void UpdateSkillGauge(float frameScale);
 	void UpdatePendingDamage();
 	void UpdateDodgeSlow(float frameScale);
-	void UpdateDebug();
 
 	void PostUpdate() override;
 	void DrawLit() override;
 	void DrawSprite() override;
 	void GenerateDepthMapFromLight() override;
+
+	void UpdateDebug();
+	void DrawDebug();
 
 	//========================================
 	// ダメージ・生存
@@ -96,6 +98,9 @@ public:
 	// 攻撃判定
 	//========================================
 	void DoAttackHitCheckMulti(float range, float width, int damage);
+
+	//スキル用
+	void DoSkillHitCheck(float range, int damage);
 
 	//必殺技用
 	void DoUltimateHitCheck(float range, float width, int damage);
@@ -348,6 +353,14 @@ public:
 	bool m_comboFinished = false;
 
 private:
+
+	// 攻撃範囲デバッグ
+	void DrawDebugAttackRange(float range, float width);
+
+	// 円形範囲デバッグ
+	void DrawDebugSkillRange(float range);
+
+
 	//========================================
 	// UI
 	//========================================
@@ -374,4 +387,18 @@ private:
 	// 剣の軌跡
 	//========================================
 	//bool m_isSwordTrailActive = false;};
+
+private:
+
+	//========================================
+	// デバッグ用攻撃範囲
+	//========================================
+	float m_debugAttackRange = 0.0f;
+	float m_debugAttackWidth = 0.0f;
+
+	float m_debugSkillRange = 0.0f;
+
+	float m_debugUltimateRange = 0.0f;
+	float m_debugUltimateWidth = 0.0f;
+
 };
