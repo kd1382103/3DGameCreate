@@ -202,7 +202,6 @@ bool BGMVolume::IsMouseOverBar() const
 	ScreenToClient(hWnd, &mousePos);
 
 	RECT rect;
-
 	GetClientRect(hWnd, &rect);
 
 	float screenWidth =
@@ -212,24 +211,32 @@ bool BGMVolume::IsMouseOverBar() const
 		static_cast<float>(rect.bottom - rect.top);
 
 	//---------------------------------------
-	// 画面中央を (0,0) にする
+	// 実画面座標 → 1280×720座標へ変換
 	//---------------------------------------
+	float scaleX =
+		screenWidth / 1280.0f;
+
+	float scaleY =
+		screenHeight / 720.0f;
+
 	float mouseX =
-		static_cast<float>(mousePos.x)
-		- screenWidth * 0.5f;
+		static_cast<float>(mousePos.x) / scaleX
+		- 640.0f;
 
 	float mouseY =
-		screenHeight * 0.5f
-		- static_cast<float>(mousePos.y);
+		360.0f
+		- static_cast<float>(mousePos.y) / scaleY;
 
 	//---------------------------------------
 	// バーの範囲
 	//---------------------------------------
-	float left = m_barX;
-	float right = m_barX + m_barWidth;
+	float left = static_cast<float>(m_barX);
+	float right =
+		static_cast<float>(m_barX + m_barWidth);
 
-	float bottom = m_barY;
-	float top = m_barY + m_barHeight;
+	float bottom = static_cast<float>(m_barY);
+	float top =
+		static_cast<float>(m_barY + m_barHeight);
 
 	return
 		mouseX >= left &&

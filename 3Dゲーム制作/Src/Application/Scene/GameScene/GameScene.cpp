@@ -11,7 +11,7 @@
 #include <Application/GameObject/Enemy/TutorialEnemy/TutorialEnemy.h>
 #include<Application/GameObject/Boss/Boss/Boss.h>
 
-#include<Application/GameObject/Stages/Stage.h>
+#include<Application/GameObject/Stages/Stage/Stage.h>
 
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>

@@ -624,8 +624,8 @@ void PlayerUltimate::Update(Player& owner)
 				owner.m_ultimateHitInterval;
 
 			owner.DoUltimateHitCheck(
-				2.5f,
-				50.0f,
+				4.0f,   // 正面方向の長さ
+				1.75f,   // 横幅
 				40
 			);
 		}

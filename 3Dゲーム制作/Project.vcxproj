@@ -297,7 +297,7 @@
     <ClInclude Include="Src\Application\GameObject\Enemy\TutorialEnemy\TutorialEnemy.h" />
     <ClInclude Include="Src\Application\GameObject\Player\PlayerState\PlayerState.h" />
     <ClInclude Include="Src\Application\GameObject\Player\Player\Player.h" />
-    <ClInclude Include="Src\Application\GameObject\Stages\Stage.h" />
+    <ClInclude Include="Src\Application\GameObject\Stages\Stage\Stage.h" />
     <ClInclude Include="Src\Application\GameObject\UI\BattolPin\BattlePin.h" />
     <ClInclude Include="Src\Application\GameObject\UI\FontText\FontText.h" />
     <ClInclude Include="Src\Application\GameObject\UI\GameClearBotton\GameClearButton.h" />
@@ -386,7 +386,7 @@
     <ClCompile Include="Src\Application\GameObject\Enemy\TutorialEnemy\TutorialEnemy.cpp" />
     <ClCompile Include="Src\Application\GameObject\Player\PlayerState\PlayerState.cpp" />
     <ClCompile Include="Src\Application\GameObject\Player\Player\Player.cpp" />
-    <ClCompile Include="Src\Application\GameObject\Stages\Stage.cpp" />
+    <ClCompile Include="Src\Application\GameObject\Stages\Stage\Stage.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\BattolPin\BattlePin.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\FontText\FontText.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\GameClearBotton\GameClearButton.cpp" />

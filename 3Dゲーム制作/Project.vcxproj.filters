@@ -202,6 +202,12 @@
     <Filter Include="Src\Application\GameObject\Effect\SparkEffect">
       <UniqueIdentifier>{94a8ba19-30d1-400c-acd3-c000a15a80c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Stages\Sky">
+      <UniqueIdentifier>{a8d806f0-6b49-4266-9bcd-df8a60f7963e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\Stages\Stage">
+      <UniqueIdentifier>{d2e9475d-8670-4d76-9d08-51869570d333}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -486,8 +492,8 @@
     <ClInclude Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.h">
       <Filter>Src\Application\GameObject\Effect\SparkEffect</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\Stages\Stage.h">
-      <Filter>Src\Application\GameObject\Stages</Filter>
+    <ClInclude Include="Src\Application\GameObject\Stages\Stage\Stage.h">
+      <Filter>Src\Application\GameObject\Stages\Stage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -737,8 +743,8 @@
     <ClCompile Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.cpp">
       <Filter>Src\Application\GameObject\Effect\SparkEffect</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\Stages\Stage.cpp">
-      <Filter>Src\Application\GameObject\Stages</Filter>
+    <ClCompile Include="Src\Application\GameObject\Stages\Stage\Stage.cpp">
+      <Filter>Src\Application\GameObject\Stages\Stage</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
