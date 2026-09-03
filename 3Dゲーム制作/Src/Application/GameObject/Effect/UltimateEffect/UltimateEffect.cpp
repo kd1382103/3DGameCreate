@@ -75,6 +75,12 @@ void UltimateEffect::Init(
 
 	m_polygon->Set2DObject(false);
 	m_polygon->SetScale(1.0f);
+
+	//==========================================================
+	// 残像初期化
+	//==========================================================
+	m_trailPositions.clear();
+	m_trailTimer = 0.0f;
 }
 
 //==============================================================
@@ -106,6 +112,29 @@ void UltimateEffect::Update()
 		dt;
 
 	SetPos(pos);
+
+
+	//==========================================================
+	// 残像位置を記録
+	//==========================================================
+	m_trailTimer += dt;
+
+	if (m_trailTimer >= kTrailInterval)
+	{
+		m_trailTimer = 0.0f;
+
+		// 現在位置を先頭に追加
+		m_trailPositions.insert(
+			m_trailPositions.begin(),
+			GetPos()
+		);
+
+		// 最大数を超えたら古いものを削除
+		if (m_trailPositions.size() > kTrailCount)
+		{
+			m_trailPositions.pop_back();
+		}
+	}
 }
 
 //==============================================================
@@ -123,34 +152,72 @@ void UltimateEffect::DrawEffect()
 	// 板ポリの向きを90度回転
 	angle -= DirectX::XM_PIDIV2;
 
+
 	//==========================================================
-	// 拡大
+	// 残像描画
+	//==========================================================
+	for (int i = static_cast<int>(m_trailPositions.size()) - 1;
+		i >= 0;
+		--i)
+	{
+		Math::Matrix trailMat =
+			Math::Matrix::CreateScale(2.0f);
+
+		trailMat *=
+			Math::Matrix::CreateRotationY(angle);
+
+		Math::Vector3 trailPos =
+			m_trailPositions[i];
+
+		trailPos.y += 1.0f;
+
+		trailMat.Translation(trailPos);
+
+		// 古い残像ほど薄くする
+		float alpha =
+			0.10f +
+			0.12f *
+			(static_cast<float>(i) /
+				static_cast<float>(kTrailCount));
+
+		KdShaderManager::Instance()
+			.m_StandardShader.DrawPolygon(
+				*m_polygon,
+				trailMat,
+				Math::Color(
+					1.0f,
+					1.0f,
+					1.0f,
+					alpha
+				)
+			);
+	}
+
+
+	//==========================================================
+	// 本体
 	//==========================================================
 	Math::Matrix mat =
-		Math::Matrix::CreateScale(2.0f);
+		Math::Matrix::CreateScale(2.5f);
 
-	mat *= Math::Matrix::CreateRotationY(angle);
+	mat *=
+		Math::Matrix::CreateRotationY(angle);
 
-	//==========================================================
-	// 位置
-	//
-	// プレイヤーの足元ではなく、
-	// 少し上に浮かせて表示
-	//==========================================================
 	Math::Vector3 pos = GetPos();
 
 	pos.y += 1.0f;
 
 	mat.Translation(pos);
 
-	KdShaderManager::Instance().m_StandardShader.DrawPolygon(
-		*m_polygon,
-		mat,
-		Math::Color(
-			1.0f,
-			1.0f,
-			1.0f,
-			1.0f
-		)
-	);
+	KdShaderManager::Instance()
+		.m_StandardShader.DrawPolygon(
+			*m_polygon,
+			mat,
+			Math::Color(
+				1.0f,
+				1.0f,
+				1.0f,
+				1.0f
+			)
+		);
 }
