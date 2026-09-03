@@ -2,20 +2,6 @@
 
 #include <Application/GameObject/Effect/EffectBase/EffectBase.h>
 
-//==============================================================
-// 必殺技エフェクト用ポリゴン
-//==============================================================
-class UltimateEffectPolygon : public KdPolygon
-{
-public:
-
-	void SetVertices(float width, float height);
-};
-
-
-//==============================================================
-// 必殺技エフェクト
-//==============================================================
 class UltimateEffect : public EffectBase
 {
 public:
@@ -37,7 +23,10 @@ public:
 
 private:
 
-	std::shared_ptr<UltimateEffectPolygon> m_polygon;
+	//==========================================================
+	// 斬撃ポリゴン
+	//==========================================================
+	std::shared_ptr<KdSquarePolygon> m_polygon;
 
 	//==========================================================
 	// 飛んでいく方向
