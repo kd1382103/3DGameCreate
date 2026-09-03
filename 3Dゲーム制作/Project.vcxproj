@@ -287,6 +287,7 @@
     <ClInclude Include="Src\Application\GameObject\Effect\HitEffect\HitEffect.h" />
     <ClInclude Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.h" />
     <ClInclude Include="Src\Application\GameObject\Effect\SwordTrail\SwordTrail.h" />
+    <ClInclude Include="Src\Application\GameObject\Effect\UltimateEffect\UltimateEffect.h" />
     <ClInclude Include="Src\Application\GameObject\Enemy\Enemy1\Enemy1.h" />
     <ClInclude Include="Src\Application\GameObject\Enemy\Enemy2\Enemy2.h" />
     <ClInclude Include="Src\Application\GameObject\Enemy\Enemy3\Enemy3.h" />
@@ -377,6 +378,7 @@
     <ClCompile Include="Src\Application\GameObject\Effect\HitEffect\HitEffect.cpp" />
     <ClCompile Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.cpp" />
     <ClCompile Include="Src\Application\GameObject\Effect\SwordTrail\SwordTrail.cpp" />
+    <ClCompile Include="Src\Application\GameObject\Effect\UltimateEffect\UltimateEffect.cpp" />
     <ClCompile Include="Src\Application\GameObject\Enemy\Enemy1\Enemy1.cpp" />
     <ClCompile Include="Src\Application\GameObject\Enemy\Enemy2\Enemy2.cpp" />
     <ClCompile Include="Src\Application\GameObject\Enemy\Enemy3\Enemy3.cpp" />

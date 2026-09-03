@@ -1,6 +1,8 @@
 ﻿#include "PlayerState.h"
 
 #include <Application/GameObject/Player/Player/Player.h>
+#include <Application/GameObject/Effect/EffectManager.h>
+
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/main.h>
@@ -592,6 +594,21 @@ void PlayerUltimate::Enter(Player& owner)
 	//========================================
 	owner.m_ultimateHitTimer = 0;
 	owner.m_ultimateHitCount = 0;
+
+	//========================================
+	// 必殺技エフェクト
+	//========================================
+	owner.m_ultimateEffectPlayed = false;
+
+	//========================================
+	// 必殺技のカメラ
+	//========================================
+	if (auto cam =
+		std::dynamic_pointer_cast<TPSCamera>(
+			owner.m_wpCamera.lock()))
+	{
+		cam->StartUltimateCamera();
+	}
 }
 
 void PlayerUltimate::Update(Player& owner)
@@ -603,6 +620,20 @@ void PlayerUltimate::Update(Player& owner)
 	//========================================
 	if (t > 30.0f && t < 60.0f)
 	{
+		//====================================
+		// 必殺技エフェクト生成
+		//====================================
+		if (!owner.m_ultimateEffectPlayed)
+		{
+			EffectManager::Instance().Play(
+				EffectType::Ultimate,
+				owner.m_nowPos,
+				owner.GetForward()
+			);
+
+			owner.m_ultimateEffectPlayed = true;
+		}
+
 		//========================================
 		// 60FPS基準のフレーム倍率
 		//========================================
@@ -636,6 +667,17 @@ void PlayerUltimate::Update(Player& owner)
 	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
+
+		//========================================
+		// 必殺技カメラ終了
+		//========================================
+		if (auto cam =
+			std::dynamic_pointer_cast<TPSCamera>(
+				owner.m_wpCamera.lock()))
+		{
+			cam->EndUltimateCamera();
+		}
+
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
 		);

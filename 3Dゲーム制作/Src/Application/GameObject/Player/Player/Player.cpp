@@ -516,15 +516,15 @@ void Player::UpdateDebug()
 	//}
 
 	
-	KdDebugGUI::Instance().AddLog(
-		"%f\n",
-		m_nowPos.x
-	);
+	//KdDebugGUI::Instance().AddLog(
+	//	"%f\n",
+	//	m_nowPos.x
+	//);
 
-	KdDebugGUI::Instance().AddLog(
-		"%f\n",
-		m_nowPos.z
-	);
+	//KdDebugGUI::Instance().AddLog(
+	//	"%f\n",
+	//	m_nowPos.z
+	//);
 
 	//KdDebugGUI::Instance().AddLog(
 	//	"%f\n",
@@ -546,23 +546,11 @@ void Player::UpdateDebug()
 	// デバッグキー
 	//========================================
 
-	/*
-	if (GetAsyncKeyState('1') & 0x8000)
-	{
-		m_hpGauge--;
-	}
-
 	if (GetAsyncKeyState('2') & 0x8000)
 	{
 		m_ultimateEnergy =
 			m_ultimateEnergyMax;
-	}
-
-	if (GetAsyncKeyState('3') & 0x8000)
-	{
-		m_nowHp = 1;
-	}
-	*/
+	}	
 }
 
 void Player::DrawDebug()

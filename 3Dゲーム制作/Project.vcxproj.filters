@@ -208,6 +208,9 @@
     <Filter Include="Src\Application\GameObject\Stages\Stage">
       <UniqueIdentifier>{d2e9475d-8670-4d76-9d08-51869570d333}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Effect\UltimateEffect">
+      <UniqueIdentifier>{f55bc234-ae2d-4465-9746-dad35b3c2dac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -498,6 +501,9 @@
     <ClInclude Include="Src\Application\GameObject\Stages\Sky\Sky.h">
       <Filter>Src\Application\GameObject\Stages\Sky</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\UltimateEffect\UltimateEffect.h">
+      <Filter>Src\Application\GameObject\Effect\UltimateEffect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -751,6 +757,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Stages\Sky\Sky.cpp">
       <Filter>Src\Application\GameObject\Stages\Sky</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Effect\UltimateEffect\UltimateEffect.cpp">
+      <Filter>Src\Application\GameObject\Effect\UltimateEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

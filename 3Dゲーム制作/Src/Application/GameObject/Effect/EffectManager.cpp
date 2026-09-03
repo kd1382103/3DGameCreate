@@ -2,6 +2,8 @@
 
 #include <Application/GameObject/Effect/HitEffect/HitEffect.h>
 #include <Application/GameObject/Effect/SparkEffect/SparkEffect.h>
+#include <Application/GameObject/Effect/UltimateEffect/UltimateEffect.h>
+
 
 #include <Application/GameObject/Camera/CameraBase.h>
 #include <Application/Scene/SceneManager.h>
@@ -83,6 +85,31 @@ void EffectManager::Play(
 		//======================================================
 		SceneManager::Instance().AddObject(effect);
 
+		break;
+	}
+	case EffectType::Ultimate:
+	{
+		auto effect =
+			std::make_shared<UltimateEffect>();
+		effect->Init(
+			pos,
+			direction
+		);
+		//======================================================
+		// カメラ設定
+		//======================================================
+		auto camera =
+			m_wpCamera.lock();
+
+		if (camera)
+		{
+			effect->SetCamera(camera);
+		}
+
+		//======================================================
+		// シーンへ追加
+		//======================================================
+		SceneManager::Instance().AddObject(effect);
 		break;
 	}
 

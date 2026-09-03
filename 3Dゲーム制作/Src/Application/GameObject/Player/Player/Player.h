@@ -291,8 +291,11 @@ public:
 	//========================================
 	// 必殺技
 	//========================================
+	
+	//必殺技ポイント
 	float m_ultimateEnergyMax = 500.0f;
 	float m_ultimateEnergy = 0.0f;
+
 
 	bool m_attackContact = false;
 	bool m_canGainUltimate = false;
@@ -305,6 +308,8 @@ public:
 	const int m_ultimateMaxHitCount = 5;
 
 	bool m_ultimateActivated = false;
+
+	bool m_ultimateEffectPlayed = false;
 
 	//========================================
 	// HP
