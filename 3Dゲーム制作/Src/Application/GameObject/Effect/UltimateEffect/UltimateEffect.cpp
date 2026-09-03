@@ -8,7 +8,10 @@
 //==============================================================
 void UltimateEffect::Init(
 	const Math::Vector3& pos,
-	const Math::Vector3& direction)
+	const Math::Vector3& direction,
+	float hitInterval,
+	int maxHitCount,
+	float travelDistance)
 {
 	EffectBase::Init(
 		EffectType::Ultimate,
@@ -16,9 +19,33 @@ void UltimateEffect::Init(
 	);
 
 	//==========================================================
+	// 必殺技の総移動時間
+	//
+	// 5フレーム × 5回 = 25フレーム
+	// 60FPS基準なので秒に変換
+	//==========================================================
+	m_effectDuration =
+		(hitInterval * maxHitCount) / 60.0f;
+
+	//==========================================================
 	// 再生時間
 	//==========================================================
-	m_lifeTime = 1.0f;
+	m_lifeTime = m_effectDuration;
+
+	//==========================================================
+	// 移動速度
+	//
+	// 総移動距離 ÷ 総移動時間
+	//==========================================================
+	if (m_effectDuration > 0.0f)
+	{
+		m_moveSpeed =
+			travelDistance / m_effectDuration;
+	}
+	else
+	{
+		m_moveSpeed = 0.0f;
+	}
 
 	//==========================================================
 	// 飛んでいく方向

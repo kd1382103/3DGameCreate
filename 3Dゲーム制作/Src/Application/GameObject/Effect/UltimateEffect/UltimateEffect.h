@@ -25,7 +25,10 @@ public:
 
 	void Init(
 		const Math::Vector3& pos,
-		const Math::Vector3& direction
+		const Math::Vector3& direction,
+		float hitInterval,
+		int maxHitCount,
+		float travelDistance
 	);
 
 	void Update() override;
@@ -50,5 +53,10 @@ private:
 	//==========================================================
 	// 移動速度
 	//==========================================================
-	float m_moveSpeed = 0.25f;
+	float m_moveSpeed = 0.0f;
+
+	//==========================================================
+	// 表示時間
+	//==========================================================
+	float m_effectDuration = 0.0f;
 };

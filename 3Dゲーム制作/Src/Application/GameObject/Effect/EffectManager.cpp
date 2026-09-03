@@ -87,14 +87,38 @@ void EffectManager::Play(
 
 		break;
 	}
+
+	default:
+		break;
+	}
+}
+
+//==============================================================
+// 必殺技エフェクト再生
+//==============================================================
+void EffectManager::Play(
+	EffectType type,
+	const Math::Vector3& pos,
+	const Math::Vector3& direction,
+	float hitInterval,
+	int maxHitCount,
+	float travelDistance)
+{
+	switch (type)
+	{
 	case EffectType::Ultimate:
 	{
 		auto effect =
 			std::make_shared<UltimateEffect>();
+
 		effect->Init(
 			pos,
-			direction
+			direction,
+			hitInterval,
+			maxHitCount,
+			travelDistance
 		);
+
 		//======================================================
 		// カメラ設定
 		//======================================================
@@ -110,6 +134,7 @@ void EffectManager::Play(
 		// シーンへ追加
 		//======================================================
 		SceneManager::Instance().AddObject(effect);
+
 		break;
 	}
 

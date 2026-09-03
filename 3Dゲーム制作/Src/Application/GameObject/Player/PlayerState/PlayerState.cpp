@@ -628,7 +628,10 @@ void PlayerUltimate::Update(Player& owner)
 			EffectManager::Instance().Play(
 				EffectType::Ultimate,
 				owner.m_nowPos,
-				owner.GetForward()
+				owner.GetForward(),
+				owner.m_ultimateHitInterval,
+				owner.m_ultimateMaxHitCount,
+				4.0f
 			);
 
 			owner.m_ultimateEffectPlayed = true;

@@ -26,9 +26,9 @@ public:
 		m_wpCamera = camera;
 	}
 
-	//==============================================================
+	//==========================================================
 	// エフェクト再生
-	//==============================================================
+	//==========================================================
 
 	// 通常エフェクト
 	void Play(
@@ -40,6 +40,15 @@ public:
 		EffectType type,
 		const Math::Vector3& pos,
 		const Math::Vector3& direction);
+
+	// 必殺技エフェクト
+	void Play(
+		EffectType type,
+		const Math::Vector3& pos,
+		const Math::Vector3& direction,
+		float hitInterval,
+		int maxHitCount,
+		float travelDistance);
 
 private:
 
