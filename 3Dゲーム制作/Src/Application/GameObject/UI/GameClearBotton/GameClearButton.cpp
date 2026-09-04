@@ -74,15 +74,34 @@ bool GameClearButton::IsMouseOver() const
 	float screenHeight =
 		static_cast<float>(rect.bottom - rect.top);
 
-	// KdSpriteShader の座標系
-	// 画面中央を (0, 0) とする
+	//---------------------------------------
+	// 実際の画面座標 → 1280×720座標へ変換
+	//---------------------------------------
+	const float logicalWidth = 1280.0f;
+	const float logicalHeight = 720.0f;
+
+	float logicalMouseX =
+		static_cast<float>(mousePos.x)
+		* logicalWidth
+		/ screenWidth;
+
+	float logicalMouseY =
+		static_cast<float>(mousePos.y)
+		* logicalHeight
+		/ screenHeight;
+
+	//---------------------------------------
+	// 画面中央を (0, 0) にする
+	//---------------------------------------
 	float mouseX =
-		static_cast<float>(mousePos.x) - screenWidth * 0.5f;
+		logicalMouseX - logicalWidth * 0.5f;
 
 	float mouseY =
-		screenHeight * 0.5f - static_cast<float>(mousePos.y);
+		logicalHeight * 0.5f - logicalMouseY;
 
-	// DrawTex() と同じ座標範囲
+	//---------------------------------------
+	// ボタンの矩形
+	//---------------------------------------
 	float left = m_posX;
 	float right = m_posX + m_width;
 
@@ -95,7 +114,6 @@ bool GameClearButton::IsMouseOver() const
 		mouseY >= bottom &&
 		mouseY <= top;
 }
-
 
 //==============================================================
 // DrawSprite
