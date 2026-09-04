@@ -1,5 +1,5 @@
 ﻿#include "Sky.h"
-
+#include <Application/main.h>
 void Sky::Init()
 {
 	if (!m_model)
@@ -12,9 +12,16 @@ void Sky::Init()
 void Sky::Update()
 {
 	//---------------------------------------
+	// フレーム倍率
+	// 60FPSを基準にする
+	//---------------------------------------
+	float frameScale =
+		Application::Instance().GetFPSController().GetFrameScale();
+
+	//---------------------------------------
 	// 空をゆっくり回転
 	//---------------------------------------
-	m_rotation += m_rotationSpeed;
+	m_rotation += m_rotationSpeed * frameScale;
 
 	// 360度を超えたら戻す
 	if (m_rotation >= DirectX::XM_2PI)
