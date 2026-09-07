@@ -12,7 +12,16 @@ void FontText::Init(const Math::Vector3& worldPos, int value)
 	m_worldPos = worldPos;
 	m_value = value;
 
-	m_isHeal = false;
+	m_isHeal = false
+		;
+	// ダメージ：赤
+	m_color =
+	{
+		1.0f,
+		0.15f,
+		0.15f,
+		1.0f
+	};
 
 	m_life = LifeTime;
 	m_offsetY = 0.0f;
@@ -34,6 +43,15 @@ void FontText::InitHeal(const Math::Vector3& worldPos, int value)
 
 	m_isHeal = true;
 
+	// 回復：緑
+	m_color =
+	{
+		0.15f,
+		1.0f,
+		0.15f,
+		1.0f
+	};
+
 	m_life = LifeTime;
 	m_offsetY = 0.0f;
 	m_offsetX = ((rand() % 100) / 100.0f - 0.5f) * 0.5f;
@@ -52,13 +70,19 @@ void FontText::InitMessage(
 	float scale)
 {
 	m_text = text;
+	m_screenPos = pos;
+	m_messageScale = scale;
+
 	m_isMessage = true;
 
-	// 表示位置
-	m_screenPos = pos;
-
-	// 表示サイズ
-	m_messageScale = scale;
+	// 通常テキスト：黒
+	m_color =
+	{
+		0.0f,
+		0.0f,
+		0.0f,
+		1.0f
+	};
 
 	m_drawType = eDrawTypeUI;
 }
@@ -130,13 +154,12 @@ void FontText::DrawSprite()
 		return;
 	}
 
-	auto& sprite = KdShaderManager::Instance().m_spriteShader;
-
-	Math::Color color = { 1,1,1,m_alpha / 255.0f };
+	auto& sprite =
+		KdShaderManager::Instance().m_spriteShader;
 
 	KdSpriteShader::FontParam param;
 
-	param.color = color;
+	param.color = m_color;
 	param.scale = m_scale;
 	param.pivot = { 0.5f, 0.5f };
 
@@ -147,15 +170,7 @@ void FontText::DrawSprite()
 	{
 		param.pos = m_screenPos;
 		param.scale = m_messageScale;
-
-		param.color =
-		{
-			1.0f,
-			1.0f,
-			1.0f,
-			1.0f
-		};
-
+		param.color = m_color;
 		param.pivot = { 0.5f, 0.5f };
 
 		sprite.DrawFontEx(
@@ -166,13 +181,23 @@ void FontText::DrawSprite()
 
 		return;
 	}
+
 	//---------------------------------------
-	// ダメージ数字
+	// フライテキスト
 	//---------------------------------------
 	auto cam = m_wpCamera.lock();
-	if (!cam) return;
-	Math::Vector3 camForward = cam->GetCameraDir();
-	Math::Vector3 toText = m_worldPos - cam->GetCameraPos();
+
+	if (!cam)
+	{
+		return;
+	}
+
+	Math::Vector3 camForward =
+		cam->GetCameraDir();
+
+	Math::Vector3 toText =
+		m_worldPos - cam->GetCameraPos();
+
 	toText.Normalize();
 
 	if (camForward.Dot(toText) < 0.0f)
@@ -181,24 +206,21 @@ void FontText::DrawSprite()
 	}
 
 	Math::Vector3 pos = m_worldPos;
+
 	pos.x += m_offsetX;
 	pos.y += m_offsetY;
 
-	Math::Vector2 screen = cam->WorldToScreen(pos);
-
+	Math::Vector2 screen =
+		cam->WorldToScreen(pos);
 
 	param.pos = screen;
 
+	//---------------------------------------
+	// 回復
+	//---------------------------------------
 	if (m_isHeal)
 	{
-		//回復
-		param.color =
-		{
-			0.2f,
-			1.0f,
-			0.2f,
-			m_alpha / 255.0f
-		};
+		param.color = m_color;
 
 		sprite.DrawFontEx(
 			param,
@@ -206,9 +228,13 @@ void FontText::DrawSprite()
 			m_value
 		);
 	}
+	//---------------------------------------
+	// ダメージ
+	//---------------------------------------
 	else
 	{
-		// ダメージ
+		param.color = m_color;
+
 		sprite.DrawFontEx(
 			param,
 			"%d",

@@ -33,6 +33,16 @@
 void GameScene::Event()
 {
 	//=======================================
+	// BattlePinへプレイヤー位置を渡す
+	//=======================================
+	if (m_battlePin && m_player)
+	{
+		m_battlePin->SetPlayerPos(
+			m_player->GetPos()
+		);
+	}
+
+	//=======================================
 	// デバッグ
 	//=======================================
 	UpdateDebug();
@@ -1002,6 +1012,13 @@ void GameScene::InitBattleStartPin()
 	m_battlePin->SetCamera(m_camera);
 
 	//---------------------------------------
+	// プレイヤー位置
+	//---------------------------------------
+	m_battlePin->SetPlayerPos(
+		m_player->GetPos()
+	);
+
+	//---------------------------------------
 	// 戦闘開始範囲
 	//---------------------------------------
 	m_battlePin->SetBattleRange(5.0f);
@@ -1013,7 +1030,6 @@ void GameScene::InitBattleStartPin()
 
 	AddObject(m_battlePin);
 }
-
 void GameScene::SetGameUIVisible(bool visible)
 {
 	//---------------------------------------

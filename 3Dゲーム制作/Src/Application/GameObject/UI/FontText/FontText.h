@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 class CameraBase;
 
 class FontText : public KdGameObject
@@ -19,6 +20,14 @@ public:
 		const Math::Vector2& pos = { 0.0f, 0.0f },
 		float scale = 2.0f
 	);
+
+	//========================================
+	// 文字色
+	//========================================
+	void SetColor(const Math::Color& color)
+	{
+		m_color = color;
+	}
 
 	void Update() override;
 	void DrawSprite() override;
@@ -44,33 +53,30 @@ public:
 	}
 
 public:
-
-	//FlyTextの表示時間
 	static constexpr float LifeTime = 3.0f;
-
-	//拡大縮小にかける時間
 	static constexpr float ScaleTime = 0.5f;
 
 private:
-
-	//=======================================
-	// 共通
-	//=======================================
-
 	bool m_isMessage = false;
 	bool m_visible = true;
-
-	//=======================================
-	// フライテキスト
-	//=======================================
 
 	std::weak_ptr<CameraBase> m_wpCamera;
 
 	Math::Vector3 m_worldPos;
 	int m_value = 0;
 
-	// 回復テキストかどうか
 	bool m_isHeal = false;
+
+	//========================================
+	// 文字色
+	//========================================
+	Math::Color m_color =
+	{
+		1.0f,
+		1.0f,
+		1.0f,
+		1.0f
+	};
 
 	float m_life = 0.0f;
 	float m_offsetY = 0.0f;
@@ -80,12 +86,7 @@ private:
 	float m_alpha = 255.0f;
 	float m_scale = 0.0f;
 
-	//=======================================
-	// メッセージ
-	//=======================================
-
 	std::string m_text;
-
 	Math::Vector2 m_screenPos = { 0.0f, 0.0f };
 	float m_messageScale = 2.0f;
 };

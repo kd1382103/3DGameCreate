@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 class CameraBase;
+class FontText;
 
 class BattlePin : public KdGameObject
 {
@@ -57,6 +58,12 @@ public:
 		return m_visible;
 	}
 
+	// プレイヤー位置設定
+	void SetPlayerPos(const Math::Vector3& pos)
+	{
+		m_playerPos = pos;
+	}
+
 private:
 
 	enum class Edge
@@ -69,9 +76,23 @@ private:
 
 	void DrawEdgeGlow(Edge edge);
 
+	void DrawEdgePin(
+		Edge edge,
+		const Math::Vector2& screen);
+
+	// 距離表示
+	void DrawDistance(
+		Edge edge,
+		const Math::Vector2& screen,
+		float distance);
+
 private:
 
 	Math::Vector3 m_pos =
+		Math::Vector3::Zero;
+
+	// プレイヤー位置
+	Math::Vector3 m_playerPos =
 		Math::Vector3::Zero;
 
 	float m_battleRange = 1.0f;
@@ -80,6 +101,11 @@ private:
 
 	std::shared_ptr<KdSquarePolygon> m_pinPoly;
 
+	// 距離表示
+	std::shared_ptr<FontText> m_distanceText;
+
+	float m_distanceTextScale = 1.0f;
+
 	float m_scale = 0.6f;
 
 	bool m_visible = true;
@@ -87,4 +113,6 @@ private:
 	float m_glowSize = 70.0f;
 
 	int m_glowSteps = 8;
+
+	float m_edgePinSize = 16.0f;
 };
