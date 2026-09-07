@@ -1390,3 +1390,51 @@ void Player::ResolveContact()
 		}
 	}
 }
+
+void Player::Heal(float amount)
+{
+	//========================================
+	// 回復前のHP
+	//========================================
+	float beforeHp = m_nowHp;
+
+	//========================================
+	// HP回復
+	//========================================
+	m_nowHp += amount;
+
+	if (m_nowHp > m_hpGaugeMax)
+	{
+		m_nowHp = m_hpGaugeMax;
+	}
+
+	//========================================
+	// 実際に回復した量
+	//========================================
+	float healAmount = m_nowHp - beforeHp;
+
+	//========================================
+	// 回復フライテキスト
+	//========================================
+	if (healAmount > 0.0f)
+	{
+		auto fly = std::make_shared<FontText>();
+
+		fly->InitHeal(
+			m_nowPos + Math::Vector3(0, 2.0f, 0),
+			(int)healAmount
+		);
+
+		fly->SetCamera(m_wpCamera.lock());
+
+		SceneManager::Instance().AddObject(fly);
+	}
+
+	//========================================
+	// HPゲージ更新
+	//========================================
+	if (auto ui = GetUI<HPGauge>(UIType::HPGauge))
+	{
+		ui->SetGauge(m_nowHp, m_hpGaugeMax);
+	}
+}

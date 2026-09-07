@@ -497,6 +497,17 @@ void GameScene::UpdateBattle()
 	m_battleStarted = false;
 
 	//---------------------------------------
+	// playerのHP回復
+	//---------------------------------------
+	if (m_player)
+	{
+		float healAmount =
+			m_player->GetHpMax() * 0.25f;
+
+		m_player->Heal(healAmount);
+	}
+
+	//---------------------------------------
 	// 次の戦闘番号へ
 	//---------------------------------------
 	m_battleNo++;

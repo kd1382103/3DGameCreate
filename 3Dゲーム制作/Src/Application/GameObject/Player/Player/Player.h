@@ -122,6 +122,15 @@ public:
 			m_ultimateEnergy = m_ultimateEnergyMax;
 	}
 
+	//========================================
+	// 回復
+	//========================================
+	void Heal(float amount);
+	float GetHpMax() const
+	{
+		return m_hpGaugeMax;
+	}
+
 	void SetUltimateEnergyMax()
 	{
 		m_ultimateEnergy = m_ultimateEnergyMax;

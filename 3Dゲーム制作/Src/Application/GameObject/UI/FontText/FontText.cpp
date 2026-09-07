@@ -3,10 +3,16 @@
 #include <Application/GameObject/Camera/CameraBase.h>
 
 //3D空間上の座標と表示する数値を受け取り、FontTextを初期化する関数
+
+//==================================================
+// ダメージフライテキスト
+//==================================================
 void FontText::Init(const Math::Vector3& worldPos, int value)
 {
 	m_worldPos = worldPos;
 	m_value = value;
+
+	m_isHeal = false;
 
 	m_life = LifeTime;
 	m_offsetY = 0.0f;
@@ -17,6 +23,27 @@ void FontText::Init(const Math::Vector3& worldPos, int value)
 
 	m_drawType = eDrawTypeUI;
 }
+
+//==================================================
+// 回復フライテキスト
+//==================================================
+void FontText::InitHeal(const Math::Vector3& worldPos, int value)
+{
+	m_worldPos = worldPos;
+	m_value = value;
+
+	m_isHeal = true;
+
+	m_life = LifeTime;
+	m_offsetY = 0.0f;
+	m_offsetX = ((rand() % 100) / 100.0f - 0.5f) * 0.5f;
+	m_velocityX = ((rand() % 100) / 100.0f - 0.5f) * 0.15f;
+	m_alpha = 255.0f;
+	m_scale = 0.0f;
+
+	m_drawType = eDrawTypeUI;
+}
+
 
 // 文字列のみを受け取り、FontTextを初期化する関数
 void FontText::InitMessage(
@@ -162,9 +189,30 @@ void FontText::DrawSprite()
 
 	param.pos = screen;
 
-	sprite.DrawFontEx(
-		param,
-		"%d",
-		m_value
-	);
+	if (m_isHeal)
+	{
+		//回復
+		param.color =
+		{
+			0.2f,
+			1.0f,
+			0.2f,
+			m_alpha / 255.0f
+		};
+
+		sprite.DrawFontEx(
+			param,
+			"+%d",
+			m_value
+		);
+	}
+	else
+	{
+		// ダメージ
+		sprite.DrawFontEx(
+			param,
+			"%d",
+			m_value
+		);
+	}
 }

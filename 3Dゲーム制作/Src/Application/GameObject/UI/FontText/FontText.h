@@ -1,5 +1,6 @@
 ﻿#pragma once
 class CameraBase;
+
 class FontText : public KdGameObject
 {
 public:
@@ -8,6 +9,9 @@ public:
 
 	// フライテキスト
 	void Init(const Math::Vector3& worldPos, int value);
+
+	// 回復フライテキスト
+	void InitHeal(const Math::Vector3& worldPos, int value);
 
 	// 画面上のメッセージ
 	void InitMessage(
@@ -47,9 +51,6 @@ public:
 	//拡大縮小にかける時間
 	static constexpr float ScaleTime = 0.5f;
 
-	//「constexpr」はコンパイル時に定数を定義する
-	// プログラムの実行時ではなくコンパイル時に値が決まる
-
 private:
 
 	//=======================================
@@ -67,6 +68,9 @@ private:
 
 	Math::Vector3 m_worldPos;
 	int m_value = 0;
+
+	// 回復テキストかどうか
+	bool m_isHeal = false;
 
 	float m_life = 0.0f;
 	float m_offsetY = 0.0f;
