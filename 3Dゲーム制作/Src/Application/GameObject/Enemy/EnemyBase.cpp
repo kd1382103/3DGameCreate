@@ -419,19 +419,19 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit)
 					if (finalHit)
 					{
 						m_nowPos +=
-							knockDir * m_knockBackPower;
+							knockDir * StateMachineParameter::KnockBackPower;
 					}
 					else
 					{
 						m_nowPos +=
 							knockDir *
-							(m_knockBackPower * 0.2f);
+							(StateMachineParameter::KnockBackPower * 0.2f);
 					}
 				}
 				else
 				{
 					m_nowPos +=
-						knockDir * m_knockBackPower;
+						knockDir * StateMachineParameter::KnockBackPower;
 				}
 			}
 		}

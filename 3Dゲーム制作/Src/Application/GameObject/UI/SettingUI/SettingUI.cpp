@@ -2,8 +2,6 @@
 
 #include "SettingAudio/SettingAudio.h"
 #include "SettingDisplay/SettingDisplay.h"
-//#include "SettingControl/SettingControl.h"
-
 #include <Application/main.h>
 
 //============================================================

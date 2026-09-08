@@ -96,7 +96,7 @@ void Player::Update()
 	//========================================
 	if (m_canGainUltimate && m_attackContact)
 	{
-		AddUltimateEnergy(1.0f * frameScale);
+		AddUltimateEnergy(2.0f * frameScale);
 	}
 
 	//========================================

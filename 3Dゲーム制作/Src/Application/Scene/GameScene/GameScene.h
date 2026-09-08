@@ -176,6 +176,7 @@ private:
 
 	//全ての敵が死んでいるかどうかの判定
 	bool IsBattleEnemiesDead();
+
 private:
 
 	//========================================
@@ -311,7 +312,30 @@ private:
 	// エフェクト
 	//========================================
 	//std::shared_ptr<SwordTrail> m_swordTrail;
+
+	//========================================
+	// デバッグ
+	//========================================
+	
+	// 戦闘スキップ
+	void DebugSkipToBattle(int battleNo);
+
+	Math::Vector3 GetBattleStartDirection(int battleNo)
+	{
+		switch (battleNo)
+		{
+		case 0: return { 0.0f, 0.0f, 1.0f };
+		case 1: return { -1.0f, 0.0f, 0.0f };
+		case 2: return { -1.0f, 0.0f, 0.0f };
+		case 3: return { 0.0f, 0.0f, 1.0f };
+		case 4: return { 0.0f, 0.0f, -1.0f };
+		case 5: return { 0.0f, 0.0f, 1.0f };
+		}
+
+		return { 0.0f, 0.0f, 1.0f };
+	}
 };
+
 
 template<class T>
 void GameScene::SpawnEnemy(

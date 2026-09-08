@@ -80,6 +80,20 @@ void TitleScene::Event()
 //============================================================
 void TitleScene::Init()
 {
+	BaseScene::Init();
+
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+	GetCursorInfo(&ci);
+
+	//カーソルが表示されているかどうか
+	if (ci.flags & CURSOR_SHOWING)
+	{
+		ShowCursor(FALSE);
+	}
+
+	//カーソルの移動範囲制限を解除
+	ClipCursor(nullptr);
+
 	//---------------------------------------
 	// タイトル背景
 	//---------------------------------------

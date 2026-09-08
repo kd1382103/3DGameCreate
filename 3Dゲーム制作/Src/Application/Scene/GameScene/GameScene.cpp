@@ -29,6 +29,7 @@
 #include<Application/GameObject/Camera/CameraBase.h>
 
 #include<Application/main.h>
+#include <mouse.h>
 
 void GameScene::Event()
 {
@@ -66,6 +67,22 @@ void GameScene::Event()
 void GameScene::Init()
 {
 	BaseScene::Init();
+
+	//	CURSORINFO ・・・ WindowsAPIの構造体で、カーソルの情報を取得するために使用されます。
+	//	CURSORINFO構造体には、カーソルの状態や位置などの情報が含まれています。
+	
+	//情報を受け取る箱の作成・取得
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+	GetCursorInfo(&ci);
+
+	//カーソルが表示されているかどうか
+	if (ci.flags & CURSOR_SHOWING)
+	{
+		ShowCursor(FALSE);
+	}
+
+	//カーソルの移動範囲制限を解除
+	ClipCursor(nullptr);
 
 	InitSetting();
 	InitAudio();
@@ -618,6 +635,19 @@ void GameScene::GameClear()
 	StopGameObjects();
 
 	//---------------------------------------
+	// カーソルを表示	
+	//---------------------------------------
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+	GetCursorInfo(&ci);
+
+	if (!(ci.flags & CURSOR_SHOWING))
+	{
+		ShowCursor(TRUE);
+	}
+
+	ClipCursor(nullptr);
+
+	//---------------------------------------
 	// GAME CLEAR表示
 	//---------------------------------------
 	auto clearText = std::make_shared<FontText>();
@@ -696,7 +726,14 @@ void GameScene::StopGameObjects()
 	//---------------------------------------
 	// マウス解放
 	//---------------------------------------
-	ShowCursor(TRUE);
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+	GetCursorInfo(&ci);
+
+	if (!(ci.flags & CURSOR_SHOWING))
+	{
+		ShowCursor(TRUE);
+	}
+
 	ClipCursor(nullptr);
 }
 
@@ -879,69 +916,87 @@ void GameScene::UpdateAudioVolume()
 
 void GameScene::UpdateDebug()
 {
-	//========================================
-	// F1：チュートリアルスキップ
-	//========================================
 	static bool prevF1 = false;
+	static bool prevF2 = false;
+	static bool prevF3 = false;
+	static bool prevF4 = false;
+	static bool prevF5 = false;
+	static bool prevF6 = false;
 
-	bool nowF1 = (GetAsyncKeyState(VK_F1) & 0x8000) != 0;
 
-	// 押した瞬間だけ
+	bool nowF1 =
+		(GetAsyncKeyState(VK_F1) & 0x8000) != 0;
+
+	bool nowF2 =
+		(GetAsyncKeyState(VK_F2) & 0x8000) != 0;
+
+	bool nowF3 =
+		(GetAsyncKeyState(VK_F3) & 0x8000) != 0;
+
+	bool nowF4 =
+		(GetAsyncKeyState(VK_F4) & 0x8000) != 0;
+
+	bool nowF5 =
+		(GetAsyncKeyState(VK_F5) & 0x8000) != 0;
+
+	bool nowF6 =
+		(GetAsyncKeyState(VK_F6) & 0x8000) != 0;
+
+
+	//============================================================
+	// F1 : チュートリアルスキップ → Battle1開始前
+	//============================================================
 	if (nowF1 && !prevF1)
 	{
-		// チュートリアル中のみ有効
-		if (m_gamePhase == GamePhase::Tutorial ||
-			m_gamePhase == GamePhase::TutorialComplete ||
-			m_gamePhase == GamePhase::Prepare)
-		{
-			//========================================
-			// チュートリアル敵を削除
-			//========================================
-			if (m_tutorialEnemy)
-			{
-				m_tutorialEnemy->SetExpired();
-				m_tutorialEnemy = nullptr;
-			}
+		DebugSkipToBattle(0);
+	}
 
-			//========================================
-			// チュートリアル文字を削除
-			//========================================
-			if (m_tutorialText)
-			{
-				m_tutorialText->SetExpired();
-				m_tutorialText = nullptr;
-			}
+	//============================================================
+	// F2 : Battle1をスキップ → Battle2開始前
+	//============================================================
+	if (nowF2 && !prevF2)
+	{
+		DebugSkipToBattle(1);
+	}
 
-			//========================================
-			// チュートリアル完了
-			//========================================
-			m_tutorialStep = TutorialStep::Finish;
+	//============================================================
+	// F3 : Battle1～2をスキップ → Battle3開始前
+	//============================================================
+	if (nowF3 && !prevF3)
+	{
+		DebugSkipToBattle(2);
+	}
 
-			//========================================
-			// 準備フェーズへ
-			//========================================
-			m_gamePhase = GamePhase::Prepare;
+	//============================================================
+	// F4 : Battle1～3をスキップ → Battle4開始前
+	//============================================================
+	if (nowF4 && !prevF4)
+	{
+		DebugSkipToBattle(3);
+	}
 
-			m_phaseTimer = 0.0f;
+	//============================================================
+	// F5 : Battle1～4をスキップ → Battle5開始前
+	//============================================================
+	if (nowF5 && !prevF5)
+	{
+		DebugSkipToBattle(4);
+	}
 
-			//---------------------------------------
-			// Prepareへ移行したのでPinを表示
-			//---------------------------------------
-			if (m_battlePin)
-			{
-				m_battlePin->SetVisible(true);
-			}
-
-			//========================================
-			// デバッグ表示
-			//========================================
-			KdDebugGUI::Instance().AddLog(
-				"Tutorial Skip\n"
-			);
-		}
+	//============================================================
+	// F6 : Battle1～5をスキップ → Boss開始前
+	//============================================================
+	if (nowF6 && !prevF6)
+	{
+		DebugSkipToBattle(5);
 	}
 
 	prevF1 = nowF1;
+	prevF2 = nowF2;
+	prevF3 = nowF3;
+	prevF4 = nowF4;
+	prevF5 = nowF5;
+	prevF6 = nowF6;
 }
 
 void GameScene::SpawnBattleEnemies()
@@ -1029,6 +1084,76 @@ void GameScene::InitBattleStartPin()
 	m_battlePin->SetVisible(false);
 
 	AddObject(m_battlePin);
+}
+
+void GameScene::DebugSkipToBattle(int nextBattleNo)
+{
+	//========================================
+	// チュートリアル終了
+	//========================================
+	m_tutorialStep = TutorialStep::Finish;
+
+	// チュートリアル敵を消す
+	if (m_tutorialEnemy)
+	{
+		m_tutorialEnemy->SetExpired();
+		m_tutorialEnemy = nullptr;
+	}
+
+	// チュートリアル文字を消す
+	if (m_tutorialText)
+	{
+		m_tutorialText->SetExpired();
+		m_tutorialText = nullptr;
+	}
+
+	//========================================
+	// 戦闘番号
+	//========================================
+	m_battleNo = nextBattleNo;
+	m_battleStarted = false;
+
+	//========================================
+	// BattlePinの位置
+	//========================================
+	m_battleStartPos =
+		GetBattleStartPos(
+			m_battleNo >= 5 ? 5 : m_battleNo
+		);
+
+	if (m_battlePin)
+	{
+		m_battlePin->SetPos(m_battleStartPos);
+		m_battlePin->SetVisible(true);
+	}
+
+	//========================================
+	// PlayerをBattlePin手前へ
+	//========================================
+	if (m_player && m_battlePin)
+	{
+		Math::Vector3 direction =
+			GetBattleStartDirection(
+				m_battleNo >= 5 ? 5 : m_battleNo
+			);
+
+		direction.y = 0.0f;
+
+		if (direction.LengthSquared() > 0.00001f)
+		{
+			direction.Normalize();
+
+			Math::Vector3 playerPos =
+				m_battlePin->GetPos() - direction * 10.0f;
+
+			m_player->SetPos(playerPos);
+		}
+	}
+
+	//========================================
+	// Battle開始前で停止
+	//========================================
+	m_gamePhase = GamePhase::Prepare;
 }
 void GameScene::SetGameUIVisible(bool visible)
 {

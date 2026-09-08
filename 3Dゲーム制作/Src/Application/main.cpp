@@ -398,7 +398,7 @@ bool Application::Init(int w, int h)
 	input.AddDevice("Keyboard", keyboard);
 
 	// トグルキー登録（初回のみ）
-	keyboard->AddButton("ToggleKey", new KdInputButtonForWindows(VK_F2));
+	keyboard->AddButton("ToggleKey", new KdInputButtonForWindows(VK_F10));
 
 	//============================================================
 	// 初期表示モード

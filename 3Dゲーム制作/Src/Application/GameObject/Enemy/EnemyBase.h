@@ -253,10 +253,7 @@ public:
 	Math::Vector3 m_lockOnPos = Math::Vector3::Zero;
 	float m_lockOnScale = 1.0f;
 
-	//ノックバックの強さ
-	float m_knockBackPower = 0.75f;
-
-	// ノックバック可能か
+	// ノックバックするか
 	bool m_canKnockBack = true;
 
 	//チュートリアル専用

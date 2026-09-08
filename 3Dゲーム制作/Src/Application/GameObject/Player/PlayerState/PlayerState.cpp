@@ -6,7 +6,6 @@
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/main.h>
-
 //==============================================================
 // Idle
 //==============================================================
@@ -734,16 +733,23 @@ void PlayerAttackStateBase::UpdateAttack(
 	//========================================
 	// 踏み込み
 	//========================================
-	if (t > 20.0f && t < 30.0f)
-	{
-		Math::Vector3 f =
-			owner.GetForward();
+	const float lungeStartFrame = 20.0f;
+	const float lungeEndFrame = 30.0f;
 
+	if (t > lungeStartFrame && t < lungeEndFrame)
+	{
+		Math::Vector3 f = owner.GetForward();
 		f.Normalize();
+
+		const float lungeDistance =
+			StateMachineParameter::KnockBackPower;
+
+		const float lungeFrameCount =
+			lungeEndFrame - lungeStartFrame;
 
 		owner.m_nowPos +=
 			f *
-			0.05f *
+			(lungeDistance / lungeFrameCount) *
 			scaledFrameScale;
 	}
 
@@ -770,7 +776,7 @@ void PlayerAttackStateBase::UpdateAttack(
 		//====================================
 		owner.DoAttackHitCheckMulti(
 			owner.m_attackDist,
-			90.0f,
+			50.0f,
 			damage
 		);
 	}

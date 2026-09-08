@@ -43,4 +43,7 @@ private:
 	bool m_visible = false;
 	bool m_hover = false;
 	bool m_clicked = false;
+
+	// 前フレームの左クリック状態
+	bool m_prevLButton = false;
 };

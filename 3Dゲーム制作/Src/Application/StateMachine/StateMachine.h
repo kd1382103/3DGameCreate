@@ -12,6 +12,15 @@ public:
 	virtual void Exit(TOwner&) {};
 };
 
+//========================================
+// StateMachine 共通値
+//========================================
+class StateMachineParameter
+{
+public:
+	static constexpr float KnockBackPower = 0.5f;
+};
+
 template<class TOwner>
 class StateMachine
 {

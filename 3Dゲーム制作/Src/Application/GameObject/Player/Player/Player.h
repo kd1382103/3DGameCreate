@@ -270,7 +270,7 @@ public:
 	bool m_attackHitOnce = false;
 	bool m_attackSEPlayed = false;
 
-	float m_attackDist = 1.25f;
+	float m_attackDist = 1.5f;
 
 	bool m_canNextAttack = false;
 
