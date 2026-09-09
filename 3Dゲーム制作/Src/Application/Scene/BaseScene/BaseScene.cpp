@@ -1,6 +1,7 @@
 ﻿#include "BaseScene.h"
 
 #include<Application/GameObject/Camera/CameraBase.h>
+#include<Application/GameObject/Player/Player/Player.h>
 void BaseScene::PreUpdate()
 {
 	// Updateの前の更新処理
@@ -122,9 +123,24 @@ void BaseScene::DrawSprite()
 	// 2Dの描画はこの間で行う
 	KdShaderManager::Instance().m_spriteShader.Begin();
 	{
+		// Player以外を先に描画
 		for (auto& obj : m_objList)
 		{
+			if (dynamic_cast<Player*>(obj.get()))
+			{
+				continue;
+			}
+
 			obj->DrawSprite();
+		}
+
+		// Playerを最後に描画
+		for (auto& obj : m_objList)
+		{
+			if (dynamic_cast<Player*>(obj.get()))
+			{
+				obj->DrawSprite();
+			}
 		}
 	}
 	KdShaderManager::Instance().m_spriteShader.End();

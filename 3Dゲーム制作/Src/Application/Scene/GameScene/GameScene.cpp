@@ -132,7 +132,7 @@ void GameScene::InitAudio()
 	// BGM開始
 	//=======================================
 	m_gameBGM = KdAudioManager::Instance().Play(
-		"Asset/Sounds/BGM/BattleBGM.wav",
+		"Asset/Sounds/BGM/BattleBGM2.wav",
 		SoundType::BGM,
 		true
 	);

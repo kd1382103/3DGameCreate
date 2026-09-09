@@ -156,17 +156,7 @@ std::shared_ptr<KdSoundInstance> KdAudioManager::Play(std::string_view rName, So
 	//---------------------------------------
 	// 音量設定
 	//---------------------------------------
-	switch (type)
-	{
-	case SoundType::BGM:
-		instance->SetVolume(m_bgmVolume);
-		break;
-
-	case SoundType::SE:
-		instance->SetVolume(m_seVolume);
-		break;
-	}
-
+	instance->SetVolume(GetAppliedVolume(type));
 	AddPlayList(instance);
 
 	return instance;
@@ -278,7 +268,7 @@ void KdAudioManager::SetBGMVolume(float volume)
 
 		if (sound->GetSoundType() == SoundType::BGM)
 		{
-			sound->SetVolume(m_bgmVolume);
+			sound->SetVolume(GetAppliedVolume(SoundType::BGM));
 		}
 	}
 }
@@ -299,9 +289,26 @@ void KdAudioManager::SetSEVolume(float volume)
 
 		if (sound->GetSoundType() == SoundType::SE)
 		{
-			sound->SetVolume(m_seVolume);
+			sound->SetVolume(
+				GetAppliedVolume(SoundType::SE)
+			);
 		}
 	}
+}
+
+//9/9追加
+float KdAudioManager::GetAppliedVolume(SoundType type) const
+{
+	switch (type)
+	{
+	case SoundType::BGM:
+		return m_bgmVolume * m_bgmBaseVolume;
+
+	case SoundType::SE:
+		return m_seVolume * m_seBaseVolume;
+	}
+
+	return 1.0f;
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////

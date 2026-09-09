@@ -433,6 +433,8 @@ void PlayerStateSkill::Enter(Player& owner)
 	owner.m_attackHitOnce = false;
 	owner.m_attackContact = false;
 	owner.m_canGainUltimate = true;
+	owner.m_attackSEPlayed = false;
+
 }
 
 void PlayerStateSkill::Update(Player& owner)
@@ -445,6 +447,19 @@ void PlayerStateSkill::Update(Player& owner)
 	//========================================
 	if (t > 3.0f && t < 8.0f)
 	{
+		//====================================
+		// 攻撃SE
+		//====================================
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/SkillAttack.wav",
+				SoundType::SE
+			);
+
+			owner.m_attackSEPlayed = true;
+		}
+
 		owner.DoSkillHitCheck(
 			2.5f,
 			40
@@ -582,6 +597,8 @@ void PlayerUltimate::Enter(Player& owner)
 	owner.m_attackContact = false;
 	owner.m_canGainUltimate = false;
 	owner.m_ultimateActivated = true;
+	owner.m_attackSEPlayed = false;
+
 
 	//========================================
 	// ゲージ消費
@@ -619,6 +636,19 @@ void PlayerUltimate::Update(Player& owner)
 	//========================================
 	if (t > 30.0f && t < 60.0f)
 	{
+		//====================================
+		// 攻撃SE
+		//====================================
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/UltimateAttack.wav",
+				SoundType::SE
+			);
+
+			owner.m_attackSEPlayed = true;
+		}
+
 		//====================================
 		// 必殺技エフェクト生成
 		//====================================

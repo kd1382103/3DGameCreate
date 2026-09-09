@@ -392,7 +392,16 @@ void SettingUI::Open()
 
 	m_currentTab = SettingTab::Audio;
 
-	ShowCursor(TRUE);
+	//---------------------------------------
+	// カーソルを表示
+	//---------------------------------------
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+	GetCursorInfo(&ci);
+
+	if (!(ci.flags & CURSOR_SHOWING))
+	{
+		ShowCursor(TRUE);
+	}
 }
 
 //============================================================
@@ -402,5 +411,14 @@ void SettingUI::Close()
 {
 	m_visible = false;
 
-	ShowCursor(FALSE);
+	//---------------------------------------
+	// カーソルを非表示
+	//---------------------------------------
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+	GetCursorInfo(&ci);
+
+	if (ci.flags & CURSOR_SHOWING)
+	{
+		ShowCursor(FALSE);
+	}
 }

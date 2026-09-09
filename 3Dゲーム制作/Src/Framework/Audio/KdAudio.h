@@ -83,6 +83,9 @@ public:
 	float GetSEVolume() const { return m_seVolume; }
 
 private:
+	float GetAppliedVolume(SoundType type) const;
+
+private:
 
 	// サウンドデータの取得orロード
 	std::shared_ptr<KdSoundEffect> GetSound(std::string_view fileName);
@@ -99,16 +102,17 @@ private:
 	// サウント管理マップ
 	std::unordered_map< std::string, std::shared_ptr<KdSoundEffect>> m_soundMap;
 
-	//========================================
+	//==================================================
 	// 音量
-	//========================================
+	//==================================================
 
-	// BGM音量
+	// ユーザーが設定する音量
 	float m_bgmVolume = 1.0f;
-
-	// SE音量
 	float m_seVolume = 1.0f;
 
+	// 音源全体の基準音量
+	float m_bgmBaseVolume = 0.5f;
+	float m_seBaseVolume = 0.5f;
 
 	// シングルトンパターン
 public:
