@@ -36,7 +36,7 @@ public:
 	void DoAttackHitCheck(float range);
 
 	// アニメ再生（ステート側が呼ぶ）
-	void PlayAnimationAuto(const std::string& animName, int animIndex, bool loop = true);
+	void PlayAnimationAuto(const std::string& animName, bool loop = true);
 
 	// 方向ベクトル（プレイヤーと同じ）
 	Math::Vector3 GetForward() const
@@ -227,14 +227,6 @@ public:
 	std::string animWalkName;
 	std::string animDashName;
 	std::string animAttackName;
-	std::string animSkillName;
-
-	int animIdleIndex = -1;
-	int animWalkIndex = -1;
-	int animDashIndex = -1;
-	int animAttackIndex = -1;
-	int animSkillIndex = -1;
-	int animHitIndex = -1;
 
 	// 攻撃予知（ビルボード）
 	std::shared_ptr<KdSquarePolygon> m_preAttackPoly;

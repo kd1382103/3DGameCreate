@@ -10,7 +10,7 @@
 
 void EnemyBaseStateIdle::Enter(EnemyBase& owner)
 {
-	owner.PlayAnimationAuto("", owner.animIdleIndex);
+	owner.PlayAnimationAuto("Idle");
 }
 
 void EnemyBaseStateIdle::Update(EnemyBase& owner)
@@ -88,7 +88,7 @@ void EnemyBaseStateMove::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void EnemyBaseStateWalk::Enter(EnemyBase& owner)
 {
-	owner.PlayAnimationAuto("", owner.animWalkIndex);
+	owner.PlayAnimationAuto("Work");
 }
 
 void EnemyBaseStateWalk::Update(EnemyBase& owner)
@@ -113,7 +113,7 @@ void EnemyBaseStateWalk::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void EnemyBaseStateDash::Enter(EnemyBase& owner)
 {
-	owner.PlayAnimationAuto("", owner.animDashIndex);
+	owner.PlayAnimationAuto("run");
 }
 
 void EnemyBaseStateDash::Update(EnemyBase& owner)
@@ -132,7 +132,7 @@ void EnemyBaseStateAttack::Enter(EnemyBase& owner)
 	//---------------------------------------
 	// 攻撃アニメーション開始 & フラグリセット
 	//---------------------------------------
-	owner.PlayAnimationAuto("", owner.animAttackIndex, false);
+	owner.PlayAnimationAuto("Attack1", false);
 	owner.m_attackHitOnce = false;
 	owner.m_attackSEPlayed = false;
 

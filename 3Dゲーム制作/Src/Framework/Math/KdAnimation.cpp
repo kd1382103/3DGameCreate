@@ -128,6 +128,13 @@ void KdAnimationData::Node::Interpolate(Math::Matrix& rDst, float time)
 	Math::Vector3 resultVec;
 	if (InterpolateScales(resultVec, time))
 	{
+		OutputDebugStringA(
+			("Scale: " +
+				std::to_string(resultVec.x) + ", " +
+				std::to_string(resultVec.y) + ", " +
+				std::to_string(resultVec.z) + "\n").c_str()
+		);
+
 		scale = scale.CreateScale(resultVec);
 		isChange = true;
 	}

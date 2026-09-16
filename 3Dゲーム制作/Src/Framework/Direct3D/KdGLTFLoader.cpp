@@ -338,7 +338,8 @@ std::shared_ptr<KdGLTFModel> KdLoadGLTFModel(std::string_view path)
 		}
 
 		// 変換行列
-		destNode->LocalTransform = mS * mR * mT;
+		destNode->LocalTransform = mS * mR * mT
+			;
 		// Z軸ミラー
 		MatrixMirrorZ(destNode->LocalTransform);
 

@@ -203,56 +203,118 @@ void KdStandardShader::DrawModel(const KdModelData& rModel, const Math::Matrix& 
 void KdStandardShader::DrawModel(KdModelWork& rModel, const Math::Matrix& mWorld,
 	const Math::Color& colRate, const Math::Vector3& emissive)
 {
-	if (!rModel.IsEnable()) { return; }
+	//if (!rModel.IsEnable()) { return; }
+
+	//const std::shared_ptr<KdModelData>& data = rModel.GetData();
+
+	//// データがないときはスキップ
+	//if (data == nullptr) { return; }
+
+	//if (rModel.NeedCalcNodeMatrices())
+	//{
+	//	rModel.CalcNodeMatrices();
+	//}
+
+	//// オブジェクト単位の情報転送(スキンメッシュ対応)
+	//SetIsSkinMeshObj(data->IsSkinMesh());
+	//if (m_dirtyCBObj)
+	//{
+	//	m_cb0_Obj.Write();
+	//}
+
+	//auto& workNodes = rModel.GetNodes();
+	//auto& dataNodes = data->GetOriginalNodes();
+
+	//// スキンメッシュモデルの場合：ボーン情報を書き込み(スキンメッシュ対応)
+	//if (data->IsSkinMesh())
+	//{
+	//	// ノード内からボーン情報を取得
+	//	for (auto&& nodeIdx : data->GetBoneNodeIndices())
+	//	{
+	//		if (nodeIdx >= KdStandardShader::maxBoneBufferSize) { assert(0 && "転送できるボーンの上限数を超えました"); return; }
+
+	//		auto& dataNode = dataNodes[nodeIdx];
+	//		auto& workNode = workNodes[nodeIdx];
+
+	//		// ボーン情報からGPUに渡す行列の計算
+	//		m_cb3_Bone.Work().mBones[dataNode.m_boneIndex] = dataNode.m_boneInverseWorldMatrix * workNode.m_worldTransform;
+
+	//		m_cb3_Bone.Write();
+	//	}
+	//}
+	//
+
+	//// 全描画用メッシュノードを描画
+	//for (auto& nodeIdx : data->GetDrawMeshNodeIndices())
+	//{
+	//	// 描画
+	//	DrawMesh(dataNodes[nodeIdx].m_spMesh.get(), workNodes[nodeIdx].m_worldTransform * mWorld,
+	//		data->GetMaterials(), colRate, emissive);
+	//}
+
+	//// 定数に変更があった場合は自動的に初期状態に戻す
+	//if (m_dirtyCBObj)
+	//{
+	//	ResetCBObject();
+	//}
+
+	if (!rModel.IsEnable()) return;
 
 	const std::shared_ptr<KdModelData>& data = rModel.GetData();
-
-	// データがないときはスキップ
-	if (data == nullptr) { return; }
+	if (data == nullptr) return;
 
 	if (rModel.NeedCalcNodeMatrices())
 	{
 		rModel.CalcNodeMatrices();
 	}
 
-	// オブジェクト単位の情報転送(スキンメッシュ対応)
-	SetIsSkinMeshObj(data->IsSkinMesh());
-	if (m_dirtyCBObj)
-	{
-		m_cb0_Obj.Write();
-	}
-
 	auto& workNodes = rModel.GetNodes();
 	auto& dataNodes = data->GetOriginalNodes();
 
-	// スキンメッシュモデルの場合：ボーン情報を書き込み(スキンメッシュ対応)
+	// ボーン行列
 	if (data->IsSkinMesh())
 	{
-		// ノード内からボーン情報を取得
 		for (auto&& nodeIdx : data->GetBoneNodeIndices())
 		{
-			if (nodeIdx >= KdStandardShader::maxBoneBufferSize) { assert(0 && "転送できるボーンの上限数を超えました"); return; }
+			if (nodeIdx >= KdStandardShader::maxBoneBufferSize)
+			{
+				assert(0 && "転送できるボーンの上限数を超えました");
+				return;
+			}
 
 			auto& dataNode = dataNodes[nodeIdx];
 			auto& workNode = workNodes[nodeIdx];
 
-			// ボーン情報からGPUに渡す行列の計算
-			m_cb3_Bone.Work().mBones[dataNode.m_boneIndex] = dataNode.m_boneInverseWorldMatrix * workNode.m_worldTransform;
+			m_cb3_Bone.Work().mBones[dataNode.m_boneIndex] =
+				dataNode.m_boneInverseWorldMatrix *
+				workNode.m_worldTransform;
 
 			m_cb3_Bone.Write();
 		}
 	}
-	
 
-	// 全描画用メッシュノードを描画
+	// メッシュ描画
 	for (auto& nodeIdx : data->GetDrawMeshNodeIndices())
 	{
-		// 描画
-		DrawMesh(dataNodes[nodeIdx].m_spMesh.get(), workNodes[nodeIdx].m_worldTransform * mWorld,
-			data->GetMaterials(), colRate, emissive);
+		auto& dataNode = dataNodes[nodeIdx];
+
+		// ★ノードごとに切り替える
+		SetIsSkinMeshObj(dataNode.m_isSkinMesh);
+
+		if (m_dirtyCBObj)
+		{
+			m_cb0_Obj.Write();
+		}
+
+		DrawMesh(
+			dataNode.m_spMesh.get(),
+			workNodes[nodeIdx].m_worldTransform * mWorld,
+			data->GetMaterials(),
+			colRate,
+			emissive
+		);
 	}
 
-	// 定数に変更があった場合は自動的に初期状態に戻す
 	if (m_dirtyCBObj)
 	{
 		ResetCBObject();

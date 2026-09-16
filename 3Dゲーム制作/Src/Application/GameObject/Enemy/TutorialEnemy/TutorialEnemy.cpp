@@ -3,7 +3,7 @@
 void TutorialEnemy::Init()
 {
 	m_model = std::make_shared<KdModelWork>();
-	m_model->SetModelData("Asset/Models/Enemy/manModel/Enemy.gltf");
+	m_model->SetModelData("Asset/Models/Enemy/EnemyRobot/Enemy.gltf");
 
 	EnemyBase::Init();
 
@@ -24,13 +24,6 @@ void TutorialEnemy::Init()
 
 	// 索敵しない
 	detectRange = 0.0f;
-
-	//---------------------------------------
-	// アニメーション
-	//---------------------------------------
-
-	animIdleIndex = 9;
-	animAttackIndex = 39;
 
 	//---------------------------------------
 	// ノックバックしない

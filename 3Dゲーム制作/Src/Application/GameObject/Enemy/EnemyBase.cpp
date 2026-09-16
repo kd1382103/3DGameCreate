@@ -476,22 +476,15 @@ void EnemyBase::DoAttackHitCheck(float range)
 //==============================================================
 // アニメ再生
 //==============================================================
-void EnemyBase::PlayAnimationAuto(const std::string& animName, int animIndex, bool loop)
+void EnemyBase::PlayAnimationAuto(const std::string& animName, bool loop)
 {
 	if (!m_model) return;
 
-	if (animIndex >= 0)
-	{
-		auto anim = m_model->GetAnimation(animIndex);
-		if (anim) m_animator.SetAnimation(anim, loop);
-		return;
-	}
+	auto anim = m_model->GetAnimation(animName);
 
-	if (!animName.empty())
+	if (anim)
 	{
-		auto anim = m_model->GetAnimation(animName);
-		if (anim) m_animator.SetAnimation(anim, loop);
-		return;
+		m_animator.SetAnimation(anim, loop);
 	}
 }
 
@@ -671,26 +664,26 @@ void EnemyBase::UpdateHPGauge()
 
 void EnemyBase::UpdateDebug()
 {
-	//KdDebugGUI::Instance().ClearLog();
+	KdDebugGUI::Instance().ClearLog();
 
-	////========================================
-	//// アニメーション一覧
-	////========================================
-	//for (int i = 0; ; i++)
-	//{
-	//	auto anim = m_model->GetAnimation(i);
+	//========================================
+	// アニメーション一覧
+	//========================================
+	for (int i = 0; ; i++)
+	{
+		auto anim = m_model->GetAnimation(i);
 
-	//	if (!anim)
-	//	{
-	//		break;
-	//	}
+		if (!anim)
+		{
+			break;
+		}
 
-	//	KdDebugGUI::Instance().AddLog(
-	//		"%d : %s\n",
-	//		i,
-	//		anim->m_name.c_str()
-	//	);
-	//}
+		KdDebugGUI::Instance().AddLog(
+			"%d : %s\n",
+			i,
+			anim->m_name.c_str()
+		);
+	}
 
 
 	if (GetAsyncKeyState('3') & 0x8000)
