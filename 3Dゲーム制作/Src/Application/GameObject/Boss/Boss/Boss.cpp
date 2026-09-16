@@ -5,7 +5,7 @@ void Boss::Init()
 	BossBase::Init();
 
 	m_model = std::make_shared<KdModelWork>();
-	m_model->SetModelData("Asset/Models/Enemy/manModel/Enemy.gltf");
+	m_model->SetModelData("Asset/Models/boss/Boss.gltf");
 
 	animIdleIndex = 9;
 	animWalkIndex = 41;

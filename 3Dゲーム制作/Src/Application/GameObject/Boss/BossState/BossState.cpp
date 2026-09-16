@@ -124,7 +124,7 @@ void BossStateMove::Update(BossBase& owner)
 
 void BossStateWalk::Enter(BossBase& owner)
 {
-	owner.PlayAnimationAuto("", owner.animWalkIndex, true);
+	owner.PlayAnimationAuto("Work", false);
 }
 
 void BossStateWalk::Update(BossBase& owner)
@@ -225,7 +225,7 @@ void BossStateWalk::Update(BossBase& owner)
 
 void BossStateDash::Enter(BossBase& owner)
 {
-	owner.PlayAnimationAuto("", owner.animDashIndex, true);
+	owner.PlayAnimationAuto("Run", false);
 }
 
 void BossStateDash::Update(BossBase& owner)
@@ -243,7 +243,7 @@ void BossStateAttack1::Enter(BossBase& owner)
 	// 攻撃アニメーション開始
 	//---------------------------------------
 
-	owner.PlayAnimationAuto("", owner.animAttack1Index, false);
+	owner.PlayAnimationAuto("Attack1", false);
 	owner.m_attackHitOnce = false;
 	owner.m_attackSEPlayed = false;
 
@@ -382,7 +382,7 @@ void BossStateAttack2::Enter(BossBase& owner)
 	//---------------------------------------
 	// 攻撃アニメーション開始
 	//---------------------------------------
-	owner.PlayAnimationAuto("", owner.animAttack2Index, false);
+	owner.PlayAnimationAuto("Attack2", false);
 	owner.m_attackHitOnce = false;
 	owner.m_attackSEPlayed = false;
 
@@ -530,7 +530,7 @@ void BossStateAttack3::Enter(BossBase& owner)
 	//---------------------------------------
 	// 攻撃アニメーション開始
 	//---------------------------------------
-	owner.PlayAnimationAuto("", owner.animAttack3Index, false);
+	owner.PlayAnimationAuto("Attack3", false);
 	owner.m_attackHitOnce = false;
 	owner.m_attackSEPlayed = false;
 
