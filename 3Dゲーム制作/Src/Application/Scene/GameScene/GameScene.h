@@ -23,7 +23,7 @@ class GameClearButton;
 class FontText;
 class SettingUI;
 class BattlePin;
-//class SwordTrail;
+class SwordTrail;
 
 class GameScene : public BaseScene
 {
@@ -311,7 +311,7 @@ private:
 	//========================================
 	// エフェクト
 	//========================================
-	//std::shared_ptr<SwordTrail> m_swordTrail;
+	std::shared_ptr<SwordTrail> m_swordTrail;
 
 	//========================================
 	// デバッグ

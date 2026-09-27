@@ -154,13 +154,8 @@ public:
 	//========================================
 	// アニメーション
 	//========================================
+	void PlayAnimationAuto(const std::string& animName, bool loop = true);
 
-	//番号指定
-	void SetAnim(int animIndex, bool loop)
-	{
-		m_nowAnimIndex = animIndex;
-		m_animator.SetAnimation(m_model->GetAnimation(animIndex), loop);
-	}
 
 	//========================================
 	// ステート用
@@ -188,23 +183,26 @@ public:
 	bool IsJustDodgeSuccess() const { return m_justDodgeSuccess; }
 	void ResetJustDodgeSuccess() { m_justDodgeSuccess = false; }
 
-	//---------------------------------------
+	//========================================
 	// 剣の軌跡
-	//---------------------------------------
-	//void StartSwordTrail()
-	//{
-	//	m_isSwordTrailActive = true;
-	//}
+	//========================================
+	Math::Vector3 GetSwordBasePos() const;
+	Math::Vector3 GetSwordTipPos() const;
 
-	//void StopSwordTrail()
-	//{
-	//	m_isSwordTrailActive = false;
-	//}
+	void StartSwordTrail()
+	{
+		m_isSwordTrailActive = true;
+	}
 
-	//bool IsSwordTrailActive() const
-	//{
-	//	return m_isSwordTrailActive;
-	//}
+	void StopSwordTrail()
+	{
+		m_isSwordTrailActive = false;
+	}
+
+	bool IsSwordTrailActive() const
+	{
+		return m_isSwordTrailActive;
+	}
 
 public:
 	//========================================
@@ -398,11 +396,8 @@ private:
 	// 必殺技ポイント表示
 	//========================================
 	bool m_ultimatePointVisible = true;
+	
 
-	//========================================
-	// 剣の軌跡
-	//========================================
-	//bool m_isSwordTrailActive = false;};
 
 private:
 
@@ -417,4 +412,8 @@ private:
 	float m_debugUltimateRange = 0.0f;
 	float m_debugUltimateWidth = 0.0f;
 
+	//========================================
+	// 剣の軌跡用変数
+	//========================================
+	bool m_isSwordTrailActive = false;
 };

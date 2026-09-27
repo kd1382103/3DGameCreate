@@ -719,43 +719,16 @@ void BossBase::DoAttackHitCheck(float range)
 //==============================================================
 // アニメ再生
 //==============================================================
-void BossBase::PlayAnimationAuto(
-	const std::string& animName,
-	int animIndex,
-	bool loop)
+
+void BossBase::PlayAnimationAuto(const std::string& animName, bool loop)
 {
 	if (!m_model) return;
 
-	if (animIndex >= 0)
+	auto anim = m_model->GetAnimation(animName);
+
+	if (anim)
 	{
-		auto anim =
-			m_model->GetAnimation(animIndex);
-
-		if (anim)
-		{
-			m_animator.SetAnimation(
-				anim,
-				loop
-			);
-		}
-
-		return;
-	}
-
-	if (!animName.empty())
-	{
-		auto anim =
-			m_model->GetAnimation(animName);
-
-		if (anim)
-		{
-			m_animator.SetAnimation(
-				anim,
-				loop
-			);
-		}
-
-		return;
+		m_animator.SetAnimation(anim, loop);
 	}
 }
 

@@ -47,11 +47,7 @@ public:
 	//==============================================================
 	// アニメーション
 	//==============================================================
-	void PlayAnimationAuto(
-		const std::string& animName,
-		int animIndex,
-		bool loop = true
-	);
+	void PlayAnimationAuto(const std::string& animName, bool loop = true);
 
 	bool IsAttackAnimationEnd() const
 	{

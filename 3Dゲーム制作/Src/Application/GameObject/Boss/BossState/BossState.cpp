@@ -10,7 +10,7 @@
 
 void BossStateIdle::Enter(BossBase& owner)
 {
-	owner.PlayAnimationAuto("", owner.animIdleIndex, true);
+	owner.PlayAnimationAuto("Idel");
 }
 
 void BossStateIdle::Update(BossBase& owner)
@@ -124,7 +124,7 @@ void BossStateMove::Update(BossBase& owner)
 
 void BossStateWalk::Enter(BossBase& owner)
 {
-	owner.PlayAnimationAuto("Work", false);
+	owner.PlayAnimationAuto("Work");
 }
 
 void BossStateWalk::Update(BossBase& owner)
@@ -225,7 +225,7 @@ void BossStateWalk::Update(BossBase& owner)
 
 void BossStateDash::Enter(BossBase& owner)
 {
-	owner.PlayAnimationAuto("Run", false);
+	owner.PlayAnimationAuto("Run");
 }
 
 void BossStateDash::Update(BossBase& owner)

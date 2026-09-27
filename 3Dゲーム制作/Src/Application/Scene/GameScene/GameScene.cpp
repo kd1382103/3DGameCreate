@@ -23,7 +23,7 @@
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
 #include <Application/GameObject/Effect/EffectManager.h>
 
-//#include <Application/GameObject/Effect/SwordTrail/SwordTrail.h>
+#include <Application/GameObject/Effect/SwordTrail/SwordTrail.h>
 
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/Camera/CameraBase.h>
@@ -97,10 +97,10 @@ void GameScene::Init()
 	//=======================================
 	// 剣の軌跡
 	//=======================================
-	//m_swordTrail = std::make_shared<SwordTrail>();
-	//m_swordTrail->Init();
-	//m_swordTrail->SetPlayer(player);
-	//AddObject(m_swordTrail);
+	m_swordTrail = std::make_shared<SwordTrail>();
+	m_swordTrail->Init();
+	m_swordTrail->SetPlayer(m_player);
+	AddObject(m_swordTrail);
 
 }
 

@@ -23,7 +23,7 @@ void Player::Init()
 	if (!m_model)
 	{
 		m_model = std::make_shared<KdModelWork>();
-		m_model->SetModelData("Asset/Models/player/manModel/Player.gltf");
+		m_model->SetModelData("Asset/Models/player/Player/Player.gltf");
 
 		m_pDebugWire = std::make_unique<KdDebugWireFrame>();
 		m_pCollider = std::make_unique<KdCollider>();
@@ -515,7 +515,7 @@ void Player::UpdateDebug()
 	//	);
 	//}
 
-	
+
 	//KdDebugGUI::Instance().AddLog(
 	//	"%f\n",
 	//	m_nowPos.x
@@ -540,7 +540,51 @@ void Player::UpdateDebug()
 	//	"m_skillGauge : %f\n",
 	//	m_skillGauge
 	//);
-	
+
+
+
+	//const auto* swordNode = m_model->FindNode("sword");
+	//const auto* armNode = m_model->FindNode("lowerArm.R");
+
+	//KdDebugGUI::Instance().AddLog(
+	//	"Player : %.2f, %.2f, %.2f\n",
+	//	m_nowPos.x,
+	//	m_nowPos.y,
+	//	m_nowPos.z
+	//);
+
+	//if (armNode)
+	//{
+	//	Math::Vector3 armWorldPos =
+	//		Math::Vector3::Transform(
+	//			Math::Vector3::Zero,
+	//			armNode->m_worldTransform * m_mWorld
+	//		);
+
+	//	KdDebugGUI::Instance().AddLog(
+	//		"Arm World   : %.3f, %.3f, %.3f\n",
+	//		armWorldPos.x,
+	//		armWorldPos.y,
+	//		armWorldPos.z
+	//	);
+	//}
+
+	//if (swordNode)
+	//{
+	//	Math::Vector3 swordWorldPos =
+	//		Math::Vector3::Transform(
+	//			Math::Vector3::Zero,
+	//			swordNode->m_worldTransform * m_mWorld
+	//		);
+
+	//	KdDebugGUI::Instance().AddLog(
+	//		"Sword World : %.3f, %.3f, %.3f\n",
+	//		swordWorldPos.x,
+	//		swordWorldPos.y,
+	//		swordWorldPos.z
+	//	);
+	//}
+
 
 	//========================================
 	// デバッグキー
@@ -1437,4 +1481,62 @@ void Player::Heal(float amount)
 	{
 		ui->SetGauge(m_nowHp, m_hpGaugeMax);
 	}
+}
+
+void Player::PlayAnimationAuto(const std::string& animName, bool loop)
+{
+	if (!m_model) return;
+
+	auto anim = m_model->GetAnimation(animName);
+
+	if (anim)
+	{
+		m_animator.SetAnimation(anim, loop);
+	}
+}
+
+Math::Vector3 Player::GetSwordBasePos() const
+{
+	if (!m_model)
+	{
+		return m_nowPos;
+	}
+
+	const auto* swordNode = m_model->FindNode("sword");
+
+	if (!swordNode)
+	{
+		return m_nowPos;
+	}
+
+	// 持ち手の原点から「刃の根元」まで
+	Math::Vector3 localPos = { 0.0f, -2.0f, 0.0f };
+
+	return Math::Vector3::Transform(
+		localPos,
+		swordNode->m_worldTransform * m_mWorld
+	);
+}
+
+Math::Vector3 Player::GetSwordTipPos() const
+{
+	if (!m_model)
+	{
+		return m_nowPos;
+	}
+
+	const auto* swordNode = m_model->FindNode("sword");
+
+	if (!swordNode)
+	{
+		return m_nowPos;
+	}
+
+	// 持ち手の原点から「剣先」まで
+	Math::Vector3 localPos = { 0.0f, -17.0f, 0.0f };
+
+	return Math::Vector3::Transform(
+		localPos,
+		swordNode->m_worldTransform * m_mWorld
+	);
 }

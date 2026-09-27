@@ -298,7 +298,7 @@ void KdStandardShader::DrawModel(KdModelWork& rModel, const Math::Matrix& mWorld
 	{
 		auto& dataNode = dataNodes[nodeIdx];
 
-		// ★ノードごとに切り替える
+		// ノードごとに切り替える
 		SetIsSkinMeshObj(dataNode.m_isSkinMesh);
 
 		if (m_dirtyCBObj)
@@ -313,6 +313,7 @@ void KdStandardShader::DrawModel(KdModelWork& rModel, const Math::Matrix& mWorld
 			colRate,
 			emissive
 		);
+
 	}
 
 	if (m_dirtyCBObj)

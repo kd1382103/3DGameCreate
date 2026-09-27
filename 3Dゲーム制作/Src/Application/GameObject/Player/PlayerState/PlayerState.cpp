@@ -11,7 +11,7 @@
 //==============================================================
 void PlayerStateIdle::Enter(Player& owner)
 {
-	owner.SetAnim(9, true); // Idle
+	owner.PlayAnimationAuto("Idel");
 }
 
 void PlayerStateIdle::Update(Player& owner)
@@ -233,7 +233,7 @@ void PlayerStateMove::Update(Player& owner)
 //==============================================================
 void PlayerStateWalk::Enter(Player& owner)
 {
-	owner.SetAnim(41, true); // Walk
+	owner.PlayAnimationAuto("Walk",true);
 }
 
 void PlayerStateWalk::Update(Player& owner)
@@ -254,7 +254,7 @@ void PlayerStateWalk::Update(Player& owner)
 //==============================================================
 void PlayerStateDash::Enter(Player& owner)
 {
-	owner.SetAnim(36, true); // Dash
+	owner.PlayAnimationAuto("Run",true);
 }
 
 void PlayerStateDash::Update(Player& owner)
@@ -275,8 +275,7 @@ void PlayerStateDash::Update(Player& owner)
 //==============================================================
 void PlayerStateAttack1::Enter(Player& owner)
 {
-	owner.SetAnim(39, false);
-
+	owner.PlayAnimationAuto("Attack1", false);
 	EnterAttack(owner);
 }
 
@@ -293,7 +292,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	//========================================
 	// 次の攻撃
 	//========================================
-	if (t > 40.0f && t < 85.0f)
+	if (t > 40.0f && t < 60.0f)
 	{
 		if (owner.IsAttackInput())
 		{
@@ -323,7 +322,7 @@ void PlayerStateAttack1::Update(Player& owner)
 //==============================================================
 void PlayerStateAttack2::Enter(Player& owner)
 {
-	owner.SetAnim(40, false);
+	owner.PlayAnimationAuto("Attack2", false);
 
 	EnterAttack(owner);
 }
@@ -341,7 +340,7 @@ void PlayerStateAttack2::Update(Player& owner)
 	//========================================
 	// 次の攻撃
 	//========================================
-	if (t > 40.0f && t < 85.0f)
+	if (t > 40.0f && t < 60.0f)
 	{
 		if (owner.IsAttackInput())
 		{
@@ -371,7 +370,7 @@ void PlayerStateAttack2::Update(Player& owner)
 //==============================================================
 void PlayerStateAttack3::Enter(Player& owner)
 {
-	owner.SetAnim(41, false);
+	owner.PlayAnimationAuto("Attack3", false);
 
 	EnterAttack(owner);
 
@@ -411,7 +410,7 @@ void PlayerStateAttack3::Update(Player& owner)
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.m_canGainUltimate = false;
-
+		owner.StopSwordTrail();
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
 		);
@@ -423,7 +422,7 @@ void PlayerStateAttack3::Update(Player& owner)
 //==============================================================
 void PlayerStateSkill::Enter(Player& owner)
 {
-	owner.SetAnim(20, false);
+	owner.PlayAnimationAuto("Skill", false);
 
 	// スキルゲージ消費
 	owner.m_skillGauge -= owner.m_skillCost;
@@ -487,7 +486,7 @@ void PlayerStateSkill::Update(Player& owner)
 //==============================================================
 void PlayerStateDodge::Enter(Player& owner)
 {
-	owner.SetAnim(27, false);
+	owner.PlayAnimationAuto("Dodge", false);
 
 	//========================================
 	// スロー
@@ -590,7 +589,7 @@ void PlayerUltimate::Enter(Player& owner)
 {
 	// 現状、必殺技アニメーションがないため
 	// 攻撃1段目のアニメーションを使用
-	owner.SetAnim(39, false);
+	owner.PlayAnimationAuto("Ultimate", false);
 
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_attackHitOnce = false;
@@ -732,6 +731,8 @@ void PlayerAttackStateBase::EnterAttack(Player& owner)
 	owner.m_canGainUltimate = true;
 
 	owner.m_attackSEPlayed = false;
+
+	owner.StartSwordTrail();
 }
 
 //==============================================================
