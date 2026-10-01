@@ -311,6 +311,8 @@ void PlayerStateAttack1::Update(Player& owner)
 	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
+		owner.StopSwordTrail();
+
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
 		);
@@ -359,6 +361,8 @@ void PlayerStateAttack2::Update(Player& owner)
 	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
+		owner.StopSwordTrail();
+
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
 		);
@@ -433,7 +437,7 @@ void PlayerStateSkill::Enter(Player& owner)
 	owner.m_attackContact = false;
 	owner.m_canGainUltimate = true;
 	owner.m_attackSEPlayed = false;
-
+	owner.StartSwordTrail();
 }
 
 void PlayerStateSkill::Update(Player& owner)
@@ -475,6 +479,8 @@ void PlayerStateSkill::Update(Player& owner)
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		owner.m_canGainUltimate = false;
+
+		owner.StopSwordTrail();
 
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
@@ -597,6 +603,7 @@ void PlayerUltimate::Enter(Player& owner)
 	owner.m_canGainUltimate = false;
 	owner.m_ultimateActivated = true;
 	owner.m_attackSEPlayed = false;
+	owner.StartSwordTrail();
 
 
 	//========================================
@@ -708,6 +715,8 @@ void PlayerUltimate::Update(Player& owner)
 		{
 			cam->EndUltimateCamera();
 		}
+
+		owner.StopSwordTrail();
 
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
