@@ -153,25 +153,33 @@ void Player::UpdateInput()
 			(m_dir.LengthSquared() > 0.0001f);
 
 		//========================================
-		// 回避 / 走行切り替え
+		// 移動中は常に走る
 		//========================================
-		bool right = IsKeyPressedOnce(VK_RBUTTON);
+		m_running = true;
+
+		//========================================
+		// 回避
+		//========================================
 
 		m_dodgeing = false;
 
-		if (right)
+		if (IsKeyPressedOnce(VK_RBUTTON))
 		{
 			if (m_canDodge)
 			{
 				m_dodgeing = true;
 				m_justDodgeSuccess = true;
 
+				//========================================
+				// 必殺技ポイント加算
+				//========================================
 				AddUltimateEnergy(10.0f);
 
 				//========================================
 				// 回避スロー
 				//========================================
 				m_slowTimer = 10.0f;
+
 				SceneManager::Instance().SetTimeScale(0.2f);
 
 				//========================================
@@ -187,7 +195,8 @@ void Player::UpdateInput()
 				//========================================
 				// 攻撃中の敵をスロー
 				//========================================
-				for (auto& obj : SceneManager::Instance().GetObjList())
+				for (auto& obj :
+					SceneManager::Instance().GetObjList())
 				{
 					auto enemy =
 						dynamic_cast<EnemyBase*>(obj.get());
@@ -200,10 +209,6 @@ void Player::UpdateInput()
 					enemy->m_attackSEPlayed = true;
 					enemy->StartSlow(2.0f);
 				}
-			}
-			else
-			{
-				m_running = !m_running;
 			}
 		}
 

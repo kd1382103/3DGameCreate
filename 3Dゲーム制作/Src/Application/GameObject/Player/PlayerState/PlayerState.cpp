@@ -487,6 +487,7 @@ void PlayerStateSkill::Update(Player& owner)
 		);
 	}
 }
+
 //==============================================================
 // Dodge
 //==============================================================
@@ -518,33 +519,43 @@ void PlayerStateDodge::Enter(Player& owner)
 
 	//========================================
 	// 回避方向
+	//
+	// 入力方向は使用しない。
+	// 現在のプレイヤーの向いている方向の
+	// 逆方向へ回避する。
 	//========================================
 	Math::Vector3 dodgeDir =
-		owner.m_dir;
+		-owner.GetForward();
 
 	if (dodgeDir.LengthSquared() < 0.0001f)
 	{
 		dodgeDir =
-			owner.GetForward();
+			-Math::Vector3::UnitZ;
 	}
 
 	dodgeDir.Normalize();
 
+	// Dodge開始時の方向を固定
 	owner.m_dodgeDir =
 		dodgeDir;
 
+	//========================================
+	// Dodge中は通常の移動方向をリセット
+	//========================================
 	owner.m_dir =
 		Math::Vector3::Zero;
 }
 
+
+//==============================================================
+// Dodge Update
+//==============================================================
 void PlayerStateDodge::Update(Player& owner)
 {
 	//========================================
-	// 回避中は無敵
+	// アニメーション時間
 	//========================================
-	owner.m_isInvincible = true;
-
-	float t =
+	const float t =
 		owner.m_animator.GetAnimeCurrentTime();
 
 	//========================================
@@ -564,16 +575,67 @@ void PlayerStateDodge::Update(Player& owner)
 	const float scaledFrameScale =
 		frameScale * timeScale;
 
+
+	//========================================
+	// 無敵
+	//
+	// Dodge開始から40Fまで
+	//========================================
+	if (t >= 0.0f && t < 40.0f)
+	{
+		owner.m_isInvincible = true;
+	}
+	else
+	{
+		owner.m_isInvincible = false;
+	}
+
+
 	//========================================
 	// 回避移動
+	//
+	// 0～5F    : 溜め
+	// 5～10F   : 回避開始
+	// 10～20F  : 大きく後退
+	// 20～30F  : 減速
+	// 30～40F  : 着地
+	// 40F以降  : 移動なし
 	//========================================
-	if (t > 0.0f && t < 40.0f)
+	float dodgeSpeed = 0.0f;
+
+	if (t >= 5.0f && t < 10.0f)
+	{
+		// 回避開始
+		dodgeSpeed = 0.04f;
+	}
+	else if (t >= 10.0f && t < 20.0f)
+	{
+		// 一気に後退
+		dodgeSpeed = 0.12f;
+	}
+	else if (t >= 20.0f && t < 30.0f)
+	{
+		// 減速
+		dodgeSpeed = 0.08f;
+	}
+	else if (t >= 30.0f && t < 40.0f)
+	{
+		// 着地
+		dodgeSpeed = 0.03f;
+	}
+
+
+	//========================================
+	// 実際の回避移動
+	//========================================
+	if (dodgeSpeed > 0.0f)
 	{
 		owner.m_nowPos +=
 			owner.m_dodgeDir *
-			0.1f *
+			dodgeSpeed *
 			scaledFrameScale;
 	}
+
 
 	//========================================
 	// 回避終了
@@ -587,6 +649,7 @@ void PlayerStateDodge::Update(Player& owner)
 		);
 	}
 }
+
 
 //==============================================================
 // Ultimate
