@@ -1,6 +1,7 @@
 ﻿#include "SwordTrail.h"
 
 #include <Application/GameObject/Player/Player/Player.h>
+#include <Application/main.h>
 
 void SwordTrail::Init()
 {
@@ -32,6 +33,11 @@ void SwordTrail::Init()
 	// 初期状態
 	//==================================================
 	m_wasTrailActive = false;
+
+	//==================================================
+	// タイマー初期化
+	//==================================================
+	m_trailTimer = 0.0f;
 }
 
 void SwordTrail::Update()
@@ -44,17 +50,23 @@ void SwordTrail::Update()
 	}
 
 	//==================================================
+	// DeltaTime取得
+	//==================================================
+	float deltaTime = Application::Instance().GetDeltaTime();
+
+	//==================================================
 	// 剣軌跡OFF
 	//==================================================
 	if (!player->IsSwordTrailActive())
 	{
-		// 軌跡を完全に消す
 		if (m_wasTrailActive)
 		{
 			m_tPoly->ClearPoints();
 		}
 
 		m_wasTrailActive = false;
+
+		m_trailTimer = 0.0f;
 
 		return;
 	}
@@ -67,34 +79,52 @@ void SwordTrail::Update()
 		m_tPoly->ClearPoints();
 
 		m_wasTrailActive = true;
+
+		m_trailTimer = 0.0f;
 	}
 
 	//==================================================
-	// 剣の原点・剣先を取得
+	// タイマー更新
 	//==================================================
-	Math::Vector3 basePos =
-		player->GetSwordBasePos();
-
-	Math::Vector3 tipPos =
-		player->GetSwordTipPos();
+	m_trailTimer += deltaTime;
 
 	//==================================================
-	// 原点を追加
+	// 一定時間ごとに軌跡ポイント追加
 	//==================================================
-	Math::Matrix baseMat =
-		Math::Matrix::CreateTranslation(basePos);
+	if (m_trailTimer >= TrailInterval)
+	{
+		//==================================================
+		// 剣の原点・剣先を取得
+		//==================================================
+		Math::Vector3 basePos =
+			player->GetSwordBasePos();
 
-	//==================================================
-	// 剣先を追加
-	//==================================================
-	Math::Matrix tipMat =
-		Math::Matrix::CreateTranslation(tipPos);
+		Math::Vector3 tipPos =
+			player->GetSwordTipPos();
 
-	//==================================================
-	// KdTrailPolygonに追加
-	//==================================================
-	m_tPoly->AddPoint(baseMat);
-	m_tPoly->AddPoint(tipMat);
+		//==================================================
+		// 原点
+		//==================================================
+		Math::Matrix baseMat =
+			Math::Matrix::CreateTranslation(basePos);
+
+		//==================================================
+		// 剣先
+		//==================================================
+		Math::Matrix tipMat =
+			Math::Matrix::CreateTranslation(tipPos);
+
+		//==================================================
+		// KdTrailPolygonに追加
+		//==================================================
+		m_tPoly->AddPoint(baseMat);
+		m_tPoly->AddPoint(tipMat);
+
+		//==================================================
+		// 余った時間を保持
+		//==================================================
+		m_trailTimer -= TrailInterval;
+	}
 }
 
 void SwordTrail::DrawEffect()
