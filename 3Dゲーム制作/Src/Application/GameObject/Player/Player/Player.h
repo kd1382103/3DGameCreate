@@ -51,7 +51,13 @@ public:
 	//========================================
 	// ダメージ・生存
 	//========================================
-	void Damage(float dmg, bool isUltimate = false, bool finalHit = false) override;
+	void Damage(
+		float dmg,
+		bool isUltimate,
+		bool finalHit,
+		float knockBackRate
+	) override;
+
 	bool IsAlive() const { return m_nowHp > 0; }
 
 	//========================================
@@ -97,13 +103,10 @@ public:
 	//========================================
 	// 攻撃判定
 	//========================================
-	void DoAttackHitCheckMulti(float range, float width, int damage);
-
-	//スキル用
-	void DoSkillHitCheck(float range, int damage);
+	void DoAttackHitCheckMulti(float range, float width, int damage, float knockBackRate);
 
 	//必殺技用
-	void DoUltimateHitCheck(float range, float width, int damage);
+	void DoUltimateHitCheck(float range, float width, int damage, float knockBackRate);
 
 	//========================================
 	// 接触判定

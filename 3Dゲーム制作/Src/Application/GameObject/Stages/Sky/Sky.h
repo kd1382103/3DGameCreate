@@ -27,5 +27,5 @@ private:
 	float m_rotation = 0.0f;
 
 	// 回転速度
-	float m_rotationSpeed = 0.001f;
+	float m_rotationSpeed = 0.0001f;
 };

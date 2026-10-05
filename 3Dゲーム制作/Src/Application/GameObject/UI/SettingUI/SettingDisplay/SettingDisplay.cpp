@@ -289,7 +289,7 @@ void SettingDisplay::DrawSprite()
 			break;
 
 		case DisplayMode::Fullscreen:
-			displayModeText = "フルスクリーン";
+			displayModeText = "ボーダーレス";
 			break;
 		}
 

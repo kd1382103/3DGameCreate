@@ -55,9 +55,9 @@
 	],
 	"images":[
 		{
-			"mimeType":"image/png",
-			"name":"sky",
-			"uri":"sky.png"
+			"mimeType":"image/jpeg",
+			"name":"night",
+			"uri":"night.jpg"
 		}
 	],
 	"accessors":[

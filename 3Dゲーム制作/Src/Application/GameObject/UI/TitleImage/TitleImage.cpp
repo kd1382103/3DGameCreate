@@ -8,7 +8,7 @@ void TitleImage::Init()
 	m_titleTex = std::make_shared<KdTexture>();
 
 	m_titleTex->Load(
-		"Asset/Textures/TitleScene/Background.png"
+		"Asset/Textures/TitleScene/Title.png"
 	);
 
 	//---------------------------------------

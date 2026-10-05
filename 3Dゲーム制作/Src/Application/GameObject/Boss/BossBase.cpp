@@ -59,6 +59,37 @@ void BossBase::Update()
 	}
 
 	//========================================
+	// Resolve（出現演出）
+	//========================================
+	if (m_isResolving)
+	{
+		const float frameScale =
+			Application::Instance()
+			.GetFPSController()
+			.GetFrameScale();
+
+		UpdateResolve(frameScale);
+
+		//========================================
+		// リゾルブ中もIdleアニメーションを再生
+		//========================================
+		if (m_model)
+		{
+			m_animator.AdvanceTime(
+				m_model->WorkNodes(),
+				frameScale
+			);
+
+			if (m_model->NeedCalcNodeMatrices())
+			{
+				m_model->CalcNodeMatrices();
+			}
+		}
+
+		return;
+	}
+
+	//========================================
 	// 60FPS基準のフレーム倍率
 	//========================================
 	const float frameScale =
@@ -384,10 +415,34 @@ void BossBase::PostUpdate()
 //==============================================================
 void BossBase::DrawLit()
 {
-	if (m_model)
+	if (!m_model) return;
+
+	if (m_isResolving)
 	{
-		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld, { 0.6f, 0.35f, 1.0f, 1.0f });
+		KdShaderManager::Instance()
+			.m_StandardShader.SetDissolve(
+				m_resolveDissolve,
+				&m_resolveEdgeRange,
+				&m_resolveEmissive
+			);
+
+		KdShaderManager::Instance()
+			.m_StandardShader.DrawModel(
+				*m_model,
+				m_mWorld,
+				{ 0.6f, 0.35f, 1.0f, 1.0f }
+			);
+
+		return;
 	}
+
+	// 通常描画
+	KdShaderManager::Instance()
+		.m_StandardShader.DrawModel(
+			*m_model,
+			m_mWorld,
+			{ 0.6f, 0.35f, 1.0f, 1.0f }
+		);
 }
 
 //==============================================================
@@ -395,6 +450,11 @@ void BossBase::DrawLit()
 //==============================================================
 void BossBase::DrawSprite()
 {
+	if (m_isResolving)
+	{
+		return;
+	}
+
 	if (m_hpGauge)
 	{
 		m_hpGauge->DrawSprite();
@@ -545,7 +605,7 @@ void BossBase::GenerateDepthMapFromLight()
 //==============================================================
 // Damage
 //==============================================================
-void BossBase::Damage(float dmg, bool isUltimate, bool finalHit)
+void BossBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRate)
 {
 	//==========================================================
 	// ダメージ表示
@@ -711,7 +771,7 @@ void BossBase::DoAttackHitCheck(float range)
 		return;
 	}
 
-	player->Damage(m_attackDamage);
+	player->Damage(m_attackDamage, false, false, 1.0f);
 
 	m_attackHitOnce = true;
 }
@@ -737,5 +797,56 @@ void BossBase::SetHPGaugeVisible(bool visible)
 	if (m_hpGauge)
 	{
 		m_hpGauge->SetVisible(visible);
+	}
+}
+
+//==============================================================
+// Resolve開始
+//==============================================================
+void BossBase::StartResolve()
+{
+	m_isResolving = true;
+
+	m_resolveTimer = 0.0f;
+
+	m_resolveDissolve = 1.0f;
+
+	// 出現中は演出を非表示
+	m_preAttackActive = false;
+	m_lockOnActive = false;
+
+	// HPゲージ非表示
+	SetHPGaugeVisible(false);
+
+	PlayAnimationAuto("Idel", true);
+}
+
+//==============================================================
+// Resolve更新
+//==============================================================
+void BossBase::UpdateResolve(float frameScale)
+{
+	m_resolveTimer += frameScale;
+
+	float t =
+		m_resolveTimer /
+		m_resolveDuration;
+
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	// 1.0 → 0.0
+	m_resolveDissolve = 1.0f - t;
+
+	// 完了
+	if (m_resolveTimer >= m_resolveDuration)
+	{
+		m_resolveTimer = m_resolveDuration;
+
+		m_resolveDissolve = 0.0f;
+
+		m_isResolving = false;
+
+		// HPゲージ表示
+		SetHPGaugeVisible(true);
 	}
 }

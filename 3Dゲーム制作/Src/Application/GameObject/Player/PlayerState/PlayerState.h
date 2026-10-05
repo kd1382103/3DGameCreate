@@ -15,8 +15,7 @@ protected:
 
 	void UpdateAttack(
 		Player& owner,
-		float t,
-		int damage
+		float t
 	);
 };
 

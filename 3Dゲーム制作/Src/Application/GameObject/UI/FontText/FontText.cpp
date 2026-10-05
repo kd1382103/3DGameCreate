@@ -75,12 +75,12 @@ void FontText::InitMessage(
 
 	m_isMessage = true;
 
-	// 通常テキスト：黒
+	// 通常テキスト：白
 	m_color =
 	{
-		0.0f,
-		0.0f,
-		0.0f,
+		1.0f,
+		1.0f,
+		1.0f,
 		1.0f
 	};
 

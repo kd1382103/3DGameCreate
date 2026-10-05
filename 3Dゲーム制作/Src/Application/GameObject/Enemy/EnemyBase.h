@@ -30,7 +30,12 @@ public:
 	void SetTarget(const std::shared_ptr<Player>& target) { m_wpPlayer = target; }
 	void SetCamera(std::shared_ptr<CameraBase> cam) { m_wpCamera = cam; }
 
-	void Damage(float dmg, bool isUltimate = false, bool finalHit = false)override;
+	void Damage(
+		float dmg,
+		bool isUltimate,
+		bool finalHit,
+		float knockBackRate
+	) override;
 
 	// 攻撃判定（ステート側が呼ぶ）
 	void DoAttackHitCheck(float range);
@@ -140,6 +145,12 @@ public:
 	void LookAtPlayer();
 	bool IsAttacking() const { return m_isAttacking; }
 
+	//==============================================================
+	// Resolve（出現演出）
+	//==============================================================
+	bool IsResolving() const { return m_isResolving; }
+	void StartResolve();
+
 private:
 
 	//==============================================================
@@ -158,6 +169,7 @@ private:
 	void UpdateAnimation(float dt);
 	void UpdateHPGauge();
 	void UpdateDebug();
+	void UpdateResolve(float frameScale);
 
 	//==============================================================
 	// 後更新
@@ -277,5 +289,23 @@ private:
 	bool m_isSlow = false;
 	float m_slowTimer = 0.0f;
 	float m_slowRate = 0.2f;
+
+	//==============================================================
+	// Resolve（敵出現演出）
+	//==============================================================
+	bool  m_isResolving = false;
+	float m_resolveTimer = 0.0f;
+
+	// 60FPS基準で45フレーム = 0.75秒
+	static constexpr float m_resolveDuration = 45.0f;
+
+	// ディゾルブ値
+	float m_resolveDissolve = 1.0f;
+
+	// ディゾルブ境界の幅
+	float m_resolveEdgeRange = 0.08f;
+
+	// ディゾルブ境界の発光色
+	Math::Vector3 m_resolveEmissive = { 0.1f, 0.8f, 1.0f };
 
 };

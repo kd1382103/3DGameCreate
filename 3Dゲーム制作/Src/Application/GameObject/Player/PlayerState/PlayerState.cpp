@@ -287,12 +287,44 @@ void PlayerStateAttack1::Update(Player& owner)
 	//========================================
 	// 攻撃処理
 	//========================================
-	UpdateAttack(owner, t, 15);
+	UpdateAttack(owner, t);
+
+	//========================================
+	// 攻撃判定
+	//========================================
+	if (t > 12.0f && t < 27.0f) {
+		//====================================
+		// 攻撃SE
+		//====================================
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/Attack.wav",
+				SoundType::SE
+			);
+
+			owner.m_attackSEPlayed = true;
+		}
+
+		//====================================
+		// 攻撃判定
+		//====================================
+		owner.DoAttackHitCheckMulti(
+			owner.m_attackDist,
+			90.0f,
+			30,
+			1.0f
+		);
+	}
+	else
+	{
+		owner.m_attackContact = false;
+	}
 
 	//========================================
 	// 次の攻撃
 	//========================================
-	if (t > 40.0f && t < 60.0f)
+	if (t > 27.0f && t < 40.0f)
 	{
 		if (owner.IsAttackInput())
 		{
@@ -337,12 +369,45 @@ void PlayerStateAttack2::Update(Player& owner)
 	//========================================
 	// 攻撃処理
 	//========================================
-	UpdateAttack(owner, t, 20);
+	UpdateAttack(owner, t);
+
+	//========================================
+	// 攻撃判定
+	//========================================
+	if (t > 11.0f && t < 27.0f)
+	{
+		//====================================
+		// 攻撃SE
+		//====================================
+		if (!owner.m_attackSEPlayed)
+		{
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/Attack.wav",
+				SoundType::SE
+			);
+
+			owner.m_attackSEPlayed = true;
+		}
+
+		//====================================
+		// 攻撃判定
+		//====================================
+		owner.DoAttackHitCheckMulti(
+			owner.m_attackDist,
+			90.0f,
+			40,
+			1.0f
+		);
+	}
+	else
+	{
+		owner.m_attackContact = false;
+	}
 
 	//========================================
 	// 次の攻撃
 	//========================================
-	if (t > 40.0f && t < 60.0f)
+	if (t > 27.0f && t < 40.0f)
 	{
 		if (owner.IsAttackInput())
 		{
@@ -389,23 +454,40 @@ void PlayerStateAttack3::Update(Player& owner)
 	//========================================
 	// 攻撃処理
 	//========================================
-	UpdateAttack(owner, t, 30);
+	UpdateAttack(owner, t);
 
 	//========================================
-	// 次の攻撃
+	// 攻撃判定
 	//========================================
-	if (t > 40.0f && t < 85.0f)
+	if (t > 23.0f && t < 28.0f)
 	{
-		if (owner.IsAttackInput())
+		//====================================
+		// 攻撃SE
+		//====================================
+		if (!owner.m_attackSEPlayed)
 		{
-			owner.m_canGainUltimate = false;
-
-			owner.stateMachine->ChangeState(
-				std::make_unique<PlayerStateAttack1>()
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/Attack.wav",
+				SoundType::SE
 			);
 
-			return;
+			owner.m_attackSEPlayed = true;
 		}
+
+		//====================================
+		// 攻撃判定
+		//====================================
+		// Attack3
+		owner.DoAttackHitCheckMulti(
+			owner.m_attackDist,
+			90.0f,
+			60,
+			1.0f
+		);
+	}
+	else
+	{
+		owner.m_attackContact = false;
 	}
 
 	//========================================
@@ -426,33 +508,87 @@ void PlayerStateAttack3::Update(Player& owner)
 //==============================================================
 void PlayerStateSkill::Enter(Player& owner)
 {
+	//==========================================================
+	// Skillアニメーション開始
+	//==========================================================
 	owner.PlayAnimationAuto("Skill", false);
 
+	//==========================================================
 	// スキルゲージ消費
+	//==========================================================
 	owner.m_skillGauge -= owner.m_skillCost;
 
+	//==========================================================
 	// 初期化
+	//==========================================================
 	owner.m_dir = Math::Vector3::Zero;
+
 	owner.m_attackHitOnce = false;
 	owner.m_attackContact = false;
+
 	owner.m_canGainUltimate = true;
+
 	owner.m_attackSEPlayed = false;
+
+	//==========================================================
+	// 剣軌跡開始
+	//==========================================================
 	owner.StartSwordTrail();
 }
 
 void PlayerStateSkill::Update(Player& owner)
 {
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
 	float t =
 		owner.m_animator.GetAnimeCurrentTime();
 
-	//========================================
-	// スキル攻撃判定
-	//========================================
-	if (t > 3.0f && t < 8.0f)
+	//==========================================================
+	// 0～5F
+	// 構え
+	//==========================================================
+	if (t < 5.0f)
 	{
-		//====================================
-		// 攻撃SE
-		//====================================
+		owner.m_dir = Math::Vector3::Zero;
+		owner.m_attackContact = false;
+	}
+
+	//==========================================================
+	// 5～28F
+	// 突進
+	//==========================================================
+	else if (t < 28.0f)
+	{
+		Math::Vector3 forward =
+			owner.GetForward();
+
+		forward.y = 0.0f;
+
+		if (forward.LengthSquared() > 0.0001f)
+		{
+			forward.Normalize();
+
+			const float dashSpeed = 0.20f;
+
+			owner.m_nowPos +=
+				forward * dashSpeed * frameScale;
+		}
+
+		owner.m_dir = Math::Vector3::Zero;
+		owner.m_attackContact = false;
+	}
+
+	//==========================================================
+	// 28～43F
+	// 薙ぎ払い攻撃
+	//==========================================================
+	else if (t < 43.0f)
+	{
+		owner.m_dir = Math::Vector3::Zero;
+
 		if (!owner.m_attackSEPlayed)
 		{
 			KdAudioManager::Instance().Play(
@@ -463,31 +599,58 @@ void PlayerStateSkill::Update(Player& owner)
 			owner.m_attackSEPlayed = true;
 		}
 
-		owner.DoSkillHitCheck(
+		// Skill
+		owner.DoAttackHitCheckMulti(
 			2.5f,
-			40
+			100.0f,
+			100,
+			3.0f
 		);
 	}
-	else
+
+	//==========================================================
+	// 43～50F
+	// 剣を戻す
+	//==========================================================
+	else if (t < 50.0f)
 	{
+		owner.m_dir = Math::Vector3::Zero;
 		owner.m_attackContact = false;
 	}
 
-	//========================================
+	//==========================================================
 	// アニメーション終了
-	//========================================
+	//==========================================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
+		//======================================================
+		// Skill終了時の後始末
+		//======================================================
+
+		// 移動停止
+		owner.m_dir = Math::Vector3::Zero;
+
+		// 攻撃関連解除
+		owner.m_attackContact = false;
 		owner.m_canGainUltimate = false;
 
+		// 攻撃フラグ初期化
+		owner.m_attackHitOnce = false;
+		owner.m_attackSEPlayed = false;
+
+		// 剣軌跡停止
 		owner.StopSwordTrail();
 
+		//======================================================
+		// Idleへ遷移
+		//======================================================
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
 		);
+
+		return;
 	}
 }
-
 //==============================================================
 // Dodge
 //==============================================================
@@ -758,7 +921,8 @@ void PlayerUltimate::Update(Player& owner)
 			owner.DoUltimateHitCheck(
 				4.0f,   // 正面方向の長さ
 				1.75f,   // 横幅
-				40
+				60,	  // ダメージ
+				1.0f   // ノックバック率
 			);
 		}
 	}
@@ -810,11 +974,7 @@ void PlayerAttackStateBase::EnterAttack(Player& owner)
 //==============================================================
 // Attack State 共通 Update
 //==============================================================
-void PlayerAttackStateBase::UpdateAttack(
-	Player& owner,
-	float t,
-	int damage
-)
+void PlayerAttackStateBase::UpdateAttack(Player& owner,float t)
 {
 	//========================================
 	// 60FPS基準のフレーム倍率
@@ -854,37 +1014,5 @@ void PlayerAttackStateBase::UpdateAttack(
 			f *
 			(lungeDistance / lungeFrameCount) *
 			scaledFrameScale;
-	}
-
-	//========================================
-	// 攻撃判定
-	//========================================
-	if (t > 35.0f && t < 40.0f)
-	{
-		//====================================
-		// 攻撃SE
-		//====================================
-		if (!owner.m_attackSEPlayed)
-		{
-			KdAudioManager::Instance().Play(
-				"Asset/Sounds/SE/Attack.wav",
-				SoundType::SE
-			);
-
-			owner.m_attackSEPlayed = true;
-		}
-
-		//====================================
-		// 攻撃判定
-		//====================================
-		owner.DoAttackHitCheckMulti(
-			owner.m_attackDist,
-			50.0f,
-			damage
-		);
-	}
-	else
-	{
-		owner.m_attackContact = false;
 	}
 }

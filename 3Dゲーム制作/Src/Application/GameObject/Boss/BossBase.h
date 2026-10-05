@@ -37,7 +37,12 @@ public:
 		m_wpCamera = cam;
 	}
 
-	void Damage(float dmg, bool isUltimate, bool finalHit) override;
+	void Damage(
+		float dmg,
+		bool isUltimate,
+		bool finalHit,
+		float knockBackRate
+	) override;
 
 	//==============================================================
 	// 攻撃判定
@@ -140,6 +145,16 @@ public:
 	}
 
 	void SetHPGaugeVisible(bool visible);
+
+	//==============================================================
+	// Resolve（出現演出）
+	//==============================================================
+	bool IsResolving() const
+	{
+		return m_isResolving;
+	}
+
+	void StartResolve();
 
 public:
 
@@ -346,4 +361,28 @@ public:
 
 	float m_collisionRadius = 0.7f;
 	float m_collisionHeight = 1.0f;
+
+private:
+		//==============================================================
+	// Resolve
+	//==============================================================
+
+		void UpdateResolve(float frameScale);
+
+		bool m_isResolving = false;
+
+		float m_resolveTimer = 0.0f;
+
+		static constexpr float m_resolveDuration = 45.0f;
+
+		float m_resolveDissolve = 1.0f;
+
+		float m_resolveEdgeRange = 0.08f;
+
+		Math::Vector3 m_resolveEmissive =
+		{
+			0.1f,
+			0.8f,
+			1.0f
+		};
 };

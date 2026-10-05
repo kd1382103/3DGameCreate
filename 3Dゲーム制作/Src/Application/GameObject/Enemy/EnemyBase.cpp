@@ -23,6 +23,7 @@ void EnemyBase::Init()
 	InitHPGauge();
 	InitStateMachine();
 	InitLockOnIcon();
+	StartResolve();
 }
 
 void EnemyBase::Update()
@@ -34,6 +35,37 @@ void EnemyBase::Update()
 	//========================================
 	const float frameScale =
 		Application::Instance().GetFPSController().GetFrameScale();
+
+	//==========================================================
+	// Resolve中は出現演出だけを進める
+	//==========================================================
+	if (m_isResolving)
+	{
+		const float frameScale =
+			Application::Instance()
+			.GetFPSController()
+			.GetFrameScale();
+
+		UpdateResolve(frameScale);
+
+		//========================================
+		// リゾルブ中もIdleアニメーションを再生
+		//========================================
+		if (m_model)
+		{
+			m_animator.AdvanceTime(
+				m_model->WorkNodes(),
+				frameScale
+			);
+
+			if (m_model->NeedCalcNodeMatrices())
+			{
+				m_model->CalcNodeMatrices();
+			}
+		}
+
+		return;
+	}
 
 	//========================================
 	// ゲーム全体の速度
@@ -194,10 +226,39 @@ void EnemyBase::PostUpdate()
 //==============================================================
 void EnemyBase::DrawLit()
 {
-	if (m_model)
+	if (!m_model)
 	{
-		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld, { 0.6f, 0.8f, 1.0f, 1.0f });
+		return;
 	}
+
+	//==========================================================
+	// Resolve中
+	//==========================================================
+	if (m_isResolving)
+	{
+		KdShaderManager::Instance().m_StandardShader.SetDissolve(
+			m_resolveDissolve,
+			&m_resolveEdgeRange,
+			&m_resolveEmissive
+		);
+
+		KdShaderManager::Instance().m_StandardShader.DrawModel(
+			*m_model,
+			m_mWorld,
+			{ 0.6f, 0.8f, 1.0f, 1.0f }
+		);
+
+		return;
+	}
+
+	//==========================================================
+	// 通常描画
+	//==========================================================
+	KdShaderManager::Instance().m_StandardShader.DrawModel(
+		*m_model,
+		m_mWorld,
+		{ 0.6f, 0.8f, 1.0f, 1.0f }
+	);
 }
 
 void EnemyBase::GenerateDepthMapFromLight()
@@ -210,6 +271,11 @@ void EnemyBase::GenerateDepthMapFromLight()
 
 void EnemyBase::DrawSprite()
 {
+	if (m_isResolving)
+	{
+		return;
+	}
+
 	if (m_hpGauge) m_hpGauge->DrawSprite();
 
 	auto cam = m_wpCamera.lock();
@@ -311,7 +377,7 @@ void EnemyBase::DrawSprite()
 //==============================================================
 // Damage
 //==============================================================
-void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit)
+void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRate)
 {
 	//==========================================================
 	// ダメージ表示
@@ -419,24 +485,26 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit)
 					if (finalHit)
 					{
 						m_nowPos +=
-							knockDir * StateMachineParameter::KnockBackPower;
+							knockDir * StateMachineParameter::KnockBackPower * knockBackRate;
 					}
 					else
 					{
 						m_nowPos +=
 							knockDir *
-							(StateMachineParameter::KnockBackPower * 0.2f);
+							(StateMachineParameter::KnockBackPower * 0.2f * knockBackRate);
 					}
 				}
 				else
 				{
 					m_nowPos +=
-						knockDir * StateMachineParameter::KnockBackPower;
+						knockDir * StateMachineParameter::KnockBackPower * knockBackRate;
 				}
 			}
 		}
 	}
 }
+
+
 
 //==============================================================
 // 攻撃判定
@@ -469,7 +537,7 @@ void EnemyBase::DoAttackHitCheck(float range)
 
 	//正面からの攻撃ならヒット
 	if (angle > DirectX::XMConvertToRadians(90.0f))return;
-	player->Damage(m_attackDamage);
+	player->Damage(m_attackDamage, false, false, 1.0f);
 	m_attackHitOnce = true;
 }
 
@@ -542,6 +610,23 @@ void EnemyBase::LookAtPlayer()
 	dir.Normalize();
 
 	m_angleY = std::atan2f(dir.x, dir.z) + DirectX::XM_PI;
+}
+
+//==============================================================
+// Resolve開始
+//==============================================================
+void EnemyBase::StartResolve()
+{
+	m_isResolving = true;
+
+	m_resolveTimer = 0.0f;
+	m_resolveDissolve = 1.0f;
+
+	m_preAttackActive = false;
+	m_lockOnActive = false;
+
+	// リゾルブ中もIdleアニメーション
+	PlayAnimationAuto("Idel", true);
 }
 
 void EnemyBase::InitAttackPrediction()
@@ -688,7 +773,41 @@ void EnemyBase::UpdateDebug()
 
 	if (GetAsyncKeyState('3') & 0x8000)
 	{
-		Damage(m_hpMax);
+		Damage(m_hpMax, false, false, 1.0f);
+	}
+}
+
+//==============================================================
+// Resolve更新
+//==============================================================
+void EnemyBase::UpdateResolve(float frameScale)
+{
+	m_resolveTimer += frameScale;
+
+	float t = m_resolveTimer / m_resolveDuration;
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	// 少し荒くする
+	t = std::floor(t * 12.0f) / 12.0f;
+
+	// 1.0 → 0.0 にディゾルブ
+	m_resolveDissolve = 1.0f - t;
+
+	// 完了
+	if (m_resolveTimer >= m_resolveDuration)
+	{
+		m_resolveTimer = m_resolveDuration;
+		m_resolveDissolve = 0.0f;
+		m_isResolving = false;
+
+		// 念のため通常のIdle状態へ
+		if (stateMachine)
+		{
+			stateMachine->ChangeStateImmediate(
+				std::make_unique<EnemyBaseStateIdle>(),
+				*this
+			);
+		}
 	}
 }
 

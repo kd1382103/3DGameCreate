@@ -217,12 +217,12 @@ void Player::UpdateInput()
 		//========================================
 		m_attackOnce = IsKeyPressedOnce(VK_LBUTTON);
 		m_skillOnce = IsKeyPressedOnce('E');
-		m_ultimateOnce = IsKeyPressedOnce('Q');
+		m_ultimateOnce = IsKeyPressedOnce(VK_SPACE);
 
 		//========================================
 		// ロックオン
 		//========================================
-		if (IsKeyPressedOnce(VK_MBUTTON))
+		if (IsKeyPressedOnce('Q'))
 		{
 			m_lookOn = !m_lookOn;
 
@@ -800,7 +800,7 @@ void Player::GenerateDepthMapFromLight()
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
-void Player::Damage(float dmg, bool isUltimate, bool finalHit)
+void Player::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRate)
 {
 	auto fly = std::make_shared<FontText>();
 	fly->Init(m_nowPos + Math::Vector3(0, 2.0f, 0), (int)dmg);
@@ -1079,13 +1079,19 @@ bool Player::IsKeyPressedOnce(int vk)
 //	}
 //}
 
-//複数判定用
-void Player::DoAttackHitCheckMulti(float range, float width, int damage)
+//==============================================================
+// 複数の敵に対する攻撃判定
+//==============================================================
+void Player::DoAttackHitCheckMulti(
+	float range,
+	float width,
+	int damage,
+	float knockBackRate
+)
 {
 	if (m_attackHitOnce) return;
 	if (m_isInvincible) return;
 
-	// デバッグ用に現在の判定範囲を保存
 	m_debugAttackRange = range;
 	m_debugAttackWidth = width;
 
@@ -1097,20 +1103,16 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
-		//通常敵
 		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
-		
-		//Boss
 		BossBase* boss = dynamic_cast<BossBase*>(obj.get());
 
-		// どちらでもなければ対象外
 		if (!enemy && !boss) continue;
 
-		// 生存チェック
 		if (enemy && !enemy->IsAlive()) continue;
 		if (boss && !boss->IsAlive()) continue;
 
-		Math::Vector3 targetPos= Math::Vector3::Zero;
+		Math::Vector3 targetPos = Math::Vector3::Zero;
+
 		if (enemy)
 		{
 			targetPos = enemy->GetHitCenter();
@@ -1124,105 +1126,45 @@ void Player::DoAttackHitCheckMulti(float range, float width, int damage)
 		toTarget.y = 0;
 
 		float dist = toTarget.Length();
+
 		if (dist > range) continue;
 		if (dist < 0.0001f) continue;
 
 		toTarget.Normalize();
 
-		float dot = std::clamp(forward.Dot(toTarget), -1.0f, 1.0f);
+		float dot = std::clamp(
+			forward.Dot(toTarget),
+			-1.0f,
+			1.0f
+		);
+
 		float angle = acos(dot);
-		if (angle > DirectX::XMConvertToRadians(width)) continue;
 
-		// ダメージ
+		if (angle > DirectX::XMConvertToRadians(width))
+		{
+			continue;
+		}
+
+		// ノックバック倍率を敵に渡す
 		if (enemy)
 		{
-			enemy->Damage(damage, false, false);
+			enemy->Damage(
+				damage,
+				false,
+				false,
+				knockBackRate
+			);
 		}
 		else if (boss)
 		{
-			boss->Damage(damage, false, false);
+			boss->Damage(
+				damage,
+				false,
+				false,
+				knockBackRate
+			);
 		}
 
-		// 必殺技ポイント加算
-		if(m_canGainUltimate)
-		{
-			m_attackContact = true;
-		}
-		hit = true;
-	}
-
-	// 一度でも当たったら終了
-	if (hit)
-	{
-		m_attackHitOnce = true;
-		m_hitStopTimer = 0.45f;
-	}
-
-}
-
-void Player::DoSkillHitCheck(float range, int damage)
-{
-	if (m_attackHitOnce) return;
-	if (m_isInvincible) return;
-
-	// デバッグ用に現在の判定範囲を保存
-	m_debugSkillRange = range;
-
-	bool hit = false;
-
-	for (auto& obj : SceneManager::Instance().GetObjList())
-	{
-		// 通常敵
-		EnemyBase* enemy =
-			dynamic_cast<EnemyBase*>(obj.get());
-
-		// Boss
-		BossBase* boss =
-			dynamic_cast<BossBase*>(obj.get());
-
-		// どちらでもなければ対象外
-		if (!enemy && !boss) continue;
-
-		// 生存チェック
-		if (enemy && !enemy->IsAlive()) continue;
-		if (boss && !boss->IsAlive()) continue;
-
-		// 攻撃対象の座標
-		Math::Vector3 targetPos =
-			Math::Vector3::Zero;
-
-		if (enemy)
-		{
-			targetPos = enemy->GetHitCenter();
-		}
-		else if (boss)
-		{
-			targetPos = boss->GetHitCenter();
-		}
-
-		// プレイヤーから対象まで
-		Math::Vector3 toTarget =
-			targetPos - m_nowPos;
-
-		// 高さは無視
-		toTarget.y = 0.0f;
-
-		float dist = toTarget.Length();
-
-		// 範囲外
-		if (dist > range) continue;
-
-		// ダメージ
-		if (enemy)
-		{
-			enemy->Damage(damage, false, false);
-		}
-		else if (boss)
-		{
-			boss->Damage(damage, false, false);
-		}
-
-		// 必殺技ポイント加算
 		if (m_canGainUltimate)
 		{
 			m_attackContact = true;
@@ -1231,7 +1173,6 @@ void Player::DoSkillHitCheck(float range, int damage)
 		hit = true;
 	}
 
-	// 一度でも当たったら終了
 	if (hit)
 	{
 		m_attackHitOnce = true;
@@ -1239,7 +1180,7 @@ void Player::DoSkillHitCheck(float range, int damage)
 	}
 }
 
-void Player::DoUltimateHitCheck(float range, float width, int damage)
+void Player::DoUltimateHitCheck(float range, float width, int damage, float knockBackRate)
 {
 	if (m_isInvincible) return;
 	if (m_ultimateHitCount >= 5) { return; }
@@ -1329,23 +1270,25 @@ void Player::DoUltimateHitCheck(float range, float width, int damage)
 		bool finalHit =
 			(m_ultimateHitCount == 4);
 
-		// ダメージ
-		if (enemy)
-		{
-			enemy->Damage(
-				damage,
-				true,
-				finalHit
-			);
-		}
-		else if (boss)
-		{
-			boss->Damage(
-				damage,
-				true,
-				finalHit
-			);
-		}
+			// 敵へのダメージ
+			if (enemy)
+			{
+				enemy->Damage(
+					damage,
+					true,
+					finalHit,
+					1.0f
+				);
+			}
+			else if (boss)
+			{
+				boss->Damage(
+					damage,
+					true,
+					finalHit,
+					1.0f
+				);
+			}
 
 		hit = true;
 	}

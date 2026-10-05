@@ -278,6 +278,7 @@ void GameScene::UpdateGameFlow()
 
 	case GamePhase::Battle:
 		UpdateBattle();
+		UpdateGameEnd();
 		break;
 
 	case GamePhase::Boss:
@@ -571,6 +572,8 @@ void GameScene::UpdateBoss()
 
 	m_boss->SetPos({ -35, 0, 20 });
 
+	m_boss->StartResolve();
+
 	m_boss->SetTarget(m_player);
 	m_boss->SetCamera(m_camera);
 	m_boss->SetGameScene(this);
@@ -629,14 +632,38 @@ void GameScene::GameClear()
 	m_isGameClear = true;
 	m_gamePhase = GamePhase::Clear;
 
-	//---------------------------------------
+	//=======================================
+	// 設定画面が開いていたら閉じる
+	//=======================================
+	if (m_settingUI && m_settingUI->IsVisible())
+	{
+		m_settingUI->Close();
+	}
+
+	//=======================================
+	// ゲームUIを通常状態に戻す
+	//=======================================
+	SetGameUIVisible(true);
+
+	if (m_player)
+	{
+		m_player->SetUltimatePointVisible(true);
+		m_player->SetInputLock(false);
+	}
+
+	//=======================================
 	// ゲーム停止
-	//---------------------------------------
+	//=======================================
 	StopGameObjects();
 
-	//---------------------------------------
-	// カーソルを表示	
-	//---------------------------------------
+	//=======================================
+	// 時間停止を解除
+	//=======================================
+	SceneManager::Instance().SetTimeScale(1.0f);
+
+	//=======================================
+	// カーソルを表示
+	//=======================================
 	CURSORINFO ci = { sizeof(CURSORINFO) };
 	GetCursorInfo(&ci);
 
@@ -647,42 +674,78 @@ void GameScene::GameClear()
 
 	ClipCursor(nullptr);
 
-	//---------------------------------------
+	//=======================================
 	// GAME CLEAR表示
-	//---------------------------------------
+	//=======================================
 	auto clearText = std::make_shared<FontText>();
 	clearText->InitMessage("GAME CLEAR");
 	AddObject(clearText);
 
-	//---------------------------------------
+	//=======================================
 	// タイトルに戻るボタン表示
-	//---------------------------------------
+	//=======================================
 	if (m_gameClearButton)
 	{
 		m_gameClearButton->SetVisible(true);
 	}
 }
-
 void GameScene::GameOver()
 {
 	m_isGameOver = true;
 	m_gamePhase = GamePhase::GameOver;
 
-	//---------------------------------------
+	//=======================================
+	// 設定画面が開いていたら閉じる
+	//=======================================
+	if (m_settingUI && m_settingUI->IsVisible())
+	{
+		m_settingUI->Close();
+	}
+
+	//=======================================
+	// ゲームUIを通常状態に戻す
+	//=======================================
+	SetGameUIVisible(true);
+
+	if (m_player)
+	{
+		m_player->SetUltimatePointVisible(true);
+		m_player->SetInputLock(false);
+	}
+
+	//=======================================
 	// ゲーム停止
-	//---------------------------------------
+	//=======================================
 	StopGameObjects();
 
-	//---------------------------------------
+	//=======================================
+	// 時間停止を解除
+	//=======================================
+	SceneManager::Instance().SetTimeScale(1.0f);
+
+	//=======================================
+	// カーソルを表示
+	//=======================================
+	CURSORINFO ci = { sizeof(CURSORINFO) };
+	GetCursorInfo(&ci);
+
+	if (!(ci.flags & CURSOR_SHOWING))
+	{
+		ShowCursor(TRUE);
+	}
+
+	ClipCursor(nullptr);
+
+	//=======================================
 	// GAME OVER表示
-	//---------------------------------------
+	//=======================================
 	auto overText = std::make_shared<FontText>();
 	overText->InitMessage("GAME OVER");
 	AddObject(overText);
 
-	//---------------------------------------
+	//=======================================
 	// タイトルに戻るボタン表示
-	//---------------------------------------
+	//=======================================
 	if (m_gameClearButton)
 	{
 		m_gameClearButton->SetVisible(true);
@@ -739,6 +802,12 @@ void GameScene::StopGameObjects()
 
 void GameScene::UpdateSetting()
 {
+	if (m_gamePhase == GamePhase::GameOver ||
+		m_gamePhase == GamePhase::Clear)
+	{
+		return;
+	}
+
 	bool settingKey =
 		(GetAsyncKeyState(VK_TAB) & 0x8000) != 0;
 
@@ -1155,6 +1224,7 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	//========================================
 	m_gamePhase = GamePhase::Prepare;
 }
+
 void GameScene::SetGameUIVisible(bool visible)
 {
 	//---------------------------------------
@@ -1264,7 +1334,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Attack:
 		m_tutorialText->InitMessage(
-			"左クリックで攻撃ができる\n攻撃をし続けてコンボを決めよう ",
+			"左クリックで攻撃ができる\nコンボがあり３段まで攻撃できる ",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -1272,7 +1342,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Skill:
 		m_tutorialText->InitMessage(
-			"左の赤紫のスキルゲージの量が一定量の以上\nキーボードのEでスキル攻撃が可能",
+			"赤紫のスキルゲージが一定量の以上なら\n'E'でスキル攻撃が可能",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -1280,7 +1350,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Ultimate:
 		m_tutorialText->InitMessage(
-			"スキルゲージの下の数字が500なった時\nキーボードのQを押すと強力な攻撃が可能",
+			"スキルゲージの下のポイントが500なった時\n'SPACE'を押すと強力な攻撃が可能",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -1288,7 +1358,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Dodge:
 		m_tutorialText->InitMessage(
-			"敵は攻撃してきたときに発光する\nその時に右クリックすると回避できるよ",
+			"敵は攻撃してきたときに発光する\n発光時時に'右クリック'すると回避",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -1296,7 +1366,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::LockOn:
 		m_tutorialText->InitMessage(
-			"マウスホイールを押し込むと一番近い敵をロックオンできるよ",
+			"'Q'を押すと一番近い敵をロックオンする",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
