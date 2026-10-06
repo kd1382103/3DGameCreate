@@ -338,21 +338,22 @@ void GameScene::UpdateTutorial()
 	{
 		if (m_player && m_player->IsMoving())
 		{
-			m_tutorialStep = TutorialStep::Dash;
+			m_tutorialStep = TutorialStep::LockOn;
 		}
 
 		break;
 	}
 
 	//---------------------------------------
-	// ダッシュ
+	// ロックオン
 	//---------------------------------------
-	case TutorialStep::Dash:
+	case TutorialStep::LockOn:
 	{
-		if (m_player && m_player->IsRunning())
+		if (m_player && m_player->IsLockOn())
 		{
 			m_tutorialStep = TutorialStep::Attack;
 		}
+
 		break;
 	}
 
@@ -418,24 +419,12 @@ void GameScene::UpdateTutorial()
 
 			m_player->ResetJustDodgeSuccess();
 
-			m_tutorialStep = TutorialStep::LockOn;
-		}
-
-		break;
-	}
-
-	//---------------------------------------
-	// ロックオン
-	//---------------------------------------
-	case TutorialStep::LockOn:
-	{
-		if (m_player && m_player->IsLockOn())
-		{
 			m_tutorialStep = TutorialStep::Finish;
 		}
 
 		break;
 	}
+
 
 	//---------------------------------------
 	// チュートリアル終了
@@ -1354,9 +1343,9 @@ void GameScene::UpdateTutorialText()
 		);
 		break;
 
-	case TutorialStep::Dash:
+	case TutorialStep::LockOn:
 		m_tutorialText->InitMessage(
-			"歩きから走りへ切り替え\n右クリックで切り替え",
+			"'Q'を押すと一番近い敵をロックオンする",
 			{ 0.0f, 300.0f },
 			1.0f
 		);
@@ -1389,14 +1378,6 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Dodge:
 		m_tutorialText->InitMessage(
 			"敵は攻撃してきたときに発光する\n発光時時に'右クリック'すると回避",
-			{ 0.0f, 300.0f },
-			1.0f
-		);
-		break;
-
-	case TutorialStep::LockOn:
-		m_tutorialText->InitMessage(
-			"'Q'を押すと一番近い敵をロックオンする",
 			{ 0.0f, 300.0f },
 			1.0f
 		);

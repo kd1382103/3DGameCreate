@@ -343,11 +343,8 @@ void PlayerStateAttack1::Update(Player& owner)
 	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		owner.StopSwordTrail();
-
-		owner.stateMachine->ChangeState(
-			std::make_unique<PlayerStateIdle>()
-		);
+		FinishAttack(owner);
+		return;
 	}
 }
 
@@ -426,11 +423,8 @@ void PlayerStateAttack2::Update(Player& owner)
 	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		owner.StopSwordTrail();
-
-		owner.stateMachine->ChangeState(
-			std::make_unique<PlayerStateIdle>()
-		);
+		FinishAttack(owner);
+		return;
 	}
 }
 
@@ -495,11 +489,8 @@ void PlayerStateAttack3::Update(Player& owner)
 	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
-		owner.m_canGainUltimate = false;
-		owner.StopSwordTrail();
-		owner.stateMachine->ChangeState(
-			std::make_unique<PlayerStateIdle>()
-		);
+		FinishAttack(owner);
+		return;
 	}
 }
 
@@ -641,9 +632,10 @@ void PlayerStateSkill::Update(Player& owner)
 		// 剣軌跡停止
 		owner.StopSwordTrail();
 
-		//======================================================
+		// 敵死亡後の再ロックオン
+		owner.FinishLockOnAfterAction();
+
 		// Idleへ遷移
-		//======================================================
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
 		);
@@ -927,12 +919,8 @@ void PlayerUltimate::Update(Player& owner)
 		}
 	}
 
-	//========================================
-	// アニメーション終了
-	//========================================
 	if (owner.m_animator.IsAnimationEnd())
 	{
-
 		//========================================
 		// 必殺技カメラ終了
 		//========================================
@@ -943,11 +931,24 @@ void PlayerUltimate::Update(Player& owner)
 			cam->EndUltimateCamera();
 		}
 
+		//========================================
+		// 剣軌跡停止
+		//========================================
 		owner.StopSwordTrail();
 
+		//========================================
+		// 敵死亡後の再ロックオン
+		//========================================
+		owner.FinishLockOnAfterAction();
+
+		//========================================
+		// Idleへ
+		//========================================
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateIdle>()
 		);
+
+		return;
 	}
 }
 
@@ -1015,6 +1016,29 @@ void PlayerAttackStateBase::UpdateAttack(Player& owner,float t)
 			(lungeDistance / lungeFrameCount) *
 			scaledFrameScale;
 	}
+}
+
+//==============================================================
+// 攻撃終了 共通処理
+//==============================================================
+void PlayerAttackStateBase::FinishAttack(Player& owner)
+{
+	//========================================
+	// 剣軌跡停止
+	//========================================
+	owner.StopSwordTrail();
+
+	//========================================
+	// 敵死亡後の再ロックオン
+	//========================================
+	owner.FinishLockOnAfterAction();
+
+	//========================================
+	// Idleへ
+	//========================================
+	owner.stateMachine->ChangeState(
+		std::make_unique<PlayerStateIdle>()
+	);
 }
 
 //==============================================================

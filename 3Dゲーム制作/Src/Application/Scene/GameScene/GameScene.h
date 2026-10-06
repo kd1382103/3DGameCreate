@@ -68,7 +68,6 @@ public:
 	enum class TutorialStep
 	{
 		Move,		// 移動
-		Dash,		// ダッシュ
 		Attack,		// 通常攻撃
 		Skill,		// スキル
 		Ultimate,	// 必殺技

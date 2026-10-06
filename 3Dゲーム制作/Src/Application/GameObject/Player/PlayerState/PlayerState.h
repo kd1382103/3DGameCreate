@@ -9,6 +9,11 @@ class Player;
 //==============================================================
 class PlayerAttackStateBase
 {
+public:
+
+	// 攻撃終了時の共通処理
+	void FinishAttack(Player& owner);
+
 protected:
 	
 	void EnterAttack(Player& owner);
@@ -17,6 +22,8 @@ protected:
 		Player& owner,
 		float t
 	);
+
+	
 };
 
 //==============================================================

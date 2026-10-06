@@ -287,6 +287,17 @@ public:
 
 	KdGameObject* m_lockOnTarget = nullptr;
 
+	// ロックオン対象が死亡した後、攻撃終了時に再ロックオンする
+	bool m_pendingLockOn = false;
+
+	// ロックオン対象を探す
+	KdGameObject* FindNearestLockOnTarget();
+
+	// ロックオン表示を切り替える
+	void SetLockOnTarget(KdGameObject* target);
+
+	void FinishLockOnAfterAction();
+
 	//========================================
 	// 移動速度
 	//========================================

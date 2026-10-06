@@ -276,91 +276,39 @@ void Player::UpdateInput()
 		//========================================
 		// ロックオン
 		//========================================
+
 		if (IsKeyPressedOnce('Q'))
 		{
-			m_lookOn = !m_lookOn;
-
+			//---------------------------------------
+			// ロックオン中なら解除
+			//---------------------------------------
 			if (m_lookOn)
 			{
-				KdGameObject* nearest = nullptr;
-				float nearestDist = FLT_MAX;
-
-				for (auto& obj : SceneManager::Instance().GetObjList())
-				{
-					EnemyBase* enemy =
-						dynamic_cast<EnemyBase*>(obj.get());
-
-					BossBase* boss =
-						dynamic_cast<BossBase*>(obj.get());
-
-					if (!enemy && !boss) continue;
-
-					if (enemy && !enemy->IsAlive())
-						continue;
-
-					if (boss && !boss->IsAlive())
-						continue;
-
-					Math::Vector3 targetPos;
-
-					if (enemy)
-					{
-						targetPos = enemy->GetHitCenter();
-					}
-					else
-					{
-						targetPos = boss->GetHitCenter();
-					}
-
-					float dist =
-						(targetPos - m_nowPos).Length();
-
-					if (dist < nearestDist)
-					{
-						nearestDist = dist;
-						nearest = obj.get();
-					}
-				}
-
-				m_lockOnTarget = nearest;
-
-				// ロックオン表示ON
-				if (auto enemy =
-					dynamic_cast<EnemyBase*>(m_lockOnTarget))
-				{
-					enemy->m_lockOnActive = true;
-				}
-				else if (auto boss =
-					dynamic_cast<BossBase*>(m_lockOnTarget))
-				{
-					boss->m_lockOnActive = true;
-				}
+				SetLockOnTarget(nullptr);
 			}
+			//---------------------------------------
+			// ロックオンしていないなら
+			// 一番近い敵をロックオン
+			//---------------------------------------
 			else
 			{
-				// ロックオン表示OFF
-				if (auto enemy =
-					dynamic_cast<EnemyBase*>(m_lockOnTarget))
-				{
-					enemy->m_lockOnActive = false;
-				}
-				else if (auto boss =
-					dynamic_cast<BossBase*>(m_lockOnTarget))
-				{
-					boss->m_lockOnActive = false;
-				}
+				KdGameObject* nearest =
+					FindNearestLockOnTarget();
 
-				m_lockOnTarget = nullptr;
+				SetLockOnTarget(nearest);
 			}
 		}
 
 		//========================================
 		// ロックオン対象の生存確認
 		//========================================
-		if (m_lookOn)
+		if (m_lookOn && m_lockOnTarget)
 		{
-			bool targetAlive = false;
+			bool targetAlive = true;
 
+			//---------------------------------------
+			// 現在の対象が生きているか確認
+			//---------------------------------------
 			if (auto enemy =
 				dynamic_cast<EnemyBase*>(m_lockOnTarget))
 			{
@@ -371,9 +319,19 @@ void Player::UpdateInput()
 			{
 				targetAlive = boss->IsAlive();
 			}
+			else
+			{
+				targetAlive = false;
+			}
 
+			//---------------------------------------
+			// ロックオン対象が死亡した
+			//---------------------------------------
 			if (!targetAlive)
 			{
+				//-----------------------------------
+				// 現在のロックオン表示をOFF
+				//-----------------------------------
 				if (auto enemy =
 					dynamic_cast<EnemyBase*>(m_lockOnTarget))
 				{
@@ -385,8 +343,16 @@ void Player::UpdateInput()
 					boss->m_lockOnActive = false;
 				}
 
-				m_lookOn = false;
+				//-----------------------------------
+				// ロックオン対象だけ解除
+				//-----------------------------------
 				m_lockOnTarget = nullptr;
+				m_lookOn = true;	//ロックオン状態は維持
+
+				//-----------------------------------
+				// 攻撃終了後に再ロックオンする
+				//-----------------------------------
+				m_pendingLockOn = true;
 			}
 		}
 	}
@@ -1541,4 +1507,140 @@ Math::Vector3 Player::GetSwordTipPos() const
 		localPos,
 		swordNode->m_worldTransform * m_mWorld
 	);
+}
+
+//==============================================================
+// 一番近いロックオン対象を探す
+//==============================================================
+KdGameObject* Player::FindNearestLockOnTarget()
+{
+	KdGameObject* nearest = nullptr;
+
+	float nearestDist = FLT_MAX;
+
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		EnemyBase* enemy =
+			dynamic_cast<EnemyBase*>(obj.get());
+
+		BossBase* boss =
+			dynamic_cast<BossBase*>(obj.get());
+
+		// 敵でもボスでもなければ対象外
+		if (!enemy && !boss)
+		{
+			continue;
+		}
+
+		// 死亡している敵は対象外
+		if (enemy && !enemy->IsAlive())
+		{
+			continue;
+		}
+
+		if (boss && !boss->IsAlive())
+		{
+			continue;
+		}
+
+		//========================================
+		// ロックオン対象の位置
+		//========================================
+		Math::Vector3 targetPos;
+
+		if (enemy)
+		{
+			targetPos = enemy->GetHitCenter();
+		}
+		else
+		{
+			targetPos = boss->GetHitCenter();
+		}
+
+		//========================================
+		// Playerからの距離
+		//========================================
+		float dist =
+			(targetPos - m_nowPos).Length();
+
+		//========================================
+		// 一番近い敵を保存
+		//========================================
+		if (dist < nearestDist)
+		{
+			nearestDist = dist;
+			nearest = obj.get();
+		}
+	}
+
+	return nearest;
+}
+
+//==============================================================
+// ロックオン対象を設定
+//==============================================================
+void Player::SetLockOnTarget(KdGameObject* target)
+{
+	//========================================
+	// 現在のロックオン表示をOFF
+	//========================================
+	if (auto enemy =
+		dynamic_cast<EnemyBase*>(m_lockOnTarget))
+	{
+		enemy->m_lockOnActive = false;
+	}
+	else if (auto boss =
+		dynamic_cast<BossBase*>(m_lockOnTarget))
+	{
+		boss->m_lockOnActive = false;
+	}
+
+	//========================================
+	// 対象を設定
+	//========================================
+	m_lockOnTarget = target;
+
+	//========================================
+	// 対象がいない
+	//========================================
+	if (!m_lockOnTarget)
+	{
+		m_lookOn = false;
+		return;
+	}
+
+	//========================================
+	// ロックオン表示ON
+	//========================================
+	if (auto enemy =
+		dynamic_cast<EnemyBase*>(m_lockOnTarget))
+	{
+		enemy->m_lockOnActive = true;
+	}
+	else if (auto boss =
+		dynamic_cast<BossBase*>(m_lockOnTarget))
+	{
+		boss->m_lockOnActive = true;
+	}
+
+	//========================================
+	// ロックオン状態
+	//========================================
+	m_lookOn = true;
+}
+
+void Player::FinishLockOnAfterAction()
+{
+	//========================================
+	// 敵死亡後の再ロックオン
+	//========================================
+	if (m_pendingLockOn)
+	{
+		KdGameObject* nearest =
+			FindNearestLockOnTarget();
+
+		SetLockOnTarget(nearest);
+
+		m_pendingLockOn = false;
+	}
 }

@@ -211,6 +211,8 @@ void TitleScene::InitCamera()
 	m_tpsCamera->SetAngleY(125.0f);
 	m_tpsCamera->SetAngleX(-20.0f);
 
+	m_tpsCamera->m_mouseFree = true;
+
 	//=======================================
 	// ステージをカメラの
 	// めり込み判定対象にする
