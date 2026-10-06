@@ -40,7 +40,36 @@ void Player::Init()
 
 void Player::Update()
 {
+	//---------------------------------------
+	// ゲーム終了中
+	//---------------------------------------
 	if (m_isGameEnd) return;
+
+	//---------------------------------------
+	// タイトル画面
+	//---------------------------------------
+	if (m_isTitleMode)
+	{
+		const float frameScale =
+			Application::Instance()
+			.GetFPSController()
+			.GetFrameScale();
+
+		// 入力は受け付けない
+		m_dir = Math::Vector3::Zero;
+
+		m_moving = false;
+		m_running = false;
+		m_attackOnce = false;
+		m_skillOnce = false;
+		m_dodgeing = false;
+		m_ultimateOnce = false;
+
+		// 現在設定されている待機アニメーションだけ進める
+		UpdateAnimation(frameScale);
+
+		return;
+	}
 
 	//========================================
 	// 60FPS基準のフレーム倍率
@@ -55,6 +84,31 @@ void Player::Update()
 		SceneManager::Instance().GetTimeScale();
 
 	const float scaledFrameScale = frameScale * timeScale;
+
+	//========================================
+	// ゲーム開始演出
+	//========================================
+	if (stateMachine->IsCurrent<PlayerStateStartJump>() ||
+		stateMachine->IsCurrent<PlayerStateLanding>())
+	{
+		// 入力を受け付けない
+		m_dir = Math::Vector3::Zero;
+
+		m_moving = false;
+		m_running = false;
+		m_attackOnce = false;
+		m_skillOnce = false;
+		m_dodgeing = false;
+		m_ultimateOnce = false;
+
+		// アニメーションだけ進める
+		UpdateAnimation(scaledFrameScale);
+
+		// ステート更新
+		stateMachine->Update(*this);
+
+		return;
+	}
 
 	//========================================
 	// 入力
@@ -501,24 +555,24 @@ void Player::UpdateDebug()
 {
 	KdDebugGUI::Instance().ClearLog();
 
-	////========================================
-	//// アニメーション一覧
-	////========================================
-	//for (int i = 0; ; i++)
-	//{
-	//	auto anim = m_model->GetAnimation(i);
+	//========================================
+	// アニメーション一覧
+	//========================================
+	for (int i = 0; ; i++)
+	{
+		auto anim = m_model->GetAnimation(i);
 
-	//	if (!anim)
-	//	{
-	//		break;
-	//	}
+		if (!anim)
+		{
+			break;
+		}
 
-	//	KdDebugGUI::Instance().AddLog(
-	//		"%d : %s\n",
-	//		i,
-	//		anim->m_name.c_str()
-	//	);
-	//}
+		KdDebugGUI::Instance().AddLog(
+			"%d : %s\n",
+			i,
+			anim->m_name.c_str()
+		);
+	}
 
 
 	//KdDebugGUI::Instance().AddLog(
@@ -604,40 +658,40 @@ void Player::UpdateDebug()
 
 void Player::DrawDebug()
 {
-	//---------------------------------------
-	// 通常攻撃
-	//---------------------------------------
-	if (m_debugAttackRange > 0.0f)
-	{
-		DrawDebugAttackRange(
-			m_debugAttackRange,
-			m_debugAttackWidth);
-	}
+	////---------------------------------------
+	//// 通常攻撃
+	////---------------------------------------
+	//if (m_debugAttackRange > 0.0f)
+	//{
+	//	DrawDebugAttackRange(
+	//		m_debugAttackRange,
+	//		m_debugAttackWidth);
+	//}
 
 
-	//---------------------------------------
-	// スキル
-	//---------------------------------------
-	if (m_debugSkillRange > 0.0f)
-	{
-		DrawDebugSkillRange(m_debugSkillRange);
-	}
+	////---------------------------------------
+	//// スキル
+	////---------------------------------------
+	//if (m_debugSkillRange > 0.0f)
+	//{
+	//	DrawDebugSkillRange(m_debugSkillRange);
+	//}
 
 
-	//---------------------------------------
-	// 必殺技
-	//---------------------------------------
-	if (m_debugUltimateRange > 0.0f)
-	{
-		DrawDebugUltimateRange(
-			m_debugUltimateRange,
-			m_debugUltimateWidth);
-	}
+	////---------------------------------------
+	//// 必殺技
+	////---------------------------------------
+	//if (m_debugUltimateRange > 0.0f)
+	//{
+	//	DrawDebugUltimateRange(
+	//		m_debugUltimateRange,
+	//		m_debugUltimateWidth);
+	//}
 
-	//---------------------------------------
-	// デバッグワイヤー描画
-	//---------------------------------------
-	m_pDebugWire->Draw();
+	////---------------------------------------
+	//// デバッグワイヤー描画
+	////---------------------------------------
+	//m_pDebugWire->Draw();
 }
 
 void Player::PostUpdate()

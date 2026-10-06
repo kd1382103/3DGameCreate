@@ -46,6 +46,26 @@ public:
 	void SetActive(bool active) { m_active = active; }
 	bool IsActive() const { return m_active; }
 
+	//==============================================================
+	
+	//10/6追加
+
+	void SetLocalPos(const Math::Vector3& pos)
+	{
+		m_mLocalPos = Math::Matrix::CreateTranslation(pos);
+	}
+
+	void SetAngleY(float angle)
+	{
+		m_DegAng.y = angle;
+	}
+
+	void SetAngleX(float angle)
+	{
+		m_DegAng.x = angle;
+	}
+
+	//==============================================================
 
 	Math::Matrix GetBillboardMatrix() const
 	{

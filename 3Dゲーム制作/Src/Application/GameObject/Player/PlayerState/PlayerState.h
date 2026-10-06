@@ -113,3 +113,20 @@ public:
 	void Enter(Player& owner) override;
 	void Update(Player& owner) override;
 };
+
+//==============================================================
+// ゲーム開始演出用
+//==============================================================
+class PlayerStateStartJump : public StateBase<Player>
+{
+public:
+	void Enter(Player& owner) override;
+	void Update(Player& owner) override;
+};
+
+class PlayerStateLanding : public StateBase<Player>
+{
+public:
+	void Enter(Player& owner) override;
+	void Update(Player& owner) override;
+};

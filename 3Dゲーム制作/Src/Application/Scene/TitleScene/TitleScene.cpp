@@ -1,9 +1,18 @@
 ﻿#include "TitleScene.h"
+
 #include "../SceneManager.h"
 
-#include <Application/GameObject/UI/FontText/FontText.h>
+#include <Application/GameObject/Player/Player/Player.h>
+#include <Application/GameObject/Stages/Stage/Stage.h>
+#include <Application/GameObject/Stages/Sky/Sky.h>
+
+#include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
+#include <Application/GameObject/Camera/CameraBase.h>
+
 #include <Application/GameObject/UI/TitleImage/TitleImage.h>
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
+
+#include <Application/GameObject/Effect/EffectManager.h>
 
 #include <Application/main.h>
 
@@ -47,12 +56,12 @@ void TitleScene::Event()
 		return;
 	}
 
-	//---------------------------------------
-	// Any Key
-	//---------------------------------------
-	for (int key = 0x08; key <= 0xFE; key++)
+	//========================================
+	// Jump中
+	//========================================
+	if (m_startJump)
 	{
-		if (GetAsyncKeyState(key) & 0x0001)
+		if (m_player->m_animator.IsAnimationEnd())
 		{
 			//=======================================
 			// タイトルBGM停止
@@ -69,6 +78,24 @@ void TitleScene::Event()
 			SceneManager::Instance().SetNextScene(
 				SceneManager::SceneType::Game
 			);
+		}
+
+		return;
+	}
+
+	//---------------------------------------
+	// Any Key
+	//---------------------------------------
+	for (int key = 0x08; key <= 0xFE; key++)
+	{
+		if (GetAsyncKeyState(key) & 0x0001)
+		{
+			//=======================================
+			// Jumpアニメーション開始
+			//=======================================
+			m_player->PlayAnimationAuto("Jump", false);
+
+			m_startJump = true;
 
 			break;
 		}
@@ -93,6 +120,15 @@ void TitleScene::Init()
 
 	//カーソルの移動範囲制限を解除
 	ClipCursor(nullptr);
+	
+	//==========================================================
+	// タイトル画面 3D
+	//==========================================================
+
+	InitStage();
+	InitSky();
+	InitCamera();
+	InitPlayer();
 
 	//---------------------------------------
 	// タイトル背景
@@ -115,6 +151,117 @@ void TitleScene::Init()
 	// 音声
 	//---------------------------------------
 	InitAudio();
+}
+
+//============================================================
+// タイトル用ステージ
+//============================================================
+void TitleScene::InitStage()
+{
+	//=======================================
+	// ステージ
+	//=======================================
+
+	m_stage =
+		std::make_shared<Stage>();
+
+	m_stage->Init();
+
+	AddObject(m_stage);
+}
+
+
+//============================================================
+// タイトル用Sky
+//============================================================
+void TitleScene::InitSky()
+{
+	//=======================================
+	// 空
+	//=======================================
+
+	m_sky =
+		std::make_shared<Sky>();
+
+	m_sky->Init();
+
+	m_sky->SetPos({ 0, 0, 0 });
+
+	AddObject(m_sky);
+}
+
+
+//============================================================
+// タイトル用カメラ
+//============================================================
+void TitleScene::InitCamera()
+{
+	//=======================================
+	// カメラ
+	//=======================================
+
+	m_tpsCamera =
+		std::make_shared<TPSCamera>();
+
+	m_tpsCamera->Init();
+
+	m_tpsCamera->SetActive(true);
+
+	m_tpsCamera->SetLocalPos({ 0.0f, 1.5f, -3.0f });
+	m_tpsCamera->SetAngleY(125.0f);
+	m_tpsCamera->SetAngleX(-20.0f);
+
+	//=======================================
+	// ステージをカメラの
+	// めり込み判定対象にする
+	//=======================================
+
+	m_tpsCamera->RegistHitObject(m_stage);
+
+	AddObject(m_tpsCamera);
+
+	//=======================================
+	// CameraBaseとして保持
+	//=======================================
+
+	m_camera = m_tpsCamera;
+
+	//=======================================
+	// エフェクトマネージャー
+	//=======================================
+
+	EffectManager::Instance().SetCamera(m_camera);
+}
+
+
+//============================================================
+// タイトル用Player
+//============================================================
+void TitleScene::InitPlayer()
+{
+	m_player = std::make_shared<Player>();
+	m_player->Init();
+
+	m_player->SetPos(Math::Vector3{ -55.0f, 0.0f, 50.0f });
+	m_player->SetAngleY(125.0f);
+
+	// タイトル画面では操作させない
+	m_player->SetTitleMode(true);
+
+	// ゲーム用UIを表示しない
+	m_player->SetUltimatePointVisible(false);
+
+	AddObject(m_player);
+
+	//==========================================================
+	// Playerをカメラのターゲットにする
+	//==========================================================
+	m_tpsCamera->SetTarget(m_player);
+
+	//==========================================================
+	// Playerからカメラを参照できるようにする
+	//==========================================================
+	m_player->SetCamera(m_camera);
 }
 
 //============================================================

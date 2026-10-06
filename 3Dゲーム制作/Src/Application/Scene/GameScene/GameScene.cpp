@@ -2,6 +2,8 @@
 #include"../SceneManager.h"
 
 #include<Application/GameObject/Player/Player/Player.h>
+#include <Application/GameObject/Player/PlayerState/PlayerState.h>
+
 #include<Application/GameObject/Enemy/Enemy1/Enemy1.h>
 #include<Application/GameObject/Enemy/Enemy2/Enemy2.h>
 #include<Application/GameObject/Enemy/Enemy3/Enemy3.h>
@@ -33,6 +35,28 @@
 
 void GameScene::Event()
 {
+	//=======================================
+	// ゲーム開始演出
+	//=======================================
+	if (!m_startLandingFinished)
+	{
+		if (m_player &&
+			m_player->stateMachine->IsCurrent<PlayerStateLanding>())
+		{
+			if (m_player->m_animator.IsAnimationEnd())
+			{
+				m_startLandingFinished = true;
+
+				//=======================================
+				// チュートリアル敵生成
+				//=======================================
+				InitTutorialEnemy();
+			}
+		}
+
+		return;
+	}
+
 	//=======================================
 	// BattlePinへプレイヤー位置を渡す
 	//=======================================
@@ -90,7 +114,6 @@ void GameScene::Init()
 	InitSky();
 	InitCamera();
 	InitPlayer();
-	InitTutorialEnemy();
 	InitUI();
 	InitBattleStartPin();
 
@@ -193,6 +216,13 @@ void GameScene::InitPlayer()
 	m_player->Init();
 	m_player->SetPos(Math::Vector3{ 0, 0, 0 });
 
+	//=======================================
+	// ゲーム開始演出
+	//=======================================
+	m_player->stateMachine->ChangeStateImmediate(
+		std::make_unique<PlayerStateLanding>(),
+		*m_player
+	);
 	AddObject(m_player);
 }
 

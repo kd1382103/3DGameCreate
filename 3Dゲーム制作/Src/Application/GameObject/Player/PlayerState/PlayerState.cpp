@@ -11,7 +11,7 @@
 //==============================================================
 void PlayerStateIdle::Enter(Player& owner)
 {
-	owner.PlayAnimationAuto("Idel");
+	owner.PlayAnimationAuto("Idle");
 }
 
 void PlayerStateIdle::Update(Player& owner)
@@ -1014,5 +1014,67 @@ void PlayerAttackStateBase::UpdateAttack(Player& owner,float t)
 			f *
 			(lungeDistance / lungeFrameCount) *
 			scaledFrameScale;
+	}
+}
+
+//==============================================================
+// Start Jump
+//==============================================================
+void PlayerStateStartJump::Enter(Player& owner)
+{
+	//========================================
+	// ゲーム開始ジャンプ
+	//========================================
+	owner.PlayAnimationAuto("Jump", false);
+
+	//========================================
+	// 開始演出中は移動しない
+	//========================================
+	owner.m_dir = Math::Vector3::Zero;
+}
+
+void PlayerStateStartJump::Update(Player& owner)
+{
+	//========================================
+	// ジャンプ終了
+	//========================================
+	if (owner.m_animator.IsAnimationEnd())
+	{
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateLanding>()
+		);
+
+		return;
+	}
+}
+
+//==============================================================
+// Landing
+//==============================================================
+void PlayerStateLanding::Enter(Player& owner)
+{
+	//========================================
+	// 着地アニメーション
+	//========================================
+	owner.PlayAnimationAuto("Land", false);
+
+	//========================================
+	// 開始演出中は移動しない
+	//========================================
+	owner.m_dir = Math::Vector3::Zero;
+}
+
+void PlayerStateLanding::Update(Player& owner)
+{
+	//========================================
+	// 着地終了
+	//========================================
+	if (owner.m_animator.IsAnimationEnd())
+	{
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>()
+		);
+
+		return;
 	}
 }

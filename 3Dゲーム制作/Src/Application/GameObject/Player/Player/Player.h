@@ -72,6 +72,11 @@ public:
 	//ゲームが終了が終了したかどうかを取得
 	void SetGameEnd(bool end) { m_isGameEnd = end; }
 
+	// タイトル画面用
+	void SetTitleMode(bool titleMode) { m_isTitleMode = titleMode; }
+	bool IsTitleMode() const { return m_isTitleMode; }
+	void SetAngleY(float angle) { m_angleY = DirectX::XMConvertToRadians(angle); }
+
 	//========================================
 	// UI
 	//========================================
@@ -356,6 +361,11 @@ public:
 	// ゲーム終了
 	//========================================
 	bool m_isGameEnd = false;
+
+	//---------------------------------------
+	// タイトル画面用
+	//---------------------------------------
+	bool m_isTitleMode = false;
 
 	//========================================
 	// 入力ロック
