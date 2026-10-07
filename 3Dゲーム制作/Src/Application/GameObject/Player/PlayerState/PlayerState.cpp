@@ -275,6 +275,7 @@ void PlayerStateDash::Update(Player& owner)
 //==============================================================
 void PlayerStateAttack1::Enter(Player& owner)
 {
+	owner.FinishLockOnAfterAction();
 	owner.PlayAnimationAuto("Attack1", false);
 	EnterAttack(owner);
 }
@@ -353,9 +354,12 @@ void PlayerStateAttack1::Update(Player& owner)
 //==============================================================
 void PlayerStateAttack2::Enter(Player& owner)
 {
+	owner.FinishLockOnAfterAction();
+
 	owner.PlayAnimationAuto("Attack2", false);
 
 	EnterAttack(owner);
+
 }
 
 void PlayerStateAttack2::Update(Player& owner)
@@ -433,6 +437,8 @@ void PlayerStateAttack2::Update(Player& owner)
 //==============================================================
 void PlayerStateAttack3::Enter(Player& owner)
 {
+	owner.FinishLockOnAfterAction();
+
 	owner.PlayAnimationAuto("Attack3", false);
 
 	EnterAttack(owner);
@@ -499,6 +505,8 @@ void PlayerStateAttack3::Update(Player& owner)
 //==============================================================
 void PlayerStateSkill::Enter(Player& owner)
 {
+	owner.FinishLockOnAfterAction();
+
 	//==========================================================
 	// Skillアニメーション開始
 	//==========================================================
@@ -811,8 +819,8 @@ void PlayerStateDodge::Update(Player& owner)
 //==============================================================
 void PlayerUltimate::Enter(Player& owner)
 {
-	// 現状、必殺技アニメーションがないため
-	// 攻撃1段目のアニメーションを使用
+	owner.FinishLockOnAfterAction();
+
 	owner.PlayAnimationAuto("Ultimate", false);
 
 	owner.m_dir = Math::Vector3::Zero;

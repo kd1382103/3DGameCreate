@@ -61,7 +61,7 @@ public:
 		return m_animator.IsAnimationEnd();
 	}
 
-	bool IsAlive() const { return !m_isExpired; }
+	bool IsAlive() const { return !m_isExpired && !m_isDying; }
 
 	//==============================================================
 	// スロー
@@ -304,7 +304,7 @@ private:
 
 	// ディゾルブ値
 	float m_resolveDissolve = 1.0f;
-
+	
 	// ディゾルブ境界の幅
 	float m_resolveEdgeRange = 0.08f;
 

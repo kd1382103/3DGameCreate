@@ -677,7 +677,8 @@ void GameScene::UpdateGameEnd()
 	if (!m_isGameClear &&
 		!m_isGameOver &&
 		m_player &&
-		!m_player->IsAlive())
+		!m_player->IsAlive() &&
+		m_player->IsGameEnd())
 	{
 		GameOver();
 	}

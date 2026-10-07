@@ -21,6 +21,25 @@ float4 main(VSOutputNoLighting In) : SV_Target0
 
 	float4 baseColor = g_tex.Sample(g_ss, In.UV) * In.Color * g_BaseColor;
 	float3 outColor = baseColor.rgb;
+
+	//==================================================
+
+	//10/7追加
+	//float4 baseColor = g_tex.Sample(g_ss, In.UV) * In.Color * g_BaseColor;
+
+	//float3 baseOutColor = baseColor.rgb;
+
+	//==================================================
+	// 自己発光
+	//==================================================
+	//float3 emissiveColor =
+	//g_emissiveTex.Sample(g_ss, In.UV).rgb
+	//* g_Emissive
+	//* In.Color.rgb;
+
+	//float3 outColor = baseOutColor;
+
+	//==========================================
 	
 	// Alphaテスト
 	if (baseColor.a < 0.05f)
@@ -29,14 +48,33 @@ float4 main(VSOutputNoLighting In) : SV_Target0
 	}
 	
 	// 自己発光色の適応
-	if (g_OnlyEmissie)
-	{
-		outColor = g_emissiveTex.Sample(g_ss, In.UV).rgb * g_Emissive * In.Color.rgb;		
-	}
-	else
-	{
-		outColor += g_emissiveTex.Sample(g_ss, In.UV).rgb * g_Emissive * In.Color.rgb;
-	}
+	//if (g_OnlyEmissie)
+	//{
+	//	outColor = g_emissiveTex.Sample(g_ss, In.UV).rgb * g_Emissive * In.Color.rgb;
+	//}
+	//else
+	//{
+	//	outColor += g_emissiveTex.Sample(g_ss, In.UV).rgb * g_Emissive * In.Color.rgb;
+	//}
+
+	//==================================================
+
+	//10/7追加
+
+	//==================================================
+	// 自己発光色
+	//==================================================
+	//if (g_OnlyEmissie)
+	//{
+	//	outColor = emissiveColor;
+	//}
+	//else
+	//{
+	//	outColor = baseOutColor + emissiveColor;
+	//}
+
+	//==================================================
+
 	
 	// 全体の明度：環境光に1が設定されている場合は影響なし
 	// 環境光の不透明度を下げる事により、明度ライトの周り以外は描画されなくなる
@@ -114,8 +152,31 @@ float4 main(VSOutputNoLighting In) : SV_Target0
 		}
 	}
 	
-	totalBrightness = saturate(totalBrightness);
-	outColor *= totalBrightness;
+	//totalBrightness = saturate(totalBrightness);
+	//outColor *= totalBrightness;
 	
+	//return float4(outColor, baseColor.a);
+
+	//==================================================
+
+	//10/7追加
+
+	//==================================================
+	// 通常の明度
+	//==================================================
+	totalBrightness = saturate(totalBrightness);
+
+	outColor *= totalBrightness;
+
+	//==================================================
+	// 自己発光
+	//
+	// SwordTrail自身の色をそのまま使って発光させる
+	// g_Emissiveの値が発光の強さになる
+	//==================================================
+	outColor += baseColor.rgb * g_Emissive;
+
 	return float4(outColor, baseColor.a);
+	//==================================================
+
 }

@@ -41,9 +41,37 @@ void Player::Init()
 void Player::Update()
 {
 	//---------------------------------------
+	// 死亡アニメーション
+	//---------------------------------------
+	if (m_isDeathAnimationPlaying)
+	{
+		const float frameScale =
+			Application::Instance()
+			.GetFPSController()
+			.GetFrameScale();
+
+		// 死亡アニメーションを進める
+		UpdateAnimation(frameScale);
+
+		//---------------------------------------
+		// Deathアニメーション終了
+		//---------------------------------------
+		if (m_animator.IsAnimationEnd())
+		{
+			m_isDeathAnimationPlaying = false;
+			m_isGameEnd = true;
+		}
+
+		return;
+	}
+
+	//---------------------------------------
 	// ゲーム終了中
 	//---------------------------------------
-	if (m_isGameEnd) return;
+	if (m_isGameEnd)
+	{
+		return;
+	}
 
 	//---------------------------------------
 	// タイトル画面
@@ -481,6 +509,14 @@ void Player::UpdatePendingDamage()
 	{
 		hpUI->OnDamage(before, after);
 		hpUI->SetGauge(after, m_hpGaugeMax);
+	}
+
+	//========================================
+	// 死亡判定
+	//========================================
+	if (m_nowHp <= 0.0f && !m_isDead)
+	{
+		StartDeath();
 	}
 
 	//========================================
@@ -1624,13 +1660,65 @@ void Player::FinishLockOnAfterAction()
 	//========================================
 	// 敵死亡後の再ロックオン
 	//========================================
-	if (m_pendingLockOn)
+	if (!m_pendingLockOn)
 	{
-		KdGameObject* nearest =
-			FindNearestLockOnTarget();
-
-		SetLockOnTarget(nearest);
-
-		m_pendingLockOn = false;
+		return;
 	}
+
+	//========================================
+	// 生存している一番近い敵を探す
+	//========================================
+	KdGameObject* nearest =
+		FindNearestLockOnTarget();
+
+	//========================================
+	// まだ敵が見つからない
+	// → 再ロックオン待機を維持
+	//========================================
+	if (!nearest)
+	{
+		return;
+	}
+
+	//========================================
+	// 新しい敵をロックオン
+	//========================================
+	SetLockOnTarget(nearest);
+
+	//========================================
+	// 再ロックオン完了
+	//========================================
+	m_pendingLockOn = false;
+}
+
+void Player::StartDeath()
+{
+	if (m_isDead) return;
+
+	m_isDead = true;
+	m_isDeathAnimationPlaying = true;
+
+	// 死亡中は操作・攻撃などを受け付けない
+	m_isInvincible = true;
+	m_dir = Math::Vector3::Zero;
+
+	m_moving = false;
+	m_running = false;
+	m_attackOnce = false;
+	m_skillOnce = false;
+	m_dodgeing = false;
+	m_ultimateOnce = false;
+
+	m_attackHitOnce = false;
+	m_attackSEPlayed = false;
+
+	// ロックオン解除
+	SetLockOnTarget(nullptr);
+	m_pendingLockOn = false;
+
+	// 剣の軌跡も停止
+	StopSwordTrail();
+
+	// 死亡アニメーション
+	PlayAnimationAuto("Death", false);
 }

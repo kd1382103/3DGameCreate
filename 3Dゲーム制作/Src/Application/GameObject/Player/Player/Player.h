@@ -212,6 +212,26 @@ public:
 		return m_isSwordTrailActive;
 	}
 
+	//========================================
+	// 死亡
+	//========================================
+	void StartDeath();
+
+	bool IsDead() const
+	{
+		return m_isDead;
+	}
+
+	bool IsDeathAnimationPlaying() const
+	{
+		return m_isDeathAnimationPlaying;
+	}
+
+	bool IsGameEnd() const
+	{
+		return m_isGameEnd;
+	}
+
 public:
 	//========================================
 	// モデル・アニメーション
@@ -342,6 +362,14 @@ public:
 	//========================================
 	int m_hpGaugeMax = 1000;
 	float m_nowHp = 1000.0f;
+
+	//========================================
+	// 死亡
+	//========================================
+	bool m_isDead = false;
+
+	// 死亡アニメーション再生中
+	bool m_isDeathAnimationPlaying = false;
 
 	//========================================
 	// 遅延ダメージ

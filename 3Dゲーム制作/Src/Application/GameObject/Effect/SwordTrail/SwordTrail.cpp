@@ -147,9 +147,23 @@ void SwordTrail::DrawEffect()
 	}
 
 	//==================================================
+	// UnLit開始
+	//==================================================
+	KdShaderManager::Instance()
+		.m_StandardShader
+		.BeginUnLit();
+
+	//==================================================
 	// トレイル描画
 	//==================================================
 	KdShaderManager::Instance()
 		.m_StandardShader
-		.DrawPolygon(*m_tPoly);
+		.DrawPolygon(*m_tPoly,Math::Matrix::Identity,Math::Color(1,1,1,1),Math::Vector3(10.0f));
+
+	//==================================================
+	// UnLit終了
+	//==================================================
+	KdShaderManager::Instance()
+		.m_StandardShader
+		.EndUnLit();
 }
