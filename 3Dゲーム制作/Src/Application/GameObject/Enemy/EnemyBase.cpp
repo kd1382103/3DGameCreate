@@ -67,6 +67,15 @@ void EnemyBase::Update()
 		return;
 	}
 
+	//==========================================================
+	// 死亡中
+	//==========================================================
+	if (m_isDying)
+	{
+		UpdateDeath(frameScale);
+		return;
+	}
+
 	//========================================
 	// ゲーム全体の速度
 	//========================================
@@ -232,9 +241,9 @@ void EnemyBase::DrawLit()
 	}
 
 	//==========================================================
-	// Resolve中
+	// Resolve中 または 死亡中
 	//==========================================================
-	if (m_isResolving)
+	if (m_isResolving || m_isDying)
 	{
 		KdShaderManager::Instance().m_StandardShader.SetDissolve(
 			m_resolveDissolve,
@@ -271,10 +280,7 @@ void EnemyBase::GenerateDepthMapFromLight()
 
 void EnemyBase::DrawSprite()
 {
-	if (m_isResolving)
-	{
-		return;
-	}
+	if (m_isResolving || m_isDying)return;
 
 	if (m_hpGauge) m_hpGauge->DrawSprite();
 
@@ -442,8 +448,7 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 	//==========================================================
 	if (m_hp <= 0)
 	{
-		ResetBattleState();
-		m_isExpired = true;
+		StartDeath();
 		return;
 	}
 
@@ -629,6 +634,54 @@ void EnemyBase::StartResolve()
 	PlayAnimationAuto("Idel", true);
 }
 
+//==============================================================
+// 死亡開始
+//==============================================================
+void EnemyBase::StartDeath()
+{
+	// すでに死亡中なら何もしない
+	if (m_isDying)
+	{
+		return;
+	}
+
+	m_isDying = true;
+	m_isDeathAnimationEnd = false;
+
+	//==========================================================
+	// 既存のResolve用ディゾルブを再利用
+	//==========================================================
+	m_resolveTimer = 0.0f;
+	m_resolveDissolve = 0.0f;
+
+	//==========================================================
+	// 戦闘状態をリセット
+	//==========================================================
+	ResetBattleState();
+
+	//==========================================================
+	// ロックオン解除
+	//==========================================================
+	m_lockOnActive = false;
+
+	//==========================================================
+	// 攻撃予知解除
+	//==========================================================
+	m_preAttackActive = false;
+	m_preAttackAlpha = 0.0f;
+	m_preAttackTimer = 0.0f;
+
+	//==========================================================
+	// HPゲージ非表示
+	//==========================================================
+	SetHPGaugeVisible(false);
+
+	//==========================================================
+	// 死亡アニメーション
+	//==========================================================
+	PlayAnimationAuto("Death", false);
+}
+
 void EnemyBase::InitAttackPrediction()
 {
 	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
@@ -808,6 +861,72 @@ void EnemyBase::UpdateResolve(float frameScale)
 				*this
 			);
 		}
+	}
+}
+
+//==============================================================
+// 死亡演出更新
+//==============================================================
+void EnemyBase::UpdateDeath(float frameScale)
+{
+	//==========================================================
+	// 死亡アニメーション再生中
+	//==========================================================
+	if (!m_isDeathAnimationEnd)
+	{
+		if (m_model)
+		{
+			m_animator.AdvanceTime(
+				m_model->WorkNodes(),
+				frameScale
+			);
+
+			if (m_model->NeedCalcNodeMatrices())
+			{
+				m_model->CalcNodeMatrices();
+			}
+		}
+
+		//======================================================
+		// 死亡アニメーション終了
+		//======================================================
+		if (m_animator.IsAnimationEnd())
+		{
+			m_isDeathAnimationEnd = true;
+
+			//==================================================
+			// 既存Resolve用ディゾルブを最初から開始
+			//==================================================
+			m_resolveTimer = 0.0f;
+			m_resolveDissolve = 0.0f;
+		}
+
+		return;
+	}
+
+	//==========================================================
+	// 死亡アニメーション終了後
+	// 最終ポーズを維持したままディゾルブ
+	//==========================================================
+	m_resolveTimer += frameScale;
+
+	float t = m_resolveTimer / m_resolveDuration;
+
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	// 1.0 → 0.0
+	m_resolveDissolve =  t;
+
+	//==========================================================
+	// ディゾルブ終了
+	//==========================================================
+	if (m_resolveTimer >= m_resolveDuration)
+	{
+		m_resolveTimer = m_resolveDuration;
+		m_resolveDissolve = 1.0f;
+
+		// 完全に消えたら削除
+		m_isExpired = true;
 	}
 }
 

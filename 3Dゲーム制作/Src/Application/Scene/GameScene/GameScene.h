@@ -77,6 +77,7 @@ public:
 	};
 
 
+
 private:
 
 	//========================================
@@ -96,6 +97,8 @@ private:
 	void InitPlayer();
 	void InitTutorialEnemy();
 	void InitUI();
+
+	void InitPointLights();
 
 	//========================================
 	// ゲーム進行

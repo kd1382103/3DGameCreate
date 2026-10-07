@@ -167,22 +167,22 @@ float4 main(VSOutput In) : SV_Target0
 	for( int i = 0; i < g_PointLightNum.x; i++ )
 	{
 		// ピクセルから点光への方向
-		float3 dir = g_PointLights[ i ].Pos - In.wPos;
+		float3 dir = g_PointLights[i].Pos - In.wPos;
 		
 		// 距離を算出
-		float dist = length( dir );
+		float dist = length(dir);
 		
 		// 正規化
 		dir /= dist;
 		
 		// 点光の判定以内
-		if( dist < g_PointLights[ i ].Radius )
+		if (dist < g_PointLights[i].Radius)
 		{
 			// 半径をもとに、距離の比率を求める
-			float atte = 1.0 - saturate( dist / g_PointLights[ i ].Radius );
+			float atte = 1.0 - saturate(dist / g_PointLights[i].Radius);
 			
 			// 明度の追加
-			totalBrightness += (1 - pow( 1 - atte, 2 )) * g_PointLights[ i ].IsBright;
+			totalBrightness += (1 - pow(1 - atte, 2)) * g_PointLights[i].IsBright;
 			
 			// 逆２乗の法則
 			atte *= atte;
@@ -190,8 +190,8 @@ float4 main(VSOutput In) : SV_Target0
 			// Diffuse(拡散光)
 			{
 				// 光の方向と法線の方向との角度さが光の強さになる
-				float lightDiffuse = dot( dir, wN );
-				lightDiffuse = saturate( lightDiffuse ); // マイナス値は0にする　0(暗)～1(明)になる
+				float lightDiffuse = dot(dir, wN);
+				lightDiffuse = saturate(lightDiffuse); // マイナス値は0にする　0(暗)～1(明)になる
 
 				lightDiffuse *= atte; // 減衰
 
@@ -206,7 +206,7 @@ float4 main(VSOutput In) : SV_Target0
 			{
 				// 反射した光の強さを求める
 				// Blinn-Phong NDF
-				float spec = BlinnPhong( -dir, vCam, wN, specPower );
+				float spec = BlinnPhong(-dir, vCam, wN, specPower);
 
 				spec *= atte; // 減衰
 				
@@ -215,7 +215,6 @@ float4 main(VSOutput In) : SV_Target0
 			}
 		}
 	}
-
 	outColor += g_AmbientLight.rgb * baseColor.rgb * baseColor.a;
 	
 	// 自己発光色の適応

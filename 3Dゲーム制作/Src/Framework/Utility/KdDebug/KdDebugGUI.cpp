@@ -59,7 +59,7 @@ void KdDebugGUI::GuiProcess()
 //	ImGui::End();
 
 	// ログウィンドウ
-	//m_uqLog->Draw("Log Window");
+	m_uqLog->Draw("Log Window");
 
 	//=====================================================
 	// ログ出力 ・・・ AddLog("～") で追加

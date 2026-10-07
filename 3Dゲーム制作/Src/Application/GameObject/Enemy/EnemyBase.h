@@ -171,6 +171,9 @@ private:
 	void UpdateDebug();
 	void UpdateResolve(float frameScale);
 
+	void StartDeath();
+	void UpdateDeath(float frameScale);
+
 	//==============================================================
 	// 後更新
 	//==============================================================
@@ -308,4 +311,11 @@ private:
 	// ディゾルブ境界の発光色
 	Math::Vector3 m_resolveEmissive = { 0.1f, 0.8f, 1.0f };
 
+	//==============================================================
+	// 死亡演出
+	//==============================================================
+	bool m_isDying = false;
+
+	// 死亡アニメーションが終了したか
+	bool m_isDeathAnimationEnd = false;
 };

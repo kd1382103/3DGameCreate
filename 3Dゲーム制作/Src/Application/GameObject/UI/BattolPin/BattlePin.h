@@ -3,16 +3,27 @@
 class CameraBase;
 class FontText;
 
+//==============================================================
+// バトル開始地点ピン
+//==============================================================
 class BattlePin : public KdGameObject
 {
 public:
+
 	BattlePin() {}
 	~BattlePin() override {}
 
+	//==========================================================
+	// 初期化・更新・描画
+	//==========================================================
 	void Init() override;
 	void Update() override;
 	void DrawSprite() override;
 
+
+	//==========================================================
+	// 位置
+	//==========================================================
 	void SetPos(const Math::Vector3& pos)
 	{
 		m_pos = pos;
@@ -23,6 +34,10 @@ public:
 		return m_pos;
 	}
 
+
+	//==========================================================
+	// バトル範囲
+	//==========================================================
 	void SetBattleRange(float range)
 	{
 		m_battleRange = range;
@@ -35,19 +50,29 @@ public:
 
 	bool IsInsideRange(const Math::Vector3& pos) const
 	{
-		Math::Vector3 diff = pos - m_pos;
+		Math::Vector3 diff =
+			pos - m_pos;
+
 		diff.y = 0.0f;
 
 		return diff.LengthSquared()
 			<= m_battleRange * m_battleRange;
 	}
 
+
+	//==========================================================
+	// カメラ
+	//==========================================================
 	void SetCamera(
 		const std::shared_ptr<CameraBase>& camera)
 	{
 		m_camera = camera;
 	}
 
+
+	//==========================================================
+	// 表示・非表示
+	//==========================================================
 	void SetVisible(bool visible)
 	{
 		m_visible = visible;
@@ -58,61 +83,63 @@ public:
 		return m_visible;
 	}
 
-	// プレイヤー位置設定
+
+	//==========================================================
+	// プレイヤー位置
+	// 距離表示に使用
+	//==========================================================
 	void SetPlayerPos(const Math::Vector3& pos)
 	{
 		m_playerPos = pos;
 	}
 
-private:
-
-	enum class Edge
-	{
-		Left,
-		Right,
-		Top,
-		Bottom
-	};
-
-	void DrawEdgeGlow(Edge edge);
-
-	void DrawEdgePin(
-		Edge edge,
-		const Math::Vector2& screen);
-
-	// 距離表示
-	void DrawDistance(
-		Edge edge,
-		const Math::Vector2& screen,
-		float distance);
 
 private:
 
+	//==========================================================
+	// バトル開始地点
+	//==========================================================
 	Math::Vector3 m_pos =
 		Math::Vector3::Zero;
 
+
+	//==========================================================
 	// プレイヤー位置
+	//==========================================================
 	Math::Vector3 m_playerPos =
 		Math::Vector3::Zero;
 
+
+	//==========================================================
+	// バトル範囲
+	//==========================================================
 	float m_battleRange = 1.0f;
 
+
+	//==========================================================
+	// カメラ
+	//==========================================================
 	std::shared_ptr<CameraBase> m_camera;
 
+
+	//==========================================================
+	// ピン画像
+	//==========================================================
 	std::shared_ptr<KdSquarePolygon> m_pinPoly;
 
+	float m_scale = 0.6f;
+
+
+	//==========================================================
 	// 距離表示
+	//==========================================================
 	std::shared_ptr<FontText> m_distanceText;
 
 	float m_distanceTextScale = 1.0f;
 
-	float m_scale = 0.6f;
 
+	//==========================================================
+	// 表示状態
+	//==========================================================
 	bool m_visible = true;
-
-	float m_glowSize = 70.0f;
-
-	int m_glowSteps = 8;
-
-	float m_edgePinSize = 16.0f;
 };

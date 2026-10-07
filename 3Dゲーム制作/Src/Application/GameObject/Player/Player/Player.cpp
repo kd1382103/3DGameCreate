@@ -521,40 +521,32 @@ void Player::UpdateDebug()
 {
 	KdDebugGUI::Instance().ClearLog();
 
-	//========================================
-	// アニメーション一覧
-	//========================================
-	for (int i = 0; ; i++)
-	{
-		auto anim = m_model->GetAnimation(i);
+	////========================================
+	//// アニメーション一覧
+	////========================================
+	//for (int i = 0; ; i++)
+	//{
+	//	auto anim = m_model->GetAnimation(i);
 
-		if (!anim)
-		{
-			break;
-		}
+	//	if (!anim)
+	//	{
+	//		break;
+	//	}
 
-		KdDebugGUI::Instance().AddLog(
-			"%d : %s\n",
-			i,
-			anim->m_name.c_str()
-		);
-	}
+	//	KdDebugGUI::Instance().AddLog(
+	//		"%d : %s\n",
+	//		i,
+	//		anim->m_name.c_str()
+	//	);
+	//}
 
 
-	//KdDebugGUI::Instance().AddLog(
-	//	"%f\n",
-	//	m_nowPos.x
-	//);
-
-	//KdDebugGUI::Instance().AddLog(
-	//	"%f\n",
-	//	m_nowPos.z
-	//);
-
-	//KdDebugGUI::Instance().AddLog(
-	//	"%f\n",
-	//	m_nowPos.y
-	//);
+	KdDebugGUI::Instance().AddLog(
+		"PlayerPos\nX : %f \nY : %f \nZ : %f",
+		m_nowPos.x,
+		m_nowPos.y,
+		m_nowPos.z
+	);
 
 	//KdDebugGUI::Instance().AddLog(
 	//	"Gravity : %f\n",
@@ -565,8 +557,6 @@ void Player::UpdateDebug()
 	//	"m_skillGauge : %f\n",
 	//	m_skillGauge
 	//);
-
-
 
 	//const auto* swordNode = m_model->FindNode("sword");
 	//const auto* armNode = m_model->FindNode("lowerArm.R");
@@ -803,7 +793,7 @@ void Player::DrawSprite()
 		}
 		else
 		{
-			param.color = { 0,0,0,1 };
+			param.color = { 1,1,1,1 };
 		}
 
 		KdShaderManager::Instance().m_spriteShader.DrawFontEx(

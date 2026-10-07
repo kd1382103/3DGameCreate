@@ -31,10 +31,21 @@
 #include<Application/GameObject/Camera/CameraBase.h>
 
 #include<Application/main.h>
-#include <mouse.h>
+
+namespace
+{
+	struct PointLightData
+	{
+		Math::Vector3 PLColor;
+		float PLRadius;
+		Math::Vector3 PLPos;
+	};
+}
 
 void GameScene::Event()
 {
+	InitPointLights();
+
 	//=======================================
 	// ゲーム開始演出
 	//=======================================
@@ -86,6 +97,7 @@ void GameScene::Event()
 	// 設定画面
 	//=======================================
 	UpdateSetting();
+
 }
 
 void GameScene::Init()
@@ -125,6 +137,15 @@ void GameScene::Init()
 	m_swordTrail->SetPlayer(m_player);
 	AddObject(m_swordTrail);
 
+	//=======================================
+	// 環境光
+	//=======================================
+	KdShaderManager::Instance().WorkAmbientController().SetAmbientLight({1,1,1,0.5f});
+
+	//=======================================
+	// 平行光
+	//=======================================
+	KdShaderManager::Instance().WorkAmbientController().SetDirLight({ 1, -1, 1 }, { 0.5f, 0.5f, 0.5f });
 }
 
 void GameScene::InitSetting()
@@ -288,6 +309,42 @@ void GameScene::InitUI()
 		Player::UIType::HPGauge,
 		m_hpGauge
 	);
+}
+
+void GameScene::InitPointLights()
+{
+	const std::vector<PointLightData> lights =
+	{
+		//街灯
+	  { {1, 1, 1}, 7.5f, { -10,6,75 } },
+	  { {1, 1, 1}, 7.5f, { -10,6,85 } },
+	  { {1, 1, 1}, 7.5f, { -30,6,75 } },
+	  { {1, 1, 1}, 7.5f, { -30,6,85 } },
+	  { {1, 1, 1}, 7.5f, { -50,6,75 } },
+	  { {1, 1, 1}, 7.5f, { -70,6,75 } },
+	  { {1, 1, 1}, 7.5f, { -70,6,85 } },
+	  { {1, 1, 1}, 7.5f, { -85,6,86 } },
+	  { {1, 1, 1}, 7.5f, { -85,6,112 } },
+	  { {1, 1, 1}, 7.5f, { -75,6,55 } },
+	  { {1, 1, 1}, 7.5f, { -85,6,55 } },
+	  { {1, 1, 1}, 7.5f, { -85,6,28 } },
+	  { {1, 1, 1}, 7.5f, { -85,6,1 } },
+	  { {1, 1, 1}, 7.5f, { -75,6,1 } },
+
+	  { {1, 1, 1}, 17.5f, { -34,8,10 } },
+	  
+		//信号
+	  { {255, 1, 1}, 6.0f, { -88,10,78 } },
+	};
+
+	for (const auto& light : lights)
+	{
+		KdShaderManager::Instance().WorkAmbientController().AddPointLight(
+			light.PLColor,
+			light.PLRadius,
+			light.PLPos
+		);
+	}
 }
 
 void GameScene::UpdateGameFlow()
