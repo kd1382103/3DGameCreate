@@ -19,6 +19,17 @@ public:
 
 private:
 
+	//==================================================
+	// 剣の位置からPointLightを登録
+	//==================================================
+	void UpdateSwordPointLights(
+		const Math::Vector3& basePos,
+		const Math::Vector3& tipPos
+	);
+
+
+private:
+
 	std::weak_ptr<Player> m_player;
 
 	//==================================================

@@ -84,6 +84,26 @@ void SwordTrail::Update()
 	}
 
 	//==================================================
+	// 剣の原点・剣先を取得
+	//==================================================
+	Math::Vector3 basePos =
+		player->GetSwordBasePos();
+
+	Math::Vector3 tipPos =
+		player->GetSwordTipPos();
+
+	//==================================================
+	// PointLight更新
+	//
+	// トレイルのポイント追加タイミングとは別に
+	// 毎フレーム更新する
+	//==================================================
+	UpdateSwordPointLights(
+		basePos,
+		tipPos
+	);
+
+	//==================================================
 	// タイマー更新
 	//==================================================
 	m_trailTimer += deltaTime;
@@ -93,15 +113,6 @@ void SwordTrail::Update()
 	//==================================================
 	if (m_trailTimer >= TrailInterval)
 	{
-		//==================================================
-		// 剣の原点・剣先を取得
-		//==================================================
-		Math::Vector3 basePos =
-			player->GetSwordBasePos();
-
-		Math::Vector3 tipPos =
-			player->GetSwordTipPos();
-
 		//==================================================
 		// 原点
 		//==================================================
@@ -166,4 +177,65 @@ void SwordTrail::DrawEffect()
 	KdShaderManager::Instance()
 		.m_StandardShader
 		.EndUnLit();
+}
+
+//==============================================================
+// 剣の位置からPointLightを登録
+//==============================================================
+void SwordTrail::UpdateSwordPointLights(
+	const Math::Vector3& basePos,
+	const Math::Vector3& tipPos)
+{
+	auto& ambientController =
+		KdShaderManager::Instance().WorkAmbientController();
+
+	//==================================================
+	// 剣の方向
+	//==================================================
+	Math::Vector3 swordDir = tipPos - basePos;
+
+	//==================================================
+	// 剣の根元～剣先の途中にライトを3つ配置
+	//==================================================
+	const Math::Vector3 lightPos1 =
+		basePos + swordDir * 0.25f;
+
+	const Math::Vector3 lightPos2 =
+		basePos + swordDir * 0.50f;
+
+	const Math::Vector3 lightPos3 =
+		basePos + swordDir * 0.75f;
+
+	//==================================================
+	// PointLight
+	//
+	// Color
+	//	白色
+	//
+	// Radius
+	//	3.0f
+	//
+	// IsBright
+	//	true
+	//==================================================
+	ambientController.AddPointLight(
+		Math::Vector3(1.0f, 1.0f, 1.0f),
+		0.3f,
+		lightPos1,
+		true
+	);
+
+	ambientController.AddPointLight(
+		Math::Vector3(1.0f, 1.0f, 1.0f),
+		0.3f,
+		lightPos2,
+		true
+	);
+
+	ambientController.AddPointLight(
+		Math::Vector3(1.0f, 1.0f, 1.0f),
+		0.3f,
+		lightPos3,
+		true
+	);
 }
