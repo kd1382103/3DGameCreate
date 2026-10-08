@@ -67,31 +67,31 @@ void BattlePin::DrawSprite()
 		return;
 	}
 
-	//==========================================================
-	// 背面チェック
-	// HPGaugeのWorld表示と同じ
-	//==========================================================
-	Math::Vector3 camForward =
-		cam->GetCameraDir();
+	////==========================================================
+	//// 背面チェック
+	//// HPGaugeのWorld表示と同じ
+	////==========================================================
+	//Math::Vector3 camForward =
+	//	cam->GetCameraDir();
 
-	Math::Vector3 toPin =
-		m_pos - cam->GetCameraPos();
+	//Math::Vector3 toPin =
+	//	m_pos - cam->GetCameraPos();
 
-	if (toPin.LengthSquared() < 0.00001f)
-	{
-		return;
-	}
+	//if (toPin.LengthSquared() < 0.00001f)
+	//{
+	//	return;
+	//}
 
-	toPin.Normalize();
+	//toPin.Normalize();
 
-	float dot =
-		camForward.Dot(toPin);
+	//float dot =
+	//	camForward.Dot(toPin);
 
-	// 背面なら描画しない
-	if (dot < 0.0f)
-	{
-		return;
-	}
+	//// 背面なら描画しない
+	//if (dot < 0.0f)
+	//{
+	//	return;
+	//}
 
 	//==========================================================
 	// ワールド座標 → スクリーン座標
@@ -109,79 +109,132 @@ void BattlePin::DrawSprite()
 	//==========================================================
 	// 画面外なら描画しない
 	//==========================================================
+	//const float halfWidth = 640.0f;
+	//const float halfHeight = 360.0f;
+
+	//if (screen.x < -halfWidth ||
+	//	screen.x >  halfWidth ||
+	//	screen.y < -halfHeight ||
+	//	screen.y >  halfHeight)
+	//{
+	//	return;
+	//}
+
+	//==========================================================
+	// 画面内 / 画面外判定
+	//==========================================================
 	const float halfWidth = 640.0f;
 	const float halfHeight = 360.0f;
 
-	if (screen.x < -halfWidth ||
-		screen.x >  halfWidth ||
-		screen.y < -halfHeight ||
-		screen.y >  halfHeight)
+	const bool isOutside =
+		(screen.x < -halfWidth ||
+			screen.x >  halfWidth ||
+			screen.y < -halfHeight ||
+			screen.y >  halfHeight);
+
+	//==========================================================
+	// 画面外の場合
+	// 画面端に小さいBoxを表示
+	//==========================================================
+	if (isOutside)
 	{
-		return;
-	}
+		// 画面中央からバトル地点への方向
+		Math::Vector2 dir = screen;
 
-	//==========================================================
-	// 距離計算
-	//==========================================================
-	Math::Vector3 diff =
-		m_pos - m_playerPos;
+		// 背後などで座標が極端になった場合の対策
+		if (dir.LengthSquared() < 0.00001f)
+		{
+			dir = { 0.0f, -1.0f };
+		}
+		else
+		{
+			dir.Normalize();
+		}
 
-	diff.y = 0.0f;
+		// 画面端から少し内側に表示
+		const float edgeMargin = 30.0f;
 
-	float distance =
-		diff.Length();
+		const float edgeWidth =
+			halfWidth - edgeMargin;
 
-	//==========================================================
-	// スプライト
-	//==========================================================
-	auto& sprite =
-		KdShaderManager::Instance().m_spriteShader;
+		const float edgeHeight =
+			halfHeight - edgeMargin;
 
-	//==========================================================
-	// ピン描画
-	//
-	// HPGaugeと同じく
-	// WorldToScreen → DrawTex
-	//==========================================================
-	Math::Color pinColor =
-	{
-		1.0f,
-		1.0f,
-		1.0f,
-		1.0f
-	};
+		// どちらの端に置くか計算
+		float scaleX =
+			edgeWidth / std::max(std::abs(dir.x), 0.0001f);
 
-	sprite.DrawTex(
-		m_pinPoly->GetMaterial()->m_baseColorTex.get(),
-		static_cast<int>(screen.x),
-		static_cast<int>(screen.y),
-		static_cast<int>(size),
-		static_cast<int>(size),
-		nullptr,
-		&pinColor,
-		{ 0.5f, 0.5f }
-	);
+		float scaleY =
+			edgeHeight / std::max(std::abs(dir.y), 0.0001f);
 
-	//==========================================================
-	// 距離表示
-	//==========================================================
-	if (m_distanceText)
-	{
-		Math::Vector2 distancePos =
-			screen;
+		float scale =
+			std::min(scaleX, scaleY);
 
-		// ピンの下に表示
-		distancePos.y +=
-			size * 0.5f + 20.0f;
+		screen = dir * scale;
 
-		m_distanceText->InitMessage(
-			std::to_string(
-				static_cast<int>(distance)
-			) + "m",
-			distancePos,
-			m_distanceTextScale
+		//==========================================================
+		// 距離計算
+		//==========================================================
+		Math::Vector3 diff =
+			m_pos - m_playerPos;
+
+		diff.y = 0.0f;
+
+		float distance =
+			diff.Length();
+
+		//==========================================================
+		// スプライト
+		//==========================================================
+		auto& sprite =
+			KdShaderManager::Instance().m_spriteShader;
+
+		//==========================================================
+		// ピン描画
+		//
+		// HPGaugeと同じく
+		// WorldToScreen → DrawTex
+		//==========================================================
+		Math::Color pinColor =
+		{
+			1.0f,
+			1.0f,
+			1.0f,
+			1.0f
+		};
+
+		sprite.DrawTex(
+			m_pinPoly->GetMaterial()->m_baseColorTex.get(),
+			static_cast<int>(screen.x),
+			static_cast<int>(screen.y),
+			static_cast<int>(size),
+			static_cast<int>(size),
+			nullptr,
+			&pinColor,
+			{ 0.5f, 0.5f }
 		);
 
-		m_distanceText->DrawSprite();
+		//==========================================================
+		// 距離表示
+		//==========================================================
+		if (m_distanceText)
+		{
+			Math::Vector2 distancePos =
+				screen;
+
+			// ピンの下に表示
+			distancePos.y +=
+				size * 0.5f + 20.0f;
+
+			m_distanceText->InitMessage(
+				std::to_string(
+					static_cast<int>(distance)
+				) + "m",
+				distancePos,
+				m_distanceTextScale
+			);
+
+			m_distanceText->DrawSprite();
+		}
 	}
 }

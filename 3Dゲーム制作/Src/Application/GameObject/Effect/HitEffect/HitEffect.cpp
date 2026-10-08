@@ -186,7 +186,7 @@ void HitEffect::Init(const Math::Vector3& pos)
 	KdEffekseerManager::GetInstance().Play(
 		"EffekseerSample/02_Tktk03/ToonHit.efkefc",
 		pos,
-		0.15f,
+		0.2f,
 		2.0f,
 		false
 	);
