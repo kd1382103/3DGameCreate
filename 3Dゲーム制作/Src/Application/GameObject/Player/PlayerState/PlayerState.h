@@ -137,3 +137,13 @@ public:
 	void Enter(Player& owner) override;
 	void Update(Player& owner) override;
 };
+
+//==============================================================
+// 被弾
+//==============================================================
+class PlayerStateHit : public StateBase<Player>
+{
+public:
+	void Enter(Player& owner) override;
+	void Update(Player& owner) override;
+};

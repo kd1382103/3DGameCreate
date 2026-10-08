@@ -85,6 +85,9 @@ private:
 
 	bool m_isPause = false;
 
+	float m_efkTimeAccumulator = 0.0f;
+
+
 public:
 
 	static KdEffekseerManager& GetInstance()
@@ -175,6 +178,7 @@ private:
 	Effekseer::Handle					m_handle = -1;
 
 	KdEffekseerManager::PlayEfkInfo		m_info = {};
+
 };
 
 #define EffekseerPath "Asset/Data/Effect/"

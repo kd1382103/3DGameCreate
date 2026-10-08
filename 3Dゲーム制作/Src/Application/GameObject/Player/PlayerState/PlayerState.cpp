@@ -293,7 +293,7 @@ void PlayerStateAttack1::Update(Player& owner)
 	//========================================
 	// 攻撃判定
 	//========================================
-	if (t > 12.0f && t < 27.0f) {
+	if (t > 20.0f && t < 27.0f) {
 		//====================================
 		// 攻撃SE
 		//====================================
@@ -375,7 +375,7 @@ void PlayerStateAttack2::Update(Player& owner)
 	//========================================
 	// 攻撃判定
 	//========================================
-	if (t > 11.0f && t < 27.0f)
+	if (t > 13.0f && t < 21.0f)
 	{
 		//====================================
 		// 攻撃SE
@@ -408,7 +408,7 @@ void PlayerStateAttack2::Update(Player& owner)
 	//========================================
 	// 次の攻撃
 	//========================================
-	if (t > 27.0f && t < 40.0f)
+	if (t > 23.0f && t < 35.0f)
 	{
 		if (owner.IsAttackInput())
 		{
@@ -459,7 +459,7 @@ void PlayerStateAttack3::Update(Player& owner)
 	//========================================
 	// 攻撃判定
 	//========================================
-	if (t > 23.0f && t < 28.0f)
+	if (t > 26.0f && t < 30.0f)
 	{
 		//====================================
 		// 攻撃SE
@@ -583,8 +583,9 @@ void PlayerStateSkill::Update(Player& owner)
 	//==========================================================
 	// 28～43F
 	// 薙ぎ払い攻撃
+	// 30～38Fで攻撃判定
 	//==========================================================
-	else if (t < 43.0f)
+	else if (t < 38.0f)
 	{
 		owner.m_dir = Math::Vector3::Zero;
 
@@ -738,22 +739,6 @@ void PlayerStateDodge::Update(Player& owner)
 	const float scaledFrameScale =
 		frameScale * timeScale;
 
-
-	//========================================
-	// 無敵
-	//
-	// Dodge開始から40Fまで
-	//========================================
-	if (t >= 0.0f && t < 40.0f)
-	{
-		owner.m_isInvincible = true;
-	}
-	else
-	{
-		owner.m_isInvincible = false;
-	}
-
-
 	//========================================
 	// 回避移動
 	//
@@ -822,6 +807,8 @@ void PlayerUltimate::Enter(Player& owner)
 	owner.FinishLockOnAfterAction();
 
 	owner.PlayAnimationAuto("Ultimate", false);
+
+	owner.m_isInvincible = true;
 
 	owner.m_dir = Math::Vector3::Zero;
 	owner.m_attackHitOnce = false;
@@ -929,6 +916,11 @@ void PlayerUltimate::Update(Player& owner)
 
 	if (owner.m_animator.IsAnimationEnd())
 	{
+		//========================================
+		// 無敵解除
+		//========================================
+		owner.m_isInvincible = false;
+
 		//========================================
 		// 必殺技カメラ終了
 		//========================================
@@ -1109,4 +1101,46 @@ void PlayerStateLanding::Update(Player& owner)
 
 		return;
 	}
+}
+
+//==============================================================
+// Hit
+//==============================================================
+void PlayerStateHit::Enter(Player& owner)
+{
+	// 攻撃などを解除
+	owner.m_dir = Math::Vector3::Zero;
+
+	owner.m_moving = false;
+	owner.m_running = false;
+
+	owner.m_attackOnce = false;
+	owner.m_skillOnce = false;
+	owner.m_dodgeing = false;
+	owner.m_ultimateOnce = false;
+
+	owner.m_attackHitOnce = false;
+	owner.m_attackSEPlayed = false;
+	owner.m_attackContact = false;
+
+	// 剣の軌跡を停止
+	owner.StopSwordTrail();
+
+	// ロックオン後の処理はここでは行わない
+	// 被弾アニメーション
+	owner.PlayAnimationAuto("Hit", false);
+}
+
+void PlayerStateHit::Update(Player& owner)
+{
+	// Hitアニメーションが終わるまで待つ
+	if (!owner.m_animator.IsAnimationEnd())
+	{
+		return;
+	}
+
+	// 被弾終了
+	owner.stateMachine->ChangeState(
+		std::make_unique<PlayerStateIdle>()
+	);
 }

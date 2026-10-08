@@ -114,6 +114,21 @@ void Player::Update()
 	const float scaledFrameScale = frameScale * timeScale;
 
 	//========================================
+	// ヒットストップ
+	//========================================
+	if (m_hitStopTimer > 0.0f)
+	{
+		m_hitStopTimer -= scaledFrameScale;
+
+		if (m_hitStopTimer > 0.0f)
+		{
+			return;
+		}
+
+		m_hitStopTimer = 0.0f;
+	}
+
+	//========================================
 	// ゲーム開始演出
 	//========================================
 	if (stateMachine->IsCurrent<PlayerStateStartJump>() ||
@@ -179,21 +194,6 @@ void Player::Update()
 	if (m_canGainUltimate && m_attackContact)
 	{
 		AddUltimateEnergy(2.0f * frameScale);
-	}
-
-	//========================================
-	// ヒットストップ
-	//========================================
-	if (m_hitStopTimer > 0.0f)
-	{
-		m_hitStopTimer -= scaledFrameScale;
-
-		if (m_hitStopTimer > 0.0f)
-		{
-			return;
-		}
-
-		m_hitStopTimer = 0.0f;
 	}
 
 	//========================================
@@ -862,20 +862,50 @@ void Player::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRa
 		m_nowPos + Math::Vector3(0, 1.0f, 0)
 	);
 
+	//==========================================================
+   // ヒットストップ
+   //==========================================================
+	m_hitStopTimer = 0.35f;
+
+	//==========================================================
 	// 食らった瞬間のHPを保存
+	//==========================================================
 	m_pendingBeforeHP = m_nowHp;
 
-	// 遅れて減らすHPを計算（まだ適用しない）
+	//==========================================================
+	// 遅れて減らすHPを計算
+	//==========================================================
 	float after = m_nowHp - dmg;
 	if (after < 0) after = 0;
 
 	m_pendingAfterHP = after;
 	m_pendingDamage = dmg;
 
-	// 遅延フレーム（例：10）
+	//==========================================================
+	// 遅延フレーム
+	//==========================================================
 	m_pendingDelay = 10;
 
-	//今は敵に必殺技やスキル等はないため、引数を使わないようにする（追加した時は変更）
+	//==========================================================
+	// 死亡予定の場合
+	//==========================================================
+	if (after <= 0.0f)
+	{
+		// 実際の死亡処理は
+		// UpdatePendingDamage() 側で行う
+	}
+	else
+	{
+		//======================================================
+		// 被弾ステート
+		//======================================================
+		if (stateMachine)
+		{
+			stateMachine->ChangeState(
+				std::make_unique<PlayerStateHit>()
+			);
+		}
+	}
 	(void)isUltimate;
 	(void)finalHit;
 }
@@ -1228,7 +1258,6 @@ void Player::DoAttackHitCheckMulti(
 
 void Player::DoUltimateHitCheck(float range, float width, int damage, float knockBackRate)
 {
-	if (m_isInvincible) return;
 	if (m_ultimateHitCount >= 5) { return; }
 
 	// デバッグ用に現在の判定範囲を保存

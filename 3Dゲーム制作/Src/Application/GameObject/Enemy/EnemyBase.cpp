@@ -107,14 +107,6 @@ void EnemyBase::Update()
 	UpdateGravity(scaledFrameScale);
 
 	//========================================
-	// ステート
-	//========================================
-	if (stateMachine)
-	{
-		stateMachine->Update(*this);
-	}
-
-	//========================================
 	// ヒットストップ
 	//========================================
 	if (m_hitStopTimer > 0.0f)
@@ -127,6 +119,14 @@ void EnemyBase::Update()
 		}
 
 		m_hitStopTimer = 0.0f;
+	}
+
+	//========================================
+	// ステート
+	//========================================
+	if (stateMachine)
+	{
+		stateMachine->Update(*this);
 	}
 
 	//========================================
@@ -410,24 +410,13 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 	//==========================================================
 	// 火花エフェクト(VS機械想定)
 	//==========================================================
-	//if (auto player = m_wpPlayer.lock())
-	//{
-	//	Math::Vector3 attackDir =
-	//		m_nowPos - player->GetPos();
-
-	//	attackDir.y = 0.0f;
-
-	//	if (attackDir.LengthSquared() > 0.0001f)
-	//	{
-	//		attackDir.Normalize();
-	//	}
 
 	//	EffectManager::Instance().Play(
 	//		EffectType::Spark,
 	//		m_nowPos + Math::Vector3(0, 1.0f, 0),
 	//		attackDir
 	//	);
-	//}
+	
 
 	//==========================================================
 	// HP
@@ -456,6 +445,16 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 	// ヒットストップ
 	//==========================================================
 	m_hitStopTimer = 0.35f;
+
+	//==========================================================
+	// 被弾ステート
+	//==========================================================
+	if (stateMachine)
+	{
+		stateMachine->ChangeState(
+			std::make_unique<EnemyStateHit>()
+		);
+	}
 
 	//==========================================================
 	// 攻撃予知解除
@@ -509,13 +508,17 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 	}
 }
 
-
-
 //==============================================================
 // 攻撃判定
 //==============================================================
 void EnemyBase::DoAttackHitCheck(float range)
 {
+	// ヒットストップ中は攻撃判定を行わない
+	if (m_hitStopTimer > 0.0f)
+	{
+		return;
+	}
+
 	if (m_attackHitOnce) return;
 
 	auto player = m_wpPlayer.lock();

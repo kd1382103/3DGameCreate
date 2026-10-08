@@ -204,7 +204,7 @@ void EnemyBaseStateAttack::Update(EnemyBase& owner)
 	//---------------------------------------
 	// ダメージ判定直前で予知終了
 	//---------------------------------------
-	if (t >= 14.0f && owner.m_preAttackActive)
+	if (t >= 30.0f && owner.m_preAttackActive)
 	{
 		owner.m_preAttackActive = false;
 
@@ -218,7 +218,7 @@ void EnemyBaseStateAttack::Update(EnemyBase& owner)
 	//---------------------------------------
 	// 攻撃判定
 	//---------------------------------------
-	if (t > 15.0f && t < 25.0f)
+	if (t > 30.0f && t < 35.0f)
 	{
 		//-----------------------------------
 		// 攻撃SE
@@ -291,3 +291,39 @@ void EnemyBaseStateAttack::Update(EnemyBase& owner)
 		);
 	}
 };
+
+//==============================================================
+// 被弾
+//==============================================================
+void EnemyStateHit::Enter(EnemyBase& owner)
+{
+	owner.PlayAnimationAuto("Hit", false);
+}
+
+void EnemyStateHit::Update(EnemyBase& owner)
+{
+	if (!owner.m_animator.IsAnimationEnd())
+	{
+		return;
+	}
+
+	//==========================================================
+	// チュートリアル中
+	//==========================================================
+	if (owner.m_isTutorialAttack)
+	{
+		// Hit後もチュートリアル攻撃を再開
+		owner.stateMachine->ChangeState(
+			std::make_unique<EnemyBaseStateAttack>()
+		);
+
+		return;
+	}
+
+	//==========================================================
+	// 通常の敵
+	//==========================================================
+	owner.stateMachine->ChangeState(
+		std::make_unique<EnemyBaseStateIdle>()
+	);
+}

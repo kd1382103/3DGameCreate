@@ -42,3 +42,9 @@ public:
 	void Update(EnemyBase& owner) override;
 };
 
+class EnemyStateHit : public StateBase<EnemyBase>
+{
+public:
+	void Enter(EnemyBase& owner) override;
+	void Update(EnemyBase& owner) override;
+};

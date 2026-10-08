@@ -1,4 +1,5 @@
-﻿
+﻿#include <Application/main.h>
+
 void KdEffekseerManager::Create(int w, int h)
 {
 	// エフェクトのレンダラーの作成
@@ -237,8 +238,29 @@ void KdEffekseerManager::UpdateEffekseerEffect()
 {
 	if (m_isPause) { return; }
 
-	m_efkManager->Update();
+	float frameScale =
+		Application::Instance().GetFPSController().GetFrameScale();
 
+	//==================================================
+	// 60FPS基準の時間に変換
+	//
+	// 60FPSなら
+	// 1 / 60 = 1フレーム分
+	//
+	// 120FPSなら
+	// 1 / 120 = 0.5フレーム分
+	//==================================================
+	m_efkTimeAccumulator += frameScale;
+
+	//==================================================
+	// 60FPS基準でEffekseerを更新
+	//==================================================
+	while (m_efkTimeAccumulator >= 1.0f)
+	{
+		m_efkManager->Update();
+
+		m_efkTimeAccumulator -= 1.0f;
+	}
 	m_efkManager->BeginUpdate();
 
 	// ループ再生監視
