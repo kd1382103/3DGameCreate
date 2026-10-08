@@ -210,6 +210,9 @@ void Application::KdBeginUpdate()
 
 	// 空間環境の更新
 	KdShaderManager::Instance().WorkAmbientController().Update();
+
+	//Effekseerの更新
+	KdEffekseerManager::GetInstance().Update();
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -284,6 +287,11 @@ void Application::PreDraw()
 void Application::Draw()
 {
 	SceneManager::Instance().Draw();
+
+	//============================================================
+	// Effekseer描画
+	//============================================================
+	KdEffekseerManager::GetInstance().Draw();
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -355,6 +363,11 @@ bool Application::Init(int w, int h)
 			return false;
 		}
 	}
+
+	//===================================================================
+	// Effekseer初期化
+	//===================================================================
+	KdEffekseerManager::GetInstance().Create(w, h);
 
 	//===================================================================
 	// imgui初期化
@@ -509,6 +522,11 @@ void Application::Release()
 	KdShaderManager::Instance().Release();
 
 	KdAudioManager::Instance().Release();
+
+	//============================================================
+	// Effekseer解放
+	//============================================================
+	KdEffekseerManager::GetInstance().Release();
 
 	KdDirect3D::Instance().Release();
 

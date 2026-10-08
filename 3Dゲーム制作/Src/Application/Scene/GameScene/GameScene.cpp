@@ -204,6 +204,13 @@ void GameScene::InitCamera()
 	// エフェクトマネージャーにカメラを設定
 	//=======================================
 	EffectManager::Instance().SetCamera(m_camera);
+
+	//=======================================
+	// Effekseerにカメラを設定
+	//=======================================
+	KdEffekseerManager::GetInstance().SetCamera(
+		m_tpsCamera->WorkCamera()
+	);
 }
 
 void GameScene::InitStage()

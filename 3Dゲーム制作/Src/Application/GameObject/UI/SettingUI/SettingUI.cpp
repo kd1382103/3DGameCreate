@@ -36,14 +36,6 @@ void SettingUI::Init()
 	m_display->Init();
 
 	//---------------------------------------
-	// Control
-	//---------------------------------------
-	//m_control =
-	//	std::make_shared<SettingControl>();
-	//
-	//m_control->Init();
-
-	//---------------------------------------
 	// 初期状態
 	//---------------------------------------
 	m_visible = false;
@@ -88,15 +80,6 @@ void SettingUI::Update()
 		{
 			m_display->Update();
 		}
-
-		break;
-
-	//case SettingTab::Control:
-
-	//	if (m_control)
-	//	{
-	//		m_control->Update();
-	//	}
 
 		break;
 	}
@@ -193,8 +176,7 @@ void SettingUI::DrawMenu()
 	const char* menuText[] =
 	{
 		"音声設定",
-		"ディスプレイ設定",
-		"操作設定"
+		"ディスプレイ設定"
 	};
 
 	int menuCount =
@@ -213,8 +195,8 @@ void SettingUI::DrawMenu()
 
 		param.pos =
 		{
-		m_menuX,
-		y
+			m_menuX,
+			y
 		};
 
 		param.scale = 1.0f;
@@ -278,15 +260,6 @@ void SettingUI::DrawCurrentSetting()
 		}
 
 		break;
-
-	//case SettingTab::Control:
-
-	//	if (m_control)
-	//	{
-	//		m_control->DrawSprite();
-	//	}
-
-	//	break;
 	}
 }
 

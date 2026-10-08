@@ -4,7 +4,6 @@
 
 class SettingAudio;
 class SettingDisplay;
-class SettingControl;
 
 class SettingUI : public BaseObject
 {
@@ -52,7 +51,6 @@ private:
 	{
 		Audio,
 		Display,
-		Control,
 
 		Count
 	};
@@ -109,7 +107,6 @@ private:
 	//---------------------------------------
 	std::shared_ptr<SettingAudio>   m_audio;
 	std::shared_ptr<SettingDisplay> m_display;
-	std::shared_ptr<SettingControl> m_control;
 
 	//============================================================
 	// 左側メニュー
