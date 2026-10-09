@@ -208,6 +208,9 @@
     <Filter Include="Src\Application\GameObject\Effect\UltimateEffect">
       <UniqueIdentifier>{f55bc234-ae2d-4465-9746-dad35b3c2dac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\UI\PlayerUI\UIBackground">
+      <UniqueIdentifier>{bdede826-cc7f-4c6c-af3a-990dcffc3186}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -501,6 +504,9 @@
     <ClInclude Include="Src\Application\GameObject\Effect\UltimateEffect\UltimateEffect.h">
       <Filter>Src\Application\GameObject\Effect\UltimateEffect</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\UIBackground\UIBackground.h">
+      <Filter>Src\Application\GameObject\UI\PlayerUI\UIBackground</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -757,6 +763,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Effect\UltimateEffect\UltimateEffect.cpp">
       <Filter>Src\Application\GameObject\Effect\UltimateEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\UIBackground\UIBackground.cpp">
+      <Filter>Src\Application\GameObject\UI\PlayerUI\UIBackground</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -23,6 +23,8 @@
 #include <Application/GameObject/UI/BattolPin/BattlePin.h>
 #include <Application/GameObject/UI/GameClearBotton/GameClearButton.h>
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
+#include <Application/GameObject/UI/PlaeyrUI/UIBackground/UIBackground.h>
+
 #include <Application/GameObject/Effect/EffectManager.h>
 
 #include <Application/GameObject/Effect/SwordTrail/SwordTrail.h>
@@ -71,12 +73,12 @@ void GameScene::Event()
 	//=======================================
 	// BattlePinへプレイヤー位置を渡す
 	//=======================================
-	if (m_battlePin && m_player)
-	{
-		m_battlePin->SetPlayerPos(
-			m_player->GetPos()
-		);
-	}
+	//if (m_battlePin && m_player)
+	//{
+	//	m_battlePin->SetPlayerPos(
+	//		m_player->GetPos()
+	//	);
+	//}
 
 	//=======================================
 	// デバッグ
@@ -274,6 +276,16 @@ void GameScene::InitTutorialEnemy()
 
 void GameScene::InitUI()
 {
+	//=======================================
+	// プレイヤーUI背景
+	//=======================================
+	m_playerUIBackground = std::make_shared<UIBackground>();
+	m_playerUIBackground->Init();
+	m_playerUIBackground->InitPlayerUI();
+	m_playerUIBackground->SetVisible(true);
+
+	AddObject(m_playerUIBackground);
+
 	//=======================================
 	// スキルゲージ
 	//=======================================
@@ -1223,9 +1235,9 @@ void GameScene::InitBattleStartPin()
 	//---------------------------------------
 	// プレイヤー位置
 	//---------------------------------------
-	m_battlePin->SetPlayerPos(
-		m_player->GetPos()
-	);
+	//m_battlePin->SetPlayerPos(
+	//	m_player->GetPos()
+	//);
 
 	//---------------------------------------
 	// 戦闘開始範囲
@@ -1243,6 +1255,24 @@ void GameScene::InitBattleStartPin()
 void GameScene::DebugSkipToBattle(int nextBattleNo)
 {
 	//========================================
+	// チュートリアル文字を消す
+	//========================================
+	if (m_tutorialText)
+	{
+		m_tutorialText->SetExpired();
+		m_tutorialText = nullptr;
+	}
+
+	//========================================
+	// チュートリアル背景を消す
+	//========================================
+	if (m_tutorialBackground)
+	{
+		m_tutorialBackground->SetExpired();
+		m_tutorialBackground = nullptr;
+	}
+
+	//========================================
 	// チュートリアル終了
 	//========================================
 	m_tutorialStep = TutorialStep::Finish;
@@ -1252,13 +1282,6 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	{
 		m_tutorialEnemy->SetExpired();
 		m_tutorialEnemy = nullptr;
-	}
-
-	// チュートリアル文字を消す
-	if (m_tutorialText)
-	{
-		m_tutorialText->SetExpired();
-		m_tutorialText = nullptr;
 	}
 
 	//========================================
@@ -1312,6 +1335,14 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 
 void GameScene::SetGameUIVisible(bool visible)
 {
+	//---------------------------------------
+	// プレイヤーUI背景
+	//---------------------------------------
+	if (m_playerUIBackground)
+	{
+		m_playerUIBackground->SetVisible(visible);
+	}
+
 	//---------------------------------------
 	// プレイヤーUI
 	//---------------------------------------
@@ -1395,6 +1426,47 @@ void GameScene::UpdateTutorialText()
 	}
 
 	//---------------------------------------
+	// チュートリアル終了時は背景も消す
+	//---------------------------------------
+	if (!m_tutorialBackground)
+	{
+		m_tutorialBackground =
+			std::make_shared<UIBackground>();
+
+		m_tutorialBackground->InitTutorial(
+			{ 0.0f, 300.0f },
+			450.0f,
+			100.0f
+		);
+
+		AddObject(m_tutorialBackground);
+	}
+
+	//---------------------------------------
+	// チュートリアル背景を初回だけ生成
+	//---------------------------------------
+	if (!m_tutorialBackground)
+	{
+		m_tutorialBackground = std::make_shared<UIBackground>();
+
+		m_tutorialBackground->Init();
+		m_tutorialBackground->InitTutorial(
+			{ 0.0f, 300.0f },
+			700.0f,
+			100.0f
+		);
+
+		m_tutorialBackground->SetVisible(true);
+
+		// 文字より先に登録して背景を描画する
+		AddObject(m_tutorialBackground);
+	}
+	else
+	{
+		m_tutorialBackground->SetVisible(true);
+	}
+
+	//---------------------------------------
 	// 新しい文字を作る
 	//---------------------------------------
 	m_tutorialText = std::make_shared<FontText>();
@@ -1404,7 +1476,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Move:
 		m_tutorialText->InitMessage(
 			"キャラクターの移動\nWASDで前後左右に移動",
-			{ 0.0f, 300.0f },
+			{ 0.0f, 320.0f },
 			1.0f
 		);
 		break;
@@ -1412,7 +1484,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::LockOn:
 		m_tutorialText->InitMessage(
 			"'Q'を押すと一番近い敵をロックオンする",
-			{ 0.0f, 300.0f },
+			{ 0.0f, 320.0f },
 			1.0f
 		);
 		break;
@@ -1420,7 +1492,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Attack:
 		m_tutorialText->InitMessage(
 			"左クリックで攻撃ができる\nコンボがあり３段まで攻撃できる ",
-			{ 0.0f, 300.0f },
+			{ 0.0f, 330.0f },
 			1.0f
 		);
 		break;
@@ -1428,7 +1500,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Skill:
 		m_tutorialText->InitMessage(
 			"赤紫のスキルゲージが一定量の以上なら\nEでスキル攻撃が可能",
-			{ 0.0f, 300.0f },
+			{ 0.0f, 320.0f },
 			1.0f
 		);
 		break;
@@ -1436,7 +1508,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Ultimate:
 		m_tutorialText->InitMessage(
 			"スキルゲージの下のポイントが500なった時\nSPACEを押すと強力な攻撃が可能",
-			{ 0.0f, 300.0f },
+			{ 0.0f, 320.0f },
 			1.0f
 		);
 		break;
@@ -1444,7 +1516,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Dodge:
 		m_tutorialText->InitMessage(
 			"敵は攻撃してきたときに発光する\n発光時に右クリックすると回避",
-			{ 0.0f, 300.0f },
+			{ 0.0f, 320.0f },
 			1.0f
 		);
 		break;

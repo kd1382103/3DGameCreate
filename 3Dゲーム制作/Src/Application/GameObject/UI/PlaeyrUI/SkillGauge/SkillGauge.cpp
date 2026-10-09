@@ -25,10 +25,10 @@ void SkillGauge::DrawSprite()
 		return;
 	}
 
-	float fullWidth = 200.0f;     // ゲージ最大幅
+	float fullWidth = 225.0f;     // ゲージ最大幅
 	float nowWidth = fullWidth * rate;
-	float x = -500.0f;  
-	float y = 250.0f; 
+	float x = -575.0f;  
+	float y = 290.0f; 
 
 	Math::Color color = { 1, 1, 1, 1 };
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;

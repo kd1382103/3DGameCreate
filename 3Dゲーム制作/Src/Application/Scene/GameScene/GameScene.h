@@ -2,9 +2,11 @@
 
 #include "../BaseScene/BaseScene.h"
 
+//カメラ
 class CameraBase;
 class TPSCamera;
 
+//キャラクター
 class Player;
 class Enemy1;
 class Enemy2;
@@ -14,15 +16,18 @@ class Enemy5;
 class TutorialEnemy;
 class Boss;
 
+//ステージ
 class Stage;
 class Sky;
 
+//UI・テキスト・エフェクト
 class SkillGauge;
 class HPGauge;
 class GameClearButton;
 class FontText;
 class SettingUI;
 class BattlePin;
+class UIBackground;
 class SwordTrail;
 
 class GameScene : public BaseScene
@@ -221,6 +226,8 @@ private:
 
 	std::shared_ptr<GameClearButton> m_gameClearButton;
 
+	std::shared_ptr<UIBackground> m_playerUIBackground;
+	std::shared_ptr<UIBackground> m_tutorialBackground;
 
 	//========================================
 	// テキスト

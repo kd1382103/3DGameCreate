@@ -817,7 +817,7 @@ void Player::DrawSprite()
 	{
 		KdSpriteShader::FontParam param;
 
-		param.pos = { -500,180 };
+		param.pos = { -575,230 };
 		param.scale = 2.0f;
 		param.pivot = { 0,0 };
 		param.angle = 0;

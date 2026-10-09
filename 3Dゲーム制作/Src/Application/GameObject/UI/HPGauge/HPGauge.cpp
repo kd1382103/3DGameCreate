@@ -36,7 +36,7 @@ void HPGauge::DrawSprite()
 	//===========================
 	// ゲージサイズ計算
 	//===========================
-	float fullWidth = 200.0f;
+	float fullWidth = 225.0f;
 
 	float rate = m_hp / m_hpMax;
 	rate = std::clamp(rate, 0.0f, 1.0f);
@@ -67,8 +67,8 @@ void HPGauge::DrawSprite()
 	if (m_mode == GaugeMode::Screen)
 	{
 		// プレイヤー用固定座標
-		x = -500.0f;
-		y = 275.0f;
+		x = -575.0f;
+		y = 320.0f;
 	}
 	else
 	{
@@ -86,9 +86,9 @@ void HPGauge::DrawSprite()
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;
 
 	//===========================
-		// ① 最大HP背景（黒）
-		// 常に最大幅
-		//===========================
+	// ① 最大HP背景（黒）
+	// 常に最大幅
+	//===========================
 	Math::Color backColor = { 0, 0, 0, 1 };
 
 	sprite.DrawTex(
