@@ -19,6 +19,7 @@ class Boss;
 //ステージ
 class Stage;
 class Sky;
+class BattleArea;
 
 //UI・テキスト・エフェクト
 class SkillGauge;
@@ -99,6 +100,7 @@ private:
 	void InitCamera();
 	void InitStage();
 	void InitSky();
+	void InitBattleArea();
 	void InitPlayer();
 	void InitTutorialEnemy();
 	void InitUI();
@@ -212,6 +214,7 @@ private:
 	//========================================
 	std::shared_ptr<Stage> m_stage;
 	std::shared_ptr<Sky> m_sky;
+	std::shared_ptr<BattleArea> m_battleArea;
 
 	//========================================
 	// バトル開始位置表示ピン

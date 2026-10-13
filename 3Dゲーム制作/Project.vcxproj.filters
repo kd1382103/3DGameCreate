@@ -211,6 +211,9 @@
     <Filter Include="Src\Application\GameObject\UI\PlayerUI\UIBackground">
       <UniqueIdentifier>{bdede826-cc7f-4c6c-af3a-990dcffc3186}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Stages\BattleArea">
+      <UniqueIdentifier>{a6694851-6481-4768-ae0a-cd550cd9a004}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -507,6 +510,9 @@
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\UIBackground\UIBackground.h">
       <Filter>Src\Application\GameObject\UI\PlayerUI\UIBackground</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Stages\BattleArea\BattleArea.h">
+      <Filter>Src\Application\GameObject\Stages\BattleArea</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -766,6 +772,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\UIBackground\UIBackground.cpp">
       <Filter>Src\Application\GameObject\UI\PlayerUI\UIBackground</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Stages\BattleArea\BattleArea.cpp">
+      <Filter>Src\Application\GameObject\Stages\BattleArea</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

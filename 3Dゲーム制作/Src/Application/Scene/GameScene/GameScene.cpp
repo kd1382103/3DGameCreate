@@ -15,6 +15,7 @@
 
 #include<Application/GameObject/Stages/Stage/Stage.h>
 #include<Application/GameObject/Stages/Sky/Sky.h>
+#include <Application/GameObject/Stages/BattleArea/BattleArea.h>
 
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
@@ -125,6 +126,7 @@ void GameScene::Init()
 	InitSetting();
 	InitAudio();
 	InitStage();
+	InitBattleArea();
 	InitSky();
 	InitCamera();
 	InitPlayer();
@@ -237,6 +239,25 @@ void GameScene::InitSky()
 	AddObject(m_sky);
 }
 
+void GameScene::InitBattleArea()
+{
+	m_battleArea = std::make_shared<BattleArea>();
+
+	m_battleArea->Init();
+
+	// 最初の戦闘エリア
+	m_battleArea->SetArea(
+		GetBattleStartPos(m_battleNo),
+		5,
+		5
+	);
+
+	// 最初はバリアを出さない
+	m_battleArea->SetBarrierActive(false);
+
+	AddObject(m_battleArea);
+}
+
 void GameScene::InitPlayer()
 {
 	//=======================================
@@ -244,6 +265,8 @@ void GameScene::InitPlayer()
 	//=======================================
 	m_player = std::make_shared<Player>();
 	m_player->Init();
+	m_player->SetBattleArea(m_battleArea);
+	m_player->SetTutorialMode(true);
 	m_player->SetPos(Math::Vector3{ 0, 0, 0 });
 
 	//=======================================
@@ -349,11 +372,34 @@ void GameScene::InitPointLights()
 	  { {1, 1, 1}, 10.0f, { -85,6,28 } },
 	  { {1, 1, 1}, 10.0f, { -85,6,1 } },
 	  { {1, 1, 1}, 10.0f, { -75,6,1 } },
-
-
+	  { {1, 1, 1}, 10.0f, { 20,6,10 } },
+	  { {1, 1, 1}, 10.0f, { 20,6,30 } },
+	  { {1, 1, 1}, 10.0f, { -7,6,-7 } },
+	  { {1, 1, 1}, 10.0f, { 5,6,10 } },
+	  { {1, 1, 1}, 10.0f, { 5,6,30 } },
+	  { {1, 1, 1}, 10.0f, { 32,6,10 } },
+	  { {1, 1, 1}, 10.0f, { 32,6,30 } },
+	  { {1, 1, 1}, 10.0f, { -6,6,45 } },
+	  { {1, 1, 1}, 10.0f, { 34,6,45 } },
+	  { {1, 1, 1}, 10.0f, { 34,6,74 } },
+	  { {1, 1, 1}, 10.0f, { 45,6,85 } },
+	  { {1, 1, 1}, 10.0f, { 46,6,46 } },
+	  { {1, 1, 1}, 10.0f, { -6,6,20 } },
+	  { {1, 1, 1}, 10.0f, { 46,6,20 } },
+	  { {1, 1, 1}, 10.0f, { 46,6,-6 } },
+	  { {1, 1, 1}, 10.0f, { 20,6,-6 } },
+	  { {1, 1, 1}, 10.0f, { 20,6,45 } },
+	  { {1, 1, 1}, 10.0f, { 10,6,75 } },
+	  { {1, 1, 1}, 10.0f, { 10,6,85 } },
+	  { {1, 1, 1}, 10.0f, { -85,6,-15 }},
+	  { {1, 1, 1}, 10.0f, { -70,6,-15 }},
+	  { {1, 1, 1}, 10.0f, { -70,6,-5 }},
+	  { {1, 1, 1}, 10.0f, { -53,6,-14 }},
+	  { {1, 1, 1}, 10.0f, { -32,6,-15 }},
+	  { {1, 1, 1}, 10.0f, { -12,6,-4 }},
 
 	  //boss戦エリアのライト
-	  { {1, 1, 1}, 18.0f, { -34,8,10 } },
+	  { {1, 1, 1}, 20.0f, { -34,8,10 } },
 	  
 	};
 
@@ -509,6 +555,14 @@ void GameScene::UpdateTutorial()
 	case TutorialStep::Finish:
 	{
 		//---------------------------------------
+		// チュートリアル背景を非表示
+		//---------------------------------------
+		if (m_tutorialBackground)
+		{
+			m_tutorialBackground->SetVisible(false);
+		}
+
+		//---------------------------------------
 		// チュートリアル敵を削除
 		//---------------------------------------
 		if (m_tutorialEnemy)
@@ -548,6 +602,13 @@ void GameScene::UpdateTutorialComplete()
 			m_battlePin->SetVisible(true);
 		}
 	}
+
+	// チュートリアル終了
+	if (m_player)
+	{
+		m_player->SetTutorialMode(false);
+		m_player->ResetLockOnTarget();
+	}
 }
 
 void GameScene::UpdatePrepare()
@@ -570,6 +631,19 @@ void GameScene::UpdatePrepare()
 	// 戦闘エリアに入ったのでピンを消す
 	//=======================================
 	m_battlePin->SetVisible(false);
+
+	//// 戦闘エリアを現在の戦闘位置に設定
+	//if (m_battleArea)
+	//{
+	//	m_battleArea->SetArea(
+	//		GetBattleStartPos(m_battleNo),
+	//		10,
+	//		10
+	//	);
+
+	//	// バリアを有効化
+	//	m_battleArea->SetBarrierActive(true);
+	//}
 
 	//---------------------------------------
 	// ボス戦
@@ -621,6 +695,14 @@ void GameScene::UpdateBattle()
 	m_battleStarted = false;
 
 	//---------------------------------------
+	// 戦闘終了：バリア解除
+	//---------------------------------------
+	if (m_battleArea)
+	{
+		m_battleArea->SetBarrierActive(false);
+	}
+
+	//---------------------------------------
 	// playerのHP回復
 	//---------------------------------------
 	if (m_player)
@@ -640,6 +722,20 @@ void GameScene::UpdateBattle()
 	// 次の戦闘地点を取得
 	//---------------------------------------
 	m_battleStartPos = GetBattleStartPos(m_battleNo);
+
+	//---------------------------------------
+	// 次の戦闘エリアを設定
+	//---------------------------------------
+	if (m_battleArea)
+	{
+		m_battleArea->SetArea(
+			m_battleStartPos,
+			15.0f,
+			15.0f
+		);
+
+		m_battleArea->SetBarrierActive(false);
+	}
 
 	//---------------------------------------
 	// ピンを次の戦闘地点へ移動
@@ -1273,6 +1369,14 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	}
 
 	//========================================
+	// ロックオン解除
+	//========================================
+	if (m_player)
+	{
+		m_player->ResetLockOnTarget();
+	}
+
+	//========================================
 	// チュートリアル終了
 	//========================================
 	m_tutorialStep = TutorialStep::Finish;
@@ -1285,11 +1389,16 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	}
 
 	//========================================
-	// 戦闘番号
+	// 戦闘番号 & バリア解除
 	//========================================
 	m_battleNo = nextBattleNo;
 	m_battleStarted = false;
 
+	// デバッグ移動時はバリアを解除
+	if (m_battleArea)
+	{
+		m_battleArea->SetBarrierActive(false);
+	}
 	//========================================
 	// BattlePinの位置
 	//========================================
@@ -1423,23 +1532,6 @@ void GameScene::UpdateTutorialText()
 	{
 		m_tutorialText->SetExpired();
 		m_tutorialText = nullptr;
-	}
-
-	//---------------------------------------
-	// チュートリアル終了時は背景も消す
-	//---------------------------------------
-	if (!m_tutorialBackground)
-	{
-		m_tutorialBackground =
-			std::make_shared<UIBackground>();
-
-		m_tutorialBackground->InitTutorial(
-			{ 0.0f, 300.0f },
-			450.0f,
-			100.0f
-		);
-
-		AddObject(m_tutorialBackground);
 	}
 
 	//---------------------------------------

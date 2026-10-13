@@ -402,9 +402,26 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 	//==========================================================
 	// 被弾エフェクト（VS人想定）
 	//==========================================================
+
+	auto cam = m_wpCamera.lock();
+
+	Math::Vector3 hitEffectPos = m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+	if (cam)
+	{
+		Math::Vector3 camForward = cam->GetCameraDir();
+		camForward.y = 0.0f;
+		
+		if (camForward.LengthSquared() > 0.0001f)
+		{
+			camForward.Normalize();
+			hitEffectPos -= camForward * 0.5f;
+		}
+	}
+
 	EffectManager::Instance().Play(
 		EffectType::Hit,
-		m_nowPos + Math::Vector3(0, 1.0f, 0)
+		hitEffectPos
 	);
 
 	//==========================================================

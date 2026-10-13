@@ -3,6 +3,7 @@
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/Boss/BossBase.h>
+#include <Application/GameObject/Stages/BattleArea/BattleArea.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
 #include <Application/GameObject/UI/FontText/FontText.h>
@@ -249,13 +250,18 @@ void Player::UpdateInput()
 		{
 			if (m_canDodge)
 			{
+				m_canDodge = false;
+
 				m_dodgeing = true;
 				m_justDodgeSuccess = true;
 
 				//========================================
 				// 必殺技ポイント加算
 				//========================================
-				AddUltimateEnergy(10.0f);
+				if (!m_isTutorial)
+				{
+					AddUltimateEnergy(10.0f);
+				}
 
 				//========================================
 				// 回避スロー
@@ -786,6 +792,14 @@ void Player::PostUpdate()
 	// 敵との接触判定
 	ResolveContact();
 	
+	////========================================
+	//// 戦闘エリア外への移動を制限
+	////========================================
+	//if (auto battleArea = m_wpBattleArea.lock())
+	//{
+	//	m_nowPos = battleArea->ClampPosition(m_nowPos);
+	//}
+
 	//================================================================================
 	// ワールド行列更新
 	//================================================================================

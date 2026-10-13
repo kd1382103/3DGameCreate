@@ -3,7 +3,7 @@
 
 class CameraBase;
 class HPGauge;
-
+class BattleArea;
 class EnemyBase;
 
 // 前方宣言：ステートマシン
@@ -212,6 +212,12 @@ public:
 		return m_isSwordTrailActive;
 	}
 
+	// チュートリアル中かどうかを設定
+	void SetTutorialMode(bool isTutorial)
+	{
+		m_isTutorial = isTutorial;
+	}
+
 	//========================================
 	// 死亡
 	//========================================
@@ -230,6 +236,14 @@ public:
 	bool IsGameEnd() const
 	{
 		return m_isGameEnd;
+	}
+
+	//========================================
+	// 戦闘エリア設定
+	//========================================
+	void SetBattleArea(const std::shared_ptr<BattleArea>& battleArea)
+	{
+		m_wpBattleArea = battleArea;
 	}
 
 public:
@@ -259,6 +273,11 @@ public:
 	// 回避
 	//========================================
 	Math::Vector3 m_dodgeDir = Math::Vector3::Zero;
+
+	//========================================
+	// 戦闘エリア
+	//========================================
+	std::weak_ptr<BattleArea> m_wpBattleArea;
 
 	bool m_isInvincible = false;
 	bool m_canDodge = false;
@@ -316,6 +335,12 @@ public:
 	// ロックオン表示を切り替える
 	void SetLockOnTarget(KdGameObject* target);
 
+	void ResetLockOnTarget()
+	{
+		SetLockOnTarget(nullptr);
+		m_pendingLockOn = false;
+	}
+
 	void FinishLockOnAfterAction();
 
 	//========================================
@@ -356,6 +381,10 @@ public:
 	bool m_ultimateActivated = false;
 
 	bool m_ultimateEffectPlayed = false;
+
+
+	// チュートリアル中フラグ
+	bool m_isTutorial = true;
 
 	//========================================
 	// HP
