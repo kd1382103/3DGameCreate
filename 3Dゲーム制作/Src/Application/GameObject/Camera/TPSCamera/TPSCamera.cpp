@@ -7,19 +7,24 @@
 
 void TPSCamera::Init()
 {
-	// 親クラスの初期化呼び出し
 	CameraBase::Init();
 
-	// 注視点
+	// 通常カメラの初期位置
 	m_mLocalPos =
 		Math::Matrix::CreateTranslation(
-			0, 1.5f, -4.0f
+			0.0f,
+			1.5f,
+			-4.0f
 		);
 
+	// 視野角は常に60度
 	m_nowFov = 60.0f;
 	m_targetFov = 60.0f;
-
 	m_spCamera->SetProjectionMatrix(m_nowFov);
+
+	// 回避カメラ初期化
+	m_dodgeCameraActive = false;
+	m_dodgeCameraDistance = 4.0f;
 
 	SetCursorPos(
 		m_FixMousePos.x,
@@ -27,13 +32,17 @@ void TPSCamera::Init()
 	);
 }
 
+
 void TPSCamera::PostUpdate()
 {
 	///////////////////////////////////////////////////////////////
 	// 入力
+	///////////////////////////////////////////////////////////////
 	auto& input = KdInputManager::Instance();
 
+	//=============================================================
 	// マウスカーソル自由化の切り替え
+	//=============================================================
 	if (input.IsPress("ToggleKey"))
 	{
 		m_mouseFree = !m_mouseFree;
@@ -49,6 +58,29 @@ void TPSCamera::PostUpdate()
 		UpdateRotateByMouse();
 	}
 
+	//=============================================================
+	// 回避カメラの距離補間
+	// 通常時：4.0
+	// 回避時：2.5
+	//=============================================================
+	float targetDodgeDistance =
+		m_dodgeCameraActive ? 2.5f : 4.0f;
+
+	float cameraLerp =
+		Application::Instance().GetDeltaTime() * 8.0f;
+
+	if (cameraLerp > 1.0f)
+	{
+		cameraLerp = 1.0f;
+	}
+
+	m_dodgeCameraDistance +=
+		(targetDodgeDistance - m_dodgeCameraDistance)
+		* cameraLerp;
+
+	//=============================================================
+	// 視野角
+	//=============================================================
 	m_nowFov +=
 		(m_targetFov - m_nowFov);
 
@@ -56,7 +88,7 @@ void TPSCamera::PostUpdate()
 		m_nowFov
 	);
 
-	//////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////
 
 	//=============================================================
 	// ターゲットの行列
@@ -144,7 +176,8 @@ void TPSCamera::PostUpdate()
 		//=========================================================
 		// 移動時間
 		//=========================================================
-		m_ultimateMoveTime += Application::Instance().GetDeltaTime();
+		m_ultimateMoveTime +=
+			Application::Instance().GetDeltaTime();
 
 		float t =
 			m_ultimateMoveTime /
@@ -366,10 +399,18 @@ void TPSCamera::PostUpdate()
 		else
 		{
 			//=========================================================
-			// 通常時
+			// 通常カメラ
+			// 回避中はカメラ距離を短くする
 			//=========================================================
+			Math::Matrix localCameraPos =
+				Math::Matrix::CreateTranslation(
+					0.0f,
+					1.5f,
+					-m_dodgeCameraDistance
+				);
+
 			m_mWorld =
-				m_mLocalPos *
+				localCameraPos *
 				m_mRotation *
 				_targetMat;
 		}
@@ -488,6 +529,7 @@ void TPSCamera::PostUpdate()
 		}
 	}
 }
+
 //=============================================================
 // 必殺技カメラ開始
 //=============================================================
@@ -551,14 +593,17 @@ void TPSCamera::StartUltimateCamera()
 		right * sinf(angle);
 
 	cameraDir.y = 0.0f;
-	cameraDir.Normalize();
+
+	if (cameraDir.LengthSquared() > 0.0001f)
+	{
+		cameraDir.Normalize();
+	}
 
 	//=========================================================
 	// 目的地
 	//=========================================================
 	m_ultimateMoveTargetPos =
 		player->GetPos();
-
 
 	m_ultimateMoveTargetPos +=
 		cameraDir * m_ultimateCameraDistance;
@@ -574,6 +619,7 @@ void TPSCamera::StartUltimateCamera()
 	m_ultimateCameraMove =
 		UltimateCameraMove::Start;
 }
+
 //=============================================================
 // 必殺技カメラ終了
 //=============================================================

@@ -74,12 +74,12 @@ void GameScene::Event()
 	//=======================================
 	// BattlePinへプレイヤー位置を渡す
 	//=======================================
-	//if (m_battlePin && m_player)
-	//{
-	//	m_battlePin->SetPlayerPos(
-	//		m_player->GetPos()
-	//	);
-	//}
+	if (m_battlePin && m_player)
+	{
+		m_battlePin->SetPlayerPos(
+			m_player->GetPos()
+		);
+	}
 
 	//=======================================
 	// デバッグ
@@ -397,6 +397,7 @@ void GameScene::InitPointLights()
 	  { {1, 1, 1}, 10.0f, { -53,6,-14 }},
 	  { {1, 1, 1}, 10.0f, { -32,6,-15 }},
 	  { {1, 1, 1}, 10.0f, { -12,6,-4 }},
+	  { {1, 1, 1}, 10.0f, { -50,6,85 }},
 
 	  //boss戦エリアのライト
 	  { {1, 1, 1}, 20.0f, { -34,8,10 } },
@@ -1263,59 +1264,243 @@ void GameScene::UpdateDebug()
 
 void GameScene::SpawnBattleEnemies()
 {
-	SpawnEnemy(m_enemy1, m_battleNo);
-	SpawnEnemy(m_enemy2, m_battleNo);
-	SpawnEnemy(m_enemy3, m_battleNo);
-	SpawnEnemy(m_enemy4, m_battleNo);
-	SpawnEnemy(m_enemy5, m_battleNo);
+	//------------------------------------------
+	// 既存の敵をクリア
+	//------------------------------------------
+	ClearBattleEnemies();
+
+	std::vector<EnemySpawnInfo> spawnList;
+
+	//------------------------------------------
+	// 戦闘フェーズごとの敵配置
+	//------------------------------------------
+	switch (m_battleNo)
+	{
+	case 0:
+		spawnList =
+		{
+			// 種類、数、基準位置、間隔、列数、向き
+			{ EnemyType::Enemy1, 3,
+				{ -3, 0, 30 }, { 6, 0, 5 }, 3, 180.0f },
+
+			{ EnemyType::Enemy2, 2,
+				{ 3, 0, 30 }, { 10, 0, 0 }, 2, 180.0f }
+		};
+		break;
+
+	case 1:
+		spawnList =
+		{
+			{ EnemyType::Enemy1, 3,
+				{ -4, 0, 85 }, { 6, 0, 5 }, 3, 180.0f },
+
+			{ EnemyType::Enemy2, 2,
+				{ -4, 0, 75 }, { 10, 0, 0 }, 2, 180.0f }
+		};
+		break;
+
+	case 2:
+		spawnList =
+		{
+			{ EnemyType::Enemy2, 3,
+				{ -80, 0, 85 }, { 10, 0, 0 }, 3, 180.0f },
+
+			{ EnemyType::Enemy3, 2,
+				{ -80, 0, 80 }, { 6, 0, 5 }, 3, 180.0f }
+		};
+		break;
+
+	case 3:
+		spawnList =
+		{
+			{ EnemyType::Enemy3, 4,
+				{ -75, 0, 125 }, { 6, 0, 5 }, 3, 180.0f }
+		};
+		break;
+
+	case 4:
+		spawnList =
+		{
+			{ EnemyType::Enemy4, 3,
+				{ -82, 0, 20 }, { 6, 0, 5 }, 3, 180.0f },
+
+			{ EnemyType::Enemy5, 1,
+				{ -78, 0, 20 }, { 6, 0, 5 }, 3, 180.0f }
+		};
+		break;
+
+	default:
+		return;
+	}
+
+	//------------------------------------------
+	// 敵を生成して隊列に配置
+	//------------------------------------------
+	for (const auto& info : spawnList)
+	{
+		// 出現条件を満たさない敵は生成しない
+		switch (info.type)
+		{
+		case EnemyType::Enemy1:
+			if (!Enemy1::ShouldSpawn(m_battleNo))
+				continue;
+			break;
+
+		case EnemyType::Enemy2:
+			if (!Enemy2::ShouldSpawn(m_battleNo))
+				continue;
+			break;
+
+		case EnemyType::Enemy3:
+			if (!Enemy3::ShouldSpawn(m_battleNo))
+				continue;
+			break;
+
+		case EnemyType::Enemy4:
+			if (!Enemy4::ShouldSpawn(m_battleNo))
+				continue;
+			break;
+
+		case EnemyType::Enemy5:
+			if (!Enemy5::ShouldSpawn(m_battleNo))
+				continue;
+			break;
+		}
+
+		for (int i = 0; i < info.count; ++i)
+		{
+			std::shared_ptr<EnemyBase> enemy;
+
+			//--------------------------------------
+			// 敵の生成
+			//--------------------------------------
+			switch (info.type)
+			{
+			case EnemyType::Enemy1:
+			{
+				auto e = std::make_shared<Enemy1>();
+				e->Init(m_battleNo);
+				enemy = e;
+				break;
+			}
+
+			case EnemyType::Enemy2:
+			{
+				auto e = std::make_shared<Enemy2>();
+				e->Init(m_battleNo);
+				enemy = e;
+				break;
+			}
+
+			case EnemyType::Enemy3:
+			{
+				auto e = std::make_shared<Enemy3>();
+				e->Init(m_battleNo);
+				enemy = e;
+				break;
+			}
+
+			case EnemyType::Enemy4:
+			{
+				auto e = std::make_shared<Enemy4>();
+				e->Init(m_battleNo);
+				enemy = e;
+				break;
+			}
+
+			case EnemyType::Enemy5:
+			{
+				auto e = std::make_shared<Enemy5>();
+				e->Init(m_battleNo);
+				enemy = e;
+				break;
+			}
+			}
+
+			if (!enemy)
+			{
+				continue;
+			}
+
+
+			//--------------------------------------
+			// 隊列の行・列を計算
+			//--------------------------------------
+			const int columns =
+				(info.columns > 0) ? info.columns : 1;
+
+			const int row = i / columns;
+			const int col = i % columns;
+
+			// その行に配置する敵の数
+			const int enemiesInRow =
+				std::min(columns, info.count - row * columns);
+
+			// 横方向：隊列の中央を基準に配置
+			const float offsetX =
+				(static_cast<float>(col)
+					- (enemiesInRow - 1) * 0.5f)
+				* info.spacing.x;
+
+			// 奥行き方向：行ごとに間隔を空ける
+			const float offsetZ =
+				static_cast<float>(row) * info.spacing.z;
+
+			//--------------------------------------
+			// 隊列の向きを反映
+			//--------------------------------------
+			const float angleRad =
+				DirectX::XMConvertToRadians(
+					info.formationAngleY
+				);
+
+			Math::Vector3 pos = info.startPos;
+
+			pos.x += offsetX * cosf(angleRad)
+				+ offsetZ * sinf(angleRad);
+
+			pos.z += -offsetX * sinf(angleRad)
+				+ offsetZ * cosf(angleRad);
+
+			//--------------------------------------
+			// 敵の位置・向きを設定
+			//--------------------------------------
+			enemy->SetPos(pos);
+			enemy->m_angleY = angleRad;
+
+			//--------------------------------------
+			// ターゲット・カメラ・シーンを設定
+			//--------------------------------------
+			enemy->SetTarget(m_player);
+			enemy->SetCamera(m_camera);
+			enemy->SetGameScene(this);
+
+			//--------------------------------------
+			// シーンに登録
+			//--------------------------------------
+			AddObject(enemy);
+			m_battleEnemies.push_back(enemy);
+		}
+	}
 }
 
 bool GameScene::IsBattleEnemiesDead()
 {
-	//---------------------------------------
-	// 出現する敵だけ全滅確認
-	//---------------------------------------
-	if (Enemy1::ShouldSpawn(m_battleNo))
+	// 敵がいない場合は全滅扱い
+	for (const auto& enemy : m_battleEnemies)
 	{
-		if (m_enemy1 && m_enemy1->IsAlive())
-		{
-			return false;
-		}
-	}
-
-	if (Enemy2::ShouldSpawn(m_battleNo))
-	{
-		if (m_enemy2 && m_enemy2->IsAlive())
-		{
-			return false;
-		}
-	}
-
-	if (Enemy3::ShouldSpawn(m_battleNo))
-	{
-		if (m_enemy3 && m_enemy3->IsAlive())
-		{
-			return false;
-		}
-	}
-
-	if (Enemy4::ShouldSpawn(m_battleNo))
-	{
-		if (m_enemy4 && m_enemy4->IsAlive())
-		{
-			return false;
-		}
-	}
-
-	if (Enemy5::ShouldSpawn(m_battleNo))
-	{
-		if (m_enemy5 && m_enemy5->IsAlive())
+		if (enemy && enemy->IsAlive())
 		{
 			return false;
 		}
 	}
 
 	return true;
+}
+
+void GameScene::ClearBattleEnemies()
+{
+	m_battleEnemies.clear();
 }
 
 void GameScene::InitBattleStartPin()

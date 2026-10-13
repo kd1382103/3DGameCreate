@@ -664,7 +664,7 @@ void PlayerStateDodge::Enter(Player& owner)
 	//========================================
 	SceneManager::Instance().SetTimeScale(0.2f);
 
-	owner.m_slowTimer = 0.5f;
+	owner.m_slowTimer = 10.0f;
 
 	//========================================
 	// 無敵

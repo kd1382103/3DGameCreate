@@ -31,10 +31,13 @@ void EnemyBaseStateIdle::Update(EnemyBase& owner)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // 歩行ステート
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+
 void EnemyBaseStateMove::Update(EnemyBase& owner)
 {
 	const float frameScale =
-		Application::Instance().GetFPSController().GetFrameScale();
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
 
 	const float dt =
 		frameScale *
@@ -44,43 +47,179 @@ void EnemyBaseStateMove::Update(EnemyBase& owner)
 	auto player = owner.m_wpPlayer.lock();
 	if (!player) return;
 
-	// プレイヤー方向
+	//==========================================================
+	// ① Playerへ向かう基本の追跡方向
+	//==========================================================
 	Math::Vector3 dir =
 		player->GetPos() - owner.m_nowPos;
 
-	dir.y = 0;
-	dir.Normalize();
+	dir.y = 0.0f;
 
-	// キャラ回転処理
+	if (dir.LengthSquared() < 0.0001f)
 	{
-		Math::Vector3 nowDir = owner.GetForward();
-		nowDir.Normalize();
-
-		float dot =
-			std::clamp(
-				nowDir.Dot(dir),
-				-1.0f,
-				1.0f
-			);
-
-		float angle = acos(dot);
-
-		Math::Vector3 cross = nowDir.Cross(dir);
-
-		if (cross.y < 0)
-		{
-			angle = -angle;
-		}
-
-		float rotSpeed = DirectX::XMConvertToRadians(owner.m_rotationSpeedDeg) * dt;
-
-		angle = std::clamp(angle, -rotSpeed, rotSpeed);
-
-		owner.m_angleY += angle;
+		return;
 	}
 
-	// 移動
-	owner.m_nowPos += dir * owner.m_moveSpeed * dt;
+	dir.Normalize();
+
+	//==========================================================
+	// ② 敵同士の接近回避
+	//==========================================================
+	const float avoidStartDistance = 2.5f;
+	const float avoidFullDistance = 1.5f;
+	const float avoidStrength = 1.0f;
+
+	Math::Vector3 avoidDir = Math::Vector3::Zero;
+
+	for (auto& obj : SceneManager::Instance().GetObjList())
+	{
+		// 自分自身は除外
+		if (obj.get() == &owner)
+		{
+			continue;
+		}
+
+		auto other =
+			std::dynamic_pointer_cast<EnemyBase>(obj);
+
+		if (!other)
+		{
+			continue;
+		}
+
+		// 出現中・死亡中・ゲーム終了状態の敵は除外
+		if (other->IsResolving() ||
+			other->m_isDying ||
+			other->m_isGameEnd)
+		{
+			continue;
+		}
+
+		// 自分が出現中・死亡中・ゲーム終了状態なら回避しない
+		if (owner.IsResolving() ||
+			owner.m_isDying ||
+			owner.m_isGameEnd)
+		{
+			return;
+		}
+
+		// 敵同士の水平距離と方向
+		Math::Vector3 away =
+			owner.m_nowPos - other->m_nowPos;
+
+		away.y = 0.0f;
+
+		float distance = away.Length();
+
+		// 一定距離より遠ければ無視
+		if (distance >= avoidStartDistance)
+		{
+			continue;
+		}
+
+		// 同じ位置にいる場合も方向を作る
+		if (distance < 0.001f)
+		{
+			// 敵ごとに左右の回避方向を固定する
+			Math::Vector3 right =
+				owner.GetForward().Cross(
+					Math::Vector3(0, 1, 0)
+				);
+
+			right.y = 0.0f;
+
+			if (right.LengthSquared() < 0.0001f)
+			{
+				right = Math::Vector3(1, 0, 0);
+			}
+			else
+			{
+				right.Normalize();
+			}
+
+			away = right;
+		}
+		else
+		{
+			away /= distance;
+		}
+
+		// 2.5fから1.5fに近づくほど回避を強める
+		float t =
+			(avoidStartDistance - distance) /
+			(avoidStartDistance - avoidFullDistance);
+
+		t = std::clamp(t, 0.0f, 1.0f);
+
+		// 近い敵ほど強く離れる
+		avoidDir += away * t;
+	}
+
+	//==========================================================
+	// ③ 追跡方向と回避方向を合成
+	//==========================================================
+	Math::Vector3 moveDir =
+		dir + avoidDir * avoidStrength;
+
+	moveDir.y = 0.0f;
+
+	if (moveDir.LengthSquared() > 0.0001f)
+	{
+		moveDir.Normalize();
+	}
+	else
+	{
+		moveDir = dir;
+	}
+
+	//==========================================================
+	// ④ 回転：合成した移動方向を向く
+	//==========================================================
+	{
+		Math::Vector3 nowDir = owner.GetForward();
+		nowDir.y = 0.0f;
+
+		if (nowDir.LengthSquared() > 0.0001f)
+		{
+			nowDir.Normalize();
+
+			float dot =
+				std::clamp(
+					nowDir.Dot(moveDir),
+					-1.0f,
+					1.0f
+				);
+
+			float angle = acos(dot);
+
+			Math::Vector3 cross =
+				nowDir.Cross(moveDir);
+
+			if (cross.y < 0.0f)
+			{
+				angle = -angle;
+			}
+
+			float rotSpeed =
+				DirectX::XMConvertToRadians(
+					owner.m_rotationSpeedDeg
+				) * dt;
+
+			angle = std::clamp(
+				angle,
+				-rotSpeed,
+				rotSpeed
+			);
+
+			owner.m_angleY += angle;
+		}
+	}
+
+	//==========================================================
+	// ⑤ 移動：Player追跡を継続
+	//==========================================================
+	owner.m_nowPos +=
+		moveDir * owner.m_moveSpeed * dt;
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////

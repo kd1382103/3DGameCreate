@@ -264,23 +264,6 @@ void Player::UpdateInput()
 				}
 
 				//========================================
-				// 回避スロー
-				//========================================
-				m_slowTimer = 10.0f;
-
-				SceneManager::Instance().SetTimeScale(0.2f);
-
-				//========================================
-				// 回避カメラ演出
-				//========================================
-				if (auto cam =
-					std::dynamic_pointer_cast<TPSCamera>(
-						m_wpCamera.lock()))
-				{
-					cam->StartDodgeCamera();
-				}
-
-				//========================================
 				// 攻撃中の敵をスロー
 				//========================================
 				for (auto& obj :
@@ -540,6 +523,8 @@ void Player::UpdateDodgeSlow(float frameScale)
 		return;
 	}
 
+	// ゲーム全体のスロー倍率を掛けず、
+	// 通常のフレーム倍率でタイマーを進める
 	m_slowTimer -= frameScale;
 
 	if (m_slowTimer > 0.0f)
@@ -549,8 +534,10 @@ void Player::UpdateDodgeSlow(float frameScale)
 
 	m_slowTimer = 0.0f;
 
+	// ゲーム全体のスロー解除
 	SceneManager::Instance().SetTimeScale(1.0f);
 
+	// 回避カメラ解除
 	if (auto cam =
 		std::dynamic_pointer_cast<TPSCamera>(
 			m_wpCamera.lock()))
@@ -558,7 +545,6 @@ void Player::UpdateDodgeSlow(float frameScale)
 		cam->EndDodgeCamera();
 	}
 }
-
 void Player::UpdateDebug()
 {
 	KdDebugGUI::Instance().ClearLog();
