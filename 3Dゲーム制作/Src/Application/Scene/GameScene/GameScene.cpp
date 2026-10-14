@@ -82,6 +82,17 @@ void GameScene::Event()
 	}
 
 	//=======================================
+	// ゲーム終了後
+	//=======================================
+	if (m_gamePhase == GamePhase::Clear ||
+		m_gamePhase == GamePhase::GameOver)
+	{
+		// タイトルに戻るボタンの処理だけ継続
+		UpdateGameEnd();
+		return;
+	}
+
+	//=======================================
 	// デバッグ
 	//=======================================
 	UpdateDebug();
@@ -848,7 +859,7 @@ void GameScene::GameClear()
 	if (m_player)
 	{
 		m_player->SetUltimatePointVisible(true);
-		m_player->SetInputLock(false);
+		m_player->SetInputLock(true);
 	}
 
 	//=======================================
@@ -910,7 +921,7 @@ void GameScene::GameOver()
 	if (m_player)
 	{
 		m_player->SetUltimatePointVisible(true);
-		m_player->SetInputLock(false);
+		m_player->SetInputLock(true);
 	}
 
 	//=======================================
