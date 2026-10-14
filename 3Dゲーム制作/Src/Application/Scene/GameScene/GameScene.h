@@ -20,6 +20,7 @@ class BattleArea;
 //UI・テキスト・エフェクト
 class SkillGauge;
 class HPGauge;
+class UltimateGauge;
 class GameClearButton;
 class FontText;
 class SettingUI;
@@ -219,6 +220,7 @@ private:
 	//========================================
 	std::shared_ptr<SkillGauge> m_skillGauge;
 	std::shared_ptr<HPGauge> m_hpGauge;
+	std::shared_ptr<UltimateGauge> m_ultimateGauge;
 
 	std::shared_ptr<GameClearButton> m_gameClearButton;
 

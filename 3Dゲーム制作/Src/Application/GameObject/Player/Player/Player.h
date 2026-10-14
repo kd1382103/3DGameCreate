@@ -21,6 +21,7 @@ public:
 	{
 		SkillGauge,
 		HPGauge,
+		UltimateGauge,
 	};
 
 	Player() {}
@@ -36,7 +37,7 @@ public:
 	void UpdateMovementInput();
 	void UpdateAnimation(float frameScale);
 	void UpdateGravity(float frameScale);
-	void UpdateSkillGauge(float frameScale);
+	void UpdateUIGauge(float frameScale);
 	void UpdatePendingDamage();
 	void UpdateDodgeSlow(float frameScale);
 
@@ -478,8 +479,6 @@ private:
 	//========================================
 	bool m_ultimatePointVisible = true;
 	
-
-
 private:
 
 	//========================================

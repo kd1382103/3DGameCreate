@@ -214,6 +214,9 @@
     <Filter Include="Src\Application\GameObject\Stages\BattleArea">
       <UniqueIdentifier>{a6694851-6481-4768-ae0a-cd550cd9a004}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\UI\PlayerUI\UltimateGauge">
+      <UniqueIdentifier>{38ee66b3-6b47-4287-a1e0-a4344b80a425}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -513,6 +516,9 @@
     <ClInclude Include="Src\Application\GameObject\Stages\BattleArea\BattleArea.h">
       <Filter>Src\Application\GameObject\Stages\BattleArea</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\UltimateGauge\UltimateGauge.h">
+      <Filter>Src\Application\GameObject\UI\PlayerUI\UltimateGauge</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -775,6 +781,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Stages\BattleArea\BattleArea.cpp">
       <Filter>Src\Application\GameObject\Stages\BattleArea</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\UltimateGauge\UltimateGauge.cpp">
+      <Filter>Src\Application\GameObject\UI\PlayerUI\UltimateGauge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

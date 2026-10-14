@@ -168,4 +168,57 @@ void HPGauge::DrawSprite()
 		&hpColor,
 		{ 0, 0 }
 	);
+
+	//===========================
+	// ④ HPラベル（プレイヤー用のみ）
+	//===========================
+	if (m_mode == GaugeMode::Screen)
+	{
+		auto& spriteShader =
+			KdShaderManager::Instance().m_spriteShader;
+
+		KdSpriteShader::FontParam param;
+
+		param.pos = { x - 35.0f, y };
+		param.scale = 1.25f;
+		param.pivot = { 0.5f, 0.5f };
+
+		// 黒い縁取り
+		Math::Color outlineColor = { 0, 0, 0, 1 };
+		const float outlineSize = 1.0f;
+
+		const Math::Vector2 offsets[] =
+		{
+			{ -outlineSize,  0 },
+			{  outlineSize,  0 },
+			{  0, -outlineSize },
+			{  0,  outlineSize }
+		};
+
+		for (const auto& offset : offsets)
+		{
+			param.pos =
+			{
+				x - 20.0f + offset.x,
+				y +10.0f + offset.y
+			};
+
+			param.color = outlineColor;
+
+			spriteShader.DrawFontEx(
+				param,
+				"%s",
+				"HP"
+			);
+		}
+
+		param.pos = { x - 20.0f, y + 10.0f };
+		param.color = { 0, 1, 0, 1 };
+
+		spriteShader.DrawFontEx(
+			param,
+			"%s",
+			"HP"
+		);
+	}
 }

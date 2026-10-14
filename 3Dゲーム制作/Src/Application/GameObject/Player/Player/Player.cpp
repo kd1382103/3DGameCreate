@@ -6,6 +6,7 @@
 #include <Application/GameObject/Stages/BattleArea/BattleArea.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
+#include <Application/GameObject/UI/PlaeyrUI/UltimateGauge/UltimateGauge.h>
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/main.h>
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
@@ -175,9 +176,9 @@ void Player::Update()
 	UpdateGravity(scaledFrameScale);
 
 	//========================================
-	// スキルゲージ
+	// UIゲージ
 	//========================================
-	UpdateSkillGauge(scaledFrameScale);
+	UpdateUIGauge(scaledFrameScale);
 
 	//========================================
 	// 遅延ダメージ
@@ -430,7 +431,7 @@ void Player::UpdateGravity(float dt)
 	m_nowPos.y -= m_gravity * dt;
 }
 
-void Player::UpdateSkillGauge(float dt)
+void Player::UpdateUIGauge(float dt)
 {
 	m_skillGauge += m_skillRegen * dt;
 
@@ -458,6 +459,18 @@ void Player::UpdateSkillGauge(float dt)
 			m_nowHp,
 			m_hpGaugeMax
 		);
+	}
+
+	if (auto ui =
+		GetUI<UltimateGauge>(UIType::UltimateGauge))
+	{
+		ui->SetGauge(
+			m_ultimateEnergy,
+			m_ultimateEnergyMax
+		);
+
+		// 満タン時の点滅を更新
+		ui->Update();
 	}
 }
 
@@ -815,90 +828,22 @@ void Player::DrawLit()
 void Player::DrawSprite()
 {
 	if (auto ui = GetUI<SkillGauge>(UIType::SkillGauge))
+	{
 		ui->DrawSprite();
+	}
 
 	if (auto ui = GetUI<HPGauge>(UIType::HPGauge))
+	{
 		ui->DrawSprite();
+	}
 
-	// 必殺技ポイント表示
+	// 必殺技ポイントUI
 	if (m_ultimatePointVisible)
 	{
-		auto& sprite = KdShaderManager::Instance().m_spriteShader;
-		KdSpriteShader::FontParam param;
-
-		param.pos = { -575,230 };
-		param.scale = 2.0f;
-		param.pivot = { 0,0 };
-		param.angle = 0;
-		param.spacing = 0;
-
-		// 最大値なら黄色、それ以外は白
-		if (m_ultimateEnergy >= m_ultimateEnergyMax)
+		if (auto ui = GetUI<UltimateGauge>(UIType::UltimateGauge))
 		{
-			param.color = { 1.0f, 0.85f, 0.0f, 1.0f };
+			ui->DrawSprite();
 		}
-		else
-		{
-			param.color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		}
-
-		// 縁取り：黒
-		Math::Color outlineColor =
-		{
-			0.0f, 0.0f, 0.0f, 1.0f
-		};
-
-		const float outlineSize = 1.5f;
-
-		// 上下左右＋斜めの8方向に描画
-		const Math::Vector2 offsets[] =
-		{
-			{ -outlineSize,  0.0f },
-			{  outlineSize,  0.0f },
-			{  0.0f, -outlineSize },
-			{  0.0f,  outlineSize },
-			{ -outlineSize, -outlineSize },
-			{  outlineSize, -outlineSize },
-			{ -outlineSize,  outlineSize },
-			{  outlineSize,  outlineSize }
-		};
-
-		for (const auto& offset : offsets)
-		{
-			param.pos =
-			{
-				-575.0f + offset.x,
-				230.0f + offset.y
-			};
-
-			param.color = outlineColor;
-
-			sprite.DrawFontEx(
-				param,
-				"%d",
-				static_cast<int>(m_ultimateEnergy)
-			);
-		}
-
-		//-------------------------------
-		// 本来の文字を最後に描画
-		//-------------------------------
-		param.pos = { -575, 230 };
-
-		if (m_ultimateEnergy >= m_ultimateEnergyMax)
-		{
-			param.color = { 1.0f, 0.85f, 0.0f, 1.0f };
-		}
-		else
-		{
-			param.color = { 1.0f, 1.0f, 1.0f, 1.0f };
-		}
-
-		sprite.DrawFontEx(
-			param,
-			"%d",
-			static_cast<int>(m_ultimateEnergy)
-		);
 	}
 }
 

@@ -19,6 +19,7 @@
 
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
+#include <Application/GameObject/UI/PlaeyrUI/UltimateGauge/UltimateGauge.h>
 
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/GameObject/UI/BattolPin/BattlePin.h>
@@ -335,6 +336,13 @@ void GameScene::InitUI()
 	m_hpGauge->SetGauge(100, 100);
 
 	//=======================================
+	// 必殺技ゲージ
+	//=======================================
+	m_ultimateGauge = std::make_shared<UltimateGauge>();
+	m_ultimateGauge->Init();
+	m_ultimateGauge->SetGauge(0.0f, 500.0f);
+
+	//=======================================
 	// GAME CLEAR / GAME OVER ボタン
 	//=======================================
 	m_gameClearButton = std::make_shared<GameClearButton>();
@@ -361,6 +369,11 @@ void GameScene::InitUI()
 	m_player->RegisterUI(
 		Player::UIType::HPGauge,
 		m_hpGauge
+	);
+
+	m_player->RegisterUI(
+		Player::UIType::UltimateGauge,
+		m_ultimateGauge
 	);
 }
 
@@ -1699,6 +1712,15 @@ void GameScene::SetGameUIVisible(bool visible)
 		{
 			skill->SetVisible(visible);
 		}
+
+		auto ultimate =
+			m_player->GetUI<UltimateGauge>(
+				Player::UIType::UltimateGauge);
+
+		if (ultimate)
+		{
+			ultimate->SetVisible(visible);
+		}
 	}
 
 	//---------------------------------------
@@ -1727,6 +1749,7 @@ void GameScene::SetGameUIVisible(bool visible)
 		m_tutorialText->SetVisible(visible);
 	}
 }
+
 void GameScene::SetFlyTextVisible(bool visible)
 {
 	for (auto& obj : SceneManager::Instance().GetObjList())

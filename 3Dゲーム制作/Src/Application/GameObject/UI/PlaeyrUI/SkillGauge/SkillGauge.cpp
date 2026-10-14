@@ -50,19 +50,67 @@ void SkillGauge::DrawSprite()
 	//===========================
 	// ② 現在のスキルゲージ
 	//===========================
-	if (rate <= 0.0f)
+	if (rate > 0.0f)
 	{
-		return;
+		Math::Color color = { 1.0f, 0.2f, 0.8f, 1.0f };
+
+		sprite.DrawTex(
+			m_barTex.get(),
+			x, y,
+			nowWidth, barHeight,
+			nullptr,
+			&color,
+			{ 0, 0 }
+		);
 	}
 
-	Math::Color color = { 1, 1, 1, 1 };
+	//===========================
+	// ③ MPラベル
+	//===========================
+	auto& spriteShader =
+		KdShaderManager::Instance().m_spriteShader;
 
-	sprite.DrawTex(
-		m_barTex.get(),
-		x, y,
-		nowWidth, barHeight,
-		nullptr,
-		&color,
-		{ 0, 0 }
+	KdSpriteShader::FontParam param;
+
+	param.pos = { x - 35.0f, y };
+	param.scale = 1.25f;
+	param.pivot = { 0.5f, 0.5f };
+
+	// 黒い縁取り
+	Math::Color outlineColor = { 0, 0, 0, 1 };
+	const float outlineSize = 1.0f;
+
+	const Math::Vector2 offsets[] =
+	{
+		{ -outlineSize,  0 },
+		{  outlineSize,  0 },
+		{  0, -outlineSize },
+		{  0,  outlineSize }
+	};
+
+	for (const auto& offset : offsets)
+	{
+		param.pos =
+		{
+			x - 20.0f + offset.x,
+			y + 10.0f + offset.y
+		};
+
+		param.color = outlineColor;
+
+		spriteShader.DrawFontEx(
+			param,
+			"%s",
+			"MP"
+		);
+	}
+
+	param.pos = { x - 20.0f, y + 10.0f };
+	param.color = { 1.0f, 0.2f, 0.8f, 1.0f };
+
+	spriteShader.DrawFontEx(
+		param,
+		"%s",
+		"MP"
 	);
 }
