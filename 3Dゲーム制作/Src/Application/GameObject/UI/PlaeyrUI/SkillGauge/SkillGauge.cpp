@@ -17,29 +17,52 @@ void SkillGauge::DrawSprite()
 {
 	if (!m_visible) { return; }
 
-	float rate = m_gauge / m_gaugeMax;
+	// 最大値が0以下なら描画しない
+	if (m_gaugeMax <= 0.0f) { return; }
 
-	// ゼロならパッと消える
+	// ゲージ割合を0～1に制限
+	float rate = m_gauge / m_gaugeMax;
+	rate = std::clamp(rate, 0.0f, 1.0f);
+
+	float fullWidth = 225.0f;  // ゲージ最大幅
+	float nowWidth = fullWidth * rate;
+	float barHeight = 20.0f;
+
+	float x = -575.0f;
+	float y = 290.0f;
+
+	auto& sprite = KdShaderManager::Instance().m_spriteShader;
+
+	//===========================
+	// ① 最大ゲージ背景（黒）
+	//===========================
+	Math::Color backColor = { 0, 0, 0, 1 };
+
+	sprite.DrawTex(
+		m_barTex.get(),
+		x, y,
+		fullWidth, barHeight,
+		nullptr,
+		&backColor,
+		{ 0, 0 }
+	);
+
+	//===========================
+	// ② 現在のスキルゲージ
+	//===========================
 	if (rate <= 0.0f)
 	{
 		return;
 	}
 
-	float fullWidth = 225.0f;     // ゲージ最大幅
-	float nowWidth = fullWidth * rate;
-	float x = -575.0f;  
-	float y = 290.0f; 
-
 	Math::Color color = { 1, 1, 1, 1 };
-	auto& sprite = KdShaderManager::Instance().m_spriteShader;
 
-	// ゲージ本体（左から右に伸びる）
 	sprite.DrawTex(
 		m_barTex.get(),
-		x,y,              // 画面位置
-		nowWidth, 20,     // ← 幅だけ変える
+		x, y,
+		nowWidth, barHeight,
 		nullptr,
 		&color,
-		{ 0, 0 }          // pivot 左上固定
+		{ 0, 0 }
 	);
 }

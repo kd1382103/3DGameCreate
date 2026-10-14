@@ -10,6 +10,12 @@ void UIBackground::Init()
 {
 	m_visible = true;
 	m_isTutorialBackground = false;
+
+	// 外枠：白
+	m_borderColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	// 内側：明るめの灰色
+	m_panelColor = { 0.75f, 0.75f, 0.75f, 0.3f };
 }
 
 //==================================================
@@ -44,36 +50,50 @@ void UIBackground::InitTutorial(
 // DrawBoxのx,yは中心座標
 // halfWidth,halfHeightは半分のサイズ
 //==================================================
+
 void UIBackground::DrawPanel(
 	int x,
 	int y,
 	int halfWidth,
 	int halfHeight)
 {
-	auto& shader =
-		KdShaderManager::Instance().m_spriteShader;
+	auto& shaderManager = KdShaderManager::Instance();
+	auto& shader = shaderManager.m_spriteShader;
 
-	// 外枠
-	shader.DrawBox(
-		x,
-		y,
-		halfWidth,
-		halfHeight,
-		&m_borderColor,
-		true
-	);
+	// 半透明描画を有効にする
+	shaderManager.ChangeBlendState(KdBlendState::Alpha);
 
-	// 内側の暗いパネル
+	// 内側：明るい灰色で半透明に塗りつぶす
+	Math::Color panelColor = {
+		0.75f, 0.75f, 0.75f, 0.25f
+	};
+
 	shader.DrawBox(
 		x,
 		y,
 		halfWidth - 2,
 		halfHeight - 2,
-		&m_panelColor,
+		&panelColor,
 		true
 	);
-}
 
+	// 外枠：白い線だけを描画する
+	Math::Color borderColor = {
+		1.0f, 1.0f, 1.0f, 1.0f
+	};
+
+	shader.DrawBox(
+		x,
+		y,
+		halfWidth,
+		halfHeight,
+		&borderColor,
+		false
+	);
+
+	// 描画前のブレンド状態に戻す
+	shaderManager.UndoBlendState();
+}
 //==================================================
 // 描画
 //==================================================

@@ -523,8 +523,10 @@ void Player::UpdateDodgeSlow(float frameScale)
 		return;
 	}
 
-	// ゲーム全体のスロー倍率を掛けず、
-	// 通常のフレーム倍率でタイマーを進める
+	//========================================
+	// 回避スロー時間を減らす
+	// 通常のフレーム倍率で計算する
+	//========================================
 	m_slowTimer -= frameScale;
 
 	if (m_slowTimer > 0.0f)
@@ -534,17 +536,23 @@ void Player::UpdateDodgeSlow(float frameScale)
 
 	m_slowTimer = 0.0f;
 
+	//========================================
 	// ゲーム全体のスロー解除
+	//========================================
 	SceneManager::Instance().SetTimeScale(1.0f);
 
+	//========================================
 	// 回避カメラ解除
+	//========================================
 	if (auto cam =
 		std::dynamic_pointer_cast<TPSCamera>(
 			m_wpCamera.lock()))
 	{
 		cam->EndDodgeCamera();
 	}
+
 }
+
 void Player::UpdateDebug()
 {
 	KdDebugGUI::Instance().ClearLog();
@@ -815,6 +823,7 @@ void Player::DrawSprite()
 	// 必殺技ポイント表示
 	if (m_ultimatePointVisible)
 	{
+		auto& sprite = KdShaderManager::Instance().m_spriteShader;
 		KdSpriteShader::FontParam param;
 
 		param.pos = { -575,230 };
@@ -823,19 +832,72 @@ void Player::DrawSprite()
 		param.angle = 0;
 		param.spacing = 0;
 
+		// 最大値なら黄色、それ以外は白
 		if (m_ultimateEnergy >= m_ultimateEnergyMax)
 		{
-			param.color = { 1.0f,0.85f,0.0f,1.0f };
+			param.color = { 1.0f, 0.85f, 0.0f, 1.0f };
 		}
 		else
 		{
-			param.color = { 1,1,1,1 };
+			param.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		}
 
-		KdShaderManager::Instance().m_spriteShader.DrawFontEx(
+		// 縁取り：黒
+		Math::Color outlineColor =
+		{
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		const float outlineSize = 1.5f;
+
+		// 上下左右＋斜めの8方向に描画
+		const Math::Vector2 offsets[] =
+		{
+			{ -outlineSize,  0.0f },
+			{  outlineSize,  0.0f },
+			{  0.0f, -outlineSize },
+			{  0.0f,  outlineSize },
+			{ -outlineSize, -outlineSize },
+			{  outlineSize, -outlineSize },
+			{ -outlineSize,  outlineSize },
+			{  outlineSize,  outlineSize }
+		};
+
+		for (const auto& offset : offsets)
+		{
+			param.pos =
+			{
+				-575.0f + offset.x,
+				230.0f + offset.y
+			};
+
+			param.color = outlineColor;
+
+			sprite.DrawFontEx(
+				param,
+				"%d",
+				static_cast<int>(m_ultimateEnergy)
+			);
+		}
+
+		//-------------------------------
+		// 本来の文字を最後に描画
+		//-------------------------------
+		param.pos = { -575, 230 };
+
+		if (m_ultimateEnergy >= m_ultimateEnergyMax)
+		{
+			param.color = { 1.0f, 0.85f, 0.0f, 1.0f };
+		}
+		else
+		{
+			param.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+		}
+
+		sprite.DrawFontEx(
 			param,
 			"%d",
-			(int)m_ultimateEnergy
+			static_cast<int>(m_ultimateEnergy)
 		);
 	}
 }

@@ -47,14 +47,8 @@ private:
 	float m_height = 100.0f;
 
 	// 外枠の色
-	Math::Color m_borderColor =
-	{
-		0.0f,0.0f,0.0f,0.55f
-	};
+	Math::Color m_borderColor;
 
 	// 内側の色
-	Math::Color m_panelColor =
-	{
-		0.15f,0.15f,0.15f,0.35f
-	};
+	Math::Color m_panelColor;
 };

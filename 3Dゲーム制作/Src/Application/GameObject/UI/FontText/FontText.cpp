@@ -75,7 +75,6 @@ void FontText::InitMessage(
 
 	m_isMessage = true;
 
-	// 通常テキスト：白
 	m_color =
 	{
 		1.0f,
@@ -173,6 +172,48 @@ void FontText::DrawSprite()
 		param.color = m_color;
 		param.pivot = { 0.5f, 0.5f };
 
+		// メッセージの縁取り色：黒
+		Math::Color outlineColor =
+		{
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		const float outlineSize = 1.5f;
+
+		const Math::Vector2 offsets[] =
+		{
+			{ -outlineSize,  0.0f },
+			{  outlineSize,  0.0f },
+			{  0.0f, -outlineSize },
+			{  0.0f,  outlineSize },
+			{ -outlineSize, -outlineSize },
+			{  outlineSize, -outlineSize },
+			{ -outlineSize,  outlineSize },
+			{  outlineSize,  outlineSize }
+		};
+
+		// 先に縁取りを描画
+		for (const auto& offset : offsets)
+		{
+			param.pos =
+			{
+				m_screenPos.x + offset.x,
+				m_screenPos.y + offset.y
+			};
+
+			param.color = outlineColor;
+
+			sprite.DrawFontEx(
+				param,
+				"%s",
+				m_text.c_str()
+			);
+		}
+
+		// 本来の文字を描画
+		param.pos = m_screenPos;
+		param.color = m_color;
+
 		sprite.DrawFontEx(
 			param,
 			"%s",
@@ -215,30 +256,67 @@ void FontText::DrawSprite()
 
 	param.pos = screen;
 
-	//---------------------------------------
-	// 回復
-	//---------------------------------------
+	//-------------------------------
+	// 縁取り色
+	//-------------------------------
+	Math::Color outlineColor;
+
 	if (m_isHeal)
 	{
-		param.color = m_color;
-
-		sprite.DrawFontEx(
-			param,
-			"+%d",
-			m_value
-		);
+		// 回復：暗い緑
+		outlineColor = { 0.0f, 0.25f, 0.0f, 1.0f };
 	}
-	//---------------------------------------
-	// ダメージ
-	//---------------------------------------
 	else
 	{
-		param.color = m_color;
+		// ダメージ：暗い赤
+		outlineColor = { 0.25f, 0.0f, 0.0f, 1.0f };
+	}
 
-		sprite.DrawFontEx(
-			param,
-			"%d",
-			m_value
-		);
+	const float outlineSize = 1.0f;
+
+	const Math::Vector2 offsets[] =
+	{
+		{ -outlineSize,  0.0f },
+		{  outlineSize,  0.0f },
+		{  0.0f, -outlineSize },
+		{  0.0f,  outlineSize },
+		{ -outlineSize, -outlineSize },
+		{  outlineSize, -outlineSize },
+		{ -outlineSize,  outlineSize },
+		{  outlineSize,  outlineSize }
+	};
+
+	// 先に縁取りを描画
+	for (const auto& offset : offsets)
+	{
+		param.pos =
+		{
+			screen.x + offset.x,
+			screen.y + offset.y
+		};
+
+		param.color = outlineColor;
+
+		if (m_isHeal)
+		{
+			sprite.DrawFontEx(param, "+%d", m_value);
+		}
+		else
+		{
+			sprite.DrawFontEx(param, "%d", m_value);
+		}
+	}
+
+	// 本来の文字を最後に描画
+	param.pos = screen;
+	param.color = m_color;
+
+	if (m_isHeal)
+	{
+		sprite.DrawFontEx(param, "+%d", m_value);
+	}
+	else
+	{
+		sprite.DrawFontEx(param, "%d", m_value);
 	}
 }

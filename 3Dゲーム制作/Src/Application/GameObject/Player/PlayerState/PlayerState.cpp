@@ -666,6 +666,14 @@ void PlayerStateDodge::Enter(Player& owner)
 
 	owner.m_slowTimer = 10.0f;
 
+	// 回避カメラ
+	if (auto cam =
+		std::dynamic_pointer_cast<TPSCamera>(
+			owner.m_wpCamera.lock()))
+	{
+		cam->StartDodgeCamera();
+	}
+
 	//========================================
 	// 無敵
 	//========================================

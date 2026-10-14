@@ -205,6 +205,65 @@ void EnemyBase::PostUpdate()
 		}
 	}
 
+	//==========================================================
+	// 敵同士の重なり防止
+	//==========================================================
+	{
+		const float minDistance = 1.0f;
+
+		// 自分が出現中・死亡中なら補正しない
+		if (!m_isResolving && !m_isDying &&
+			!m_isExpired && !m_isGameEnd)
+		{
+			for (auto& obj : SceneManager::Instance().GetObjList())
+			{
+				if (obj.get() == this) continue;
+
+				auto other =
+					std::dynamic_pointer_cast<EnemyBase>(obj);
+
+				if (!other) continue;
+
+				if (other->m_isResolving ||
+					other->m_isDying ||
+					other->m_isExpired ||
+					other->m_isGameEnd)
+				{
+					continue;
+				}
+
+				Math::Vector3 dir =
+					m_nowPos - other->m_nowPos;
+
+				dir.y = 0.0f;
+
+				float distance = dir.Length();
+
+				if (distance >= minDistance) continue;
+
+				// 同じ位置にいる場合は向きを固定して分離
+				if (distance < 0.001f)
+				{
+					dir = std::less<const void*>()(
+						static_cast<const void*>(this),
+						static_cast<const void*>(other.get()))
+						? Math::Vector3(1, 0, 0)
+						: Math::Vector3(-1, 0, 0);
+				}
+				else
+				{
+					dir /= distance;
+				}
+
+				const float pushDistance =
+					(minDistance - distance) * 0.5f;
+
+				m_nowPos += dir * pushDistance;
+			}
+		}
+	}
+
+
 	//========================
 	// ワールド行列更新
 	//========================

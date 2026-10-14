@@ -280,6 +280,9 @@ public:
 	// 攻撃中か
 	bool m_isAttacking = false;
 
+	bool m_isDying = false;
+
+
 private:
 
 	// Playerとの接触判定用
@@ -314,7 +317,6 @@ private:
 	//==============================================================
 	// 死亡演出
 	//==============================================================
-	bool m_isDying = false;
 
 	// 死亡アニメーションが終了したか
 	bool m_isDeathAnimationEnd = false;
