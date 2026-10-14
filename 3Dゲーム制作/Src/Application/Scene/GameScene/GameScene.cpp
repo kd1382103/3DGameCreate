@@ -1311,15 +1311,15 @@ void GameScene::SpawnBattleEnemies()
 				EnemyType::Enemy1,
 				2,
 				{ -10, 0, 82 }, 
-				{ 4, 0, 2 },
+				{ 4, 0, 0 },
 				90.0f
 			},
 
 			{ 
 				EnemyType::Enemy3,
 				3,
-				{ -8, 0, 83.25 }, 
-				{ 3, 0, 1.5 } ,
+				{ -8, 0, 83 }, 
+				{ 3, 0, 0 } ,
 				90.0f
 			}
 		};
@@ -1334,7 +1334,7 @@ void GameScene::SpawnBattleEnemies()
 			{ 
 				EnemyType::Enemy1,
 				1,
-				{ -80, 0, 80 },
+				{ -75, 0, 80 },
 				{ 0, 0, 0 } ,
 				90.0f
 			},
@@ -1342,16 +1342,16 @@ void GameScene::SpawnBattleEnemies()
 			{ 
 				EnemyType::Enemy2,
 				2,
-				{ -82, 0, 81.75 },
-				{ 3, 0, 1.5 } ,
+				{ -79, 0, 81.5 },
+				{ 3, 0, 0 } ,
 				90.0f
 			},
 
 			{ 
 				EnemyType::Enemy4, 
 				3,
-				{ -84, 0, 83.5 }, 
-				{ 3, 0, 1.5 } ,
+				{ -83, 0, 83 }, 
+				{ 3, 0, 0 } ,
 				90.0f
 			}
 		};
@@ -1385,21 +1385,19 @@ void GameScene::SpawnBattleEnemies()
 	case 4:
 		spawnList =
 		{
-			// 敵1を5体
 			{ 
 				EnemyType::Enemy1, 
 				5,
-				{ -80, 0, 25 }, 
-				{ 5, 0, 0 } ,
+				{ -76, 0, 20 }, 
+				{ 2, 0, 0 } ,
 				180.0f
 			},
 
-			// 敵4を2体
 			{ 
 				EnemyType::Enemy4, 
 				2,
-				{ -85, 0, 20 }, 
-				{ 5, 0, 0 } ,
+				{ -78, 0, 25 }, 
+				{ 4, 0, 0 } ,
 				180.0f
 			}
 		};
@@ -1477,8 +1475,12 @@ void GameScene::SpawnBattleEnemies()
 			Math::Vector3 localOffset =
 				info.offset * static_cast<float>(i);
 
+			// 度数法からラジアンに変換
+			float angleRad =
+				DirectX::XMConvertToRadians(info.angleY);
+
 			Math::Matrix rotMat =
-				Math::Matrix::CreateRotationY(info.angleY);
+				Math::Matrix::CreateRotationY(angleRad);
 
 			Math::Vector3 rotatedOffset =
 				Math::Vector3::TransformNormal(
@@ -1489,7 +1491,7 @@ void GameScene::SpawnBattleEnemies()
 			Math::Vector3 pos =
 				info.startPos + rotatedOffset;
 
-			enemy->SetPos(pos);
+			enemy->SetPos(pos);;
 
 			//---------------------------------------
 			// プレイヤー・カメラ・シーン設定
