@@ -590,12 +590,12 @@ void Player::UpdateDebug()
 	//}
 
 
-	KdDebugGUI::Instance().AddLog(
-		"PlayerPos\nX : %f \nY : %f \nZ : %f",
-		m_nowPos.x,
-		m_nowPos.y,
-		m_nowPos.z
-	);
+	//KdDebugGUI::Instance().AddLog(
+	//	"PlayerPos\nX : %f \nY : %f \nZ : %f",
+	//	m_nowPos.x,
+	//	m_nowPos.y,
+	//	m_nowPos.z
+	//);
 
 	//KdDebugGUI::Instance().AddLog(
 	//	"Gravity : %f\n",
@@ -605,16 +605,6 @@ void Player::UpdateDebug()
 	//KdDebugGUI::Instance().AddLog(
 	//	"m_skillGauge : %f\n",
 	//	m_skillGauge
-	//);
-
-	//const auto* swordNode = m_model->FindNode("sword");
-	//const auto* armNode = m_model->FindNode("lowerArm.R");
-
-	//KdDebugGUI::Instance().AddLog(
-	//	"Player : %.2f, %.2f, %.2f\n",
-	//	m_nowPos.x,
-	//	m_nowPos.y,
-	//	m_nowPos.z
 	//);
 
 	//if (armNode)
@@ -663,40 +653,40 @@ void Player::UpdateDebug()
 
 void Player::DrawDebug()
 {
-	////---------------------------------------
-	//// 通常攻撃
-	////---------------------------------------
-	//if (m_debugAttackRange > 0.0f)
-	//{
-	//	DrawDebugAttackRange(
-	//		m_debugAttackRange,
-	//		m_debugAttackWidth);
-	//}
+	//---------------------------------------
+	// 通常攻撃
+	//---------------------------------------
+	if (m_debugAttackRange > 0.0f)
+	{
+		DrawDebugAttackRange(
+			m_debugAttackRange,
+			m_debugAttackWidth);
+	}
 
 
-	////---------------------------------------
-	//// スキル
-	////---------------------------------------
-	//if (m_debugSkillRange > 0.0f)
-	//{
-	//	DrawDebugSkillRange(m_debugSkillRange);
-	//}
+	//---------------------------------------
+	// スキル
+	//---------------------------------------
+	if (m_debugSkillRange > 0.0f)
+	{
+		DrawDebugSkillRange(m_debugSkillRange);
+	}
 
 
-	////---------------------------------------
-	//// 必殺技
-	////---------------------------------------
-	//if (m_debugUltimateRange > 0.0f)
-	//{
-	//	DrawDebugUltimateRange(
-	//		m_debugUltimateRange,
-	//		m_debugUltimateWidth);
-	//}
+	//---------------------------------------
+	// 必殺技
+	//---------------------------------------
+	if (m_debugUltimateRange > 0.0f)
+	{
+		DrawDebugUltimateRange(
+			m_debugUltimateRange,
+			m_debugUltimateWidth);
+	}
 
-	////---------------------------------------
-	//// デバッグワイヤー描画
-	////---------------------------------------
-	//m_pDebugWire->Draw();
+	//---------------------------------------
+	// デバッグワイヤー描画
+	//---------------------------------------
+	m_pDebugWire->Draw();
 }
 
 void Player::PostUpdate()

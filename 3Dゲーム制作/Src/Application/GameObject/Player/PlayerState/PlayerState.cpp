@@ -887,7 +887,7 @@ void PlayerUltimate::Update(Player& owner)
 				owner.GetForward(),
 				owner.m_ultimateHitInterval,
 				owner.m_ultimateMaxHitCount,
-				4.0f
+				5.5f
 			);
 
 			owner.m_ultimateEffectPlayed = true;
@@ -914,8 +914,8 @@ void PlayerUltimate::Update(Player& owner)
 				owner.m_ultimateHitInterval;
 
 			owner.DoUltimateHitCheck(
-				4.0f,   // 正面方向の長さ
-				1.75f,   // 横幅
+				6.0f,   // 正面方向の長さ
+				7.0f,   // 横幅
 				60,	  // ダメージ
 				1.0f   // ノックバック率
 			);

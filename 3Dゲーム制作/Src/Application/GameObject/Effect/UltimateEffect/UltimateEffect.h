@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿
+#pragma once
 
 #include <Application/GameObject/Effect/EffectBase/EffectBase.h>
 
@@ -36,7 +37,7 @@ private:
 	//==========================================================
 	// 大きさ
 	//==========================================================
-	float m_width = 2.5f;
+	float m_width = 5.0f;
 	float m_height = 4.0f;
 
 	//==========================================================
@@ -55,11 +56,11 @@ private:
 	std::vector<Math::Vector3> m_trailPositions;
 
 	// 残像を残す数
-	static constexpr int kTrailCount = 5;
+	static constexpr int kTrailCount = 8;
 
 	// 残像を記録する間隔
 	float m_trailTimer = 0.0f;
 
 	// 何秒ごとに残像を記録するか
-	static constexpr float kTrailInterval = 0.025f;
+	static constexpr float kTrailInterval = 0.02f;
 };

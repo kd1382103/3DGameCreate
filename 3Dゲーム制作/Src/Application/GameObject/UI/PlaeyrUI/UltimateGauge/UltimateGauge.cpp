@@ -61,26 +61,26 @@ void UltimateGauge::DrawSprite()
 
 	const bool isMax = (m_gauge >= m_gaugeMax);
 
-	// アイコンの位置とサイズ
-	const float iconX = -550.0f;
-	const float iconY = 265.0f;
-	const float iconSize = 40.0f;
+	const int iconX = -550;
+	const int iconY = 265;
+	const int iconSize = 40;
 
-	// 通常時の色
-	Math::Color iconColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	// ゲージの充填率（0.0～1.0）
+	const float chargeRate = std::clamp(
+		m_gauge / m_gaugeMax,
+		0.0f,
+		1.0f
+	);
 
-	// 必殺技ポイントが満タンならピンク色に点滅
-	if (isMax)
-	{
-		iconColor = {
-			1.0f,
-			0.35f,
-			0.9f,
-			m_blinkAlpha
-		};
-	}
+	// 元画像のサイズ
+	const int texWidth = m_iconTex->GetInfo().Width;
+	const int texHeight = m_iconTex->GetInfo().Height;
 
-	// アイコンを描画
+	if (texWidth <= 0 || texHeight <= 0) { return; }
+
+	// アイコン全体を白色で描画
+	Math::Color whiteColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 	sprite.DrawTex(
 		m_iconTex.get(),
 		iconX,
@@ -88,7 +88,70 @@ void UltimateGauge::DrawSprite()
 		iconSize,
 		iconSize,
 		nullptr,
-		&iconColor,
+		&whiteColor,
 		{ 0.5f, 0.5f }
+	);
+
+	// 必殺技ゲージが満タンなら、全体をピンク色で点滅
+	if (isMax)
+	{
+		Math::Color pinkColor = {
+			1.0f, 0.35f, 0.9f, m_blinkAlpha
+		};
+
+		sprite.DrawTex(
+			m_iconTex.get(),
+			iconX,
+			iconY,
+			iconSize,
+			iconSize,
+			nullptr,
+			&pinkColor,
+			{ 0.5f, 0.5f }
+		);
+
+		return;
+	}
+
+	// ゲージが空なら色を重ねない
+	if (chargeRate <= 0.0f) { return; }
+
+	// 下から上に向かって色を付ける範囲を計算
+	const int fillHeight = static_cast<int>(texHeight * chargeRate);
+
+	if (fillHeight <= 0) { return; }
+
+	// 元画像の下側を切り抜く
+	Math::Rectangle srcRect(
+		0,
+		texHeight - fillHeight,
+		texWidth,
+		fillHeight
+	);
+
+	// 画面上での描画高さ
+	const int drawHeight = static_cast<int>(iconSize * chargeRate);
+
+	if (drawHeight <= 0) { return; }
+
+	// アイコンの下端を固定する。
+	// pivot の Y を 1.0f にすることで、drawY が下端の座標になる。
+	const int bottomY = iconY - iconSize / 2;
+	const int drawY = bottomY + drawHeight;
+
+	// チャージ部分をピンク色で重ねる
+	Math::Color chargeColor = {
+		1.0f, 0.35f, 0.9f, 1.0f
+	};
+
+	sprite.DrawTex(
+		m_iconTex.get(),
+		iconX,
+		drawY,
+		iconSize,
+		drawHeight,
+		&srcRect,
+		&chargeColor,
+		{ 0.5f, 1.0f }
 	);
 }

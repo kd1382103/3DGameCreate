@@ -1,4 +1,5 @@
-﻿#include "UltimateEffect.h"
+﻿
+#include "UltimateEffect.h"
 
 #include <Application/main.h>
 #include <Application/GameObject/Camera/CameraBase.h>
@@ -18,25 +19,13 @@ void UltimateEffect::Init(
 		pos
 	);
 
-	//==========================================================
 	// 必殺技の総移動時間
-	//
-	// 5フレーム × 5回 = 25フレーム
-	// 60FPS基準なので秒に変換
-	//==========================================================
 	m_effectDuration =
 		(hitInterval * maxHitCount) / 60.0f;
 
-	//==========================================================
-	// 再生時間
-	//==========================================================
 	m_lifeTime = m_effectDuration;
 
-	//==========================================================
 	// 移動速度
-	//
-	// 総移動距離 ÷ 総移動時間
-	//==========================================================
 	if (m_effectDuration > 0.0f)
 	{
 		m_moveSpeed =
@@ -47,11 +36,8 @@ void UltimateEffect::Init(
 		m_moveSpeed = 0.0f;
 	}
 
-	//==========================================================
 	// 飛んでいく方向
-	//==========================================================
 	m_direction = direction;
-
 	m_direction.y = 0.0f;
 
 	if (m_direction.LengthSquared() > 0.0001f)
@@ -63,9 +49,7 @@ void UltimateEffect::Init(
 		m_direction = { 0, 0, 1 };
 	}
 
-	//==========================================================
-	// ポリゴン生成
-	//==========================================================
+	// 斬撃ポリゴン生成
 	m_polygon =
 		std::make_shared<KdSquarePolygon>();
 
@@ -76,9 +60,7 @@ void UltimateEffect::Init(
 	m_polygon->Set2DObject(false);
 	m_polygon->SetScale(1.0f);
 
-	//==========================================================
 	// 残像初期化
-	//==========================================================
 	m_trailPositions.clear();
 	m_trailTimer = 0.0f;
 }
@@ -88,9 +70,6 @@ void UltimateEffect::Init(
 //==============================================================
 void UltimateEffect::Update()
 {
-	//==========================================================
-	// 基底更新
-	//==========================================================
 	EffectBase::Update();
 
 	if (m_isFinished)
@@ -98,12 +77,10 @@ void UltimateEffect::Update()
 		return;
 	}
 
-	//==========================================================
-	// 移動
-	//==========================================================
 	const float dt =
 		Application::Instance().GetDeltaTime();
 
+	// 移動
 	Math::Vector3 pos = GetPos();
 
 	pos +=
@@ -113,23 +90,18 @@ void UltimateEffect::Update()
 
 	SetPos(pos);
 
-
-	//==========================================================
 	// 残像位置を記録
-	//==========================================================
 	m_trailTimer += dt;
 
 	if (m_trailTimer >= kTrailInterval)
 	{
 		m_trailTimer = 0.0f;
 
-		// 現在位置を先頭に追加
 		m_trailPositions.insert(
 			m_trailPositions.begin(),
 			GetPos()
 		);
 
-		// 最大数を超えたら古いものを削除
 		if (m_trailPositions.size() > kTrailCount)
 		{
 			m_trailPositions.pop_back();
@@ -142,16 +114,18 @@ void UltimateEffect::Update()
 //==============================================================
 void UltimateEffect::DrawEffect()
 {
-	if (!m_polygon) return;
+	if (!m_polygon)
+	{
+		return;
+	}
 
+	// 進行方向に合わせて回転
 	float angle = std::atan2f(
 		m_direction.x,
 		m_direction.z
 	);
 
-	// 板ポリの向きを90度回転
 	angle -= DirectX::XM_PIDIV2;
-
 
 	//==========================================================
 	// 残像描画
@@ -160,8 +134,20 @@ void UltimateEffect::DrawEffect()
 		i >= 0;
 		--i)
 	{
+		// 古い残像ほど小さく、薄くする
+		float ratio =
+			static_cast<float>(i) /
+			static_cast<float>(kTrailCount);
+
+		float scaleX = m_width * (0.65f + ratio * 0.2f);
+		float scaleY = m_height * (0.65f + ratio * 0.2f);
+
 		Math::Matrix trailMat =
-			Math::Matrix::CreateScale(2.0f);
+			Math::Matrix::CreateScale(
+				scaleX,
+				scaleY,
+				1.0f
+			);
 
 		trailMat *=
 			Math::Matrix::CreateRotationY(angle);
@@ -173,39 +159,92 @@ void UltimateEffect::DrawEffect()
 
 		trailMat.Translation(trailPos);
 
-		// 古い残像ほど薄くする
 		float alpha =
-			0.10f +
-			0.12f *
-			(static_cast<float>(i) /
-				static_cast<float>(kTrailCount));
+			0.06f +
+			0.12f * (1.0f - ratio);
 
 		KdShaderManager::Instance()
 			.m_StandardShader.DrawPolygon(
 				*m_polygon,
 				trailMat,
 				Math::Color(
-					1.0f,
-					1.0f,
+					0.15f,
+					0.85f,
 					1.0f,
 					alpha
 				)
 			);
 	}
 
-
 	//==========================================================
-	// 本体
+	// 本体の外側：青白い大きな斬撃
 	//==========================================================
-	Math::Matrix mat =
-		Math::Matrix::CreateScale(2.5f);
+	Math::Matrix outerMat =
+		Math::Matrix::CreateScale(
+			m_width * 1.15f,
+			m_height * 1.1f,
+			1.0f
+		);
 
-	mat *=
+	outerMat *=
 		Math::Matrix::CreateRotationY(angle);
 
 	Math::Vector3 pos = GetPos();
-
 	pos.y += 1.0f;
+
+	outerMat.Translation(pos);
+
+	KdShaderManager::Instance()
+		.m_StandardShader.DrawPolygon(
+			*m_polygon,
+			outerMat,
+			Math::Color(
+				0.1f,
+				0.65f,
+				1.0f,
+				0.45f
+			)
+		);
+
+	//==========================================================
+	// 本体の内側：明るいシアンの斬撃
+	//==========================================================
+	Math::Matrix innerMat =
+		Math::Matrix::CreateScale(
+			m_width * 0.72f,
+			m_height * 0.85f,
+			1.0f
+		);
+
+	innerMat *=
+		Math::Matrix::CreateRotationY(angle);
+
+	innerMat.Translation(pos);
+
+	KdShaderManager::Instance()
+		.m_StandardShader.DrawPolygon(
+			*m_polygon,
+			innerMat,
+			Math::Color(
+				0.45f,
+				1.0f,
+				1.0f,
+				0.9f
+			)
+		);
+
+	//==========================================================
+	// 本体：元の斬撃
+	//==========================================================
+	Math::Matrix mat =
+		Math::Matrix::CreateScale(
+			m_width,
+			m_height,
+			1.0f
+		);
+
+	mat *=
+		Math::Matrix::CreateRotationY(angle);
 
 	mat.Translation(pos);
 

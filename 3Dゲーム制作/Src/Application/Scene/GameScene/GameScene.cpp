@@ -1746,7 +1746,22 @@ void GameScene::SetGameUIVisible(bool visible)
 	//---------------------------------------
 	if (m_tutorialText)
 	{
-		m_tutorialText->SetVisible(visible);
+		m_tutorialText->SetVisible(
+			visible &&
+			m_gamePhase == GamePhase::Tutorial
+		);
+	}
+
+	//---------------------------------------
+	// チュートリアル背景
+	//---------------------------------------
+	if (m_tutorialBackground)
+	{
+		m_tutorialBackground->SetVisible(
+			visible &&
+			m_gamePhase == GamePhase::Tutorial &&
+			m_tutorialStep != TutorialStep::Finish
+		);
 	}
 }
 
