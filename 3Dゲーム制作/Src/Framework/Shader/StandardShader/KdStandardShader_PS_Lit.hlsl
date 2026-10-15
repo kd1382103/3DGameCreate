@@ -215,6 +215,55 @@ float4 main(VSOutput In) : SV_Target0
 			}
 		}
 	}
+
+	for (int c = 0; c < g_ConeLight_Num; ++c)
+	{
+		ConeLight cone = g_ConeLights[c];
+
+		if (cone.enable == 0)
+		{
+			continue;
+		}
+
+		float3 toDir = cone.pos - In.wPos;
+		float len = length(toDir);
+
+		if (len < cone.range && len > 0.0f)
+		{
+			toDir = normalize(toDir);
+
+			float rad = acos(
+            saturate(dot(toDir, -normalize(cone.dir)))
+        );
+
+			if (rad < cone.angle)
+			{
+				float angleIn = cone.angle * 0.8f;
+
+				float side = 1.0f -
+                (rad - angleIn) /
+                (cone.angle - angleIn);
+
+				float atte =
+                saturate(1.0f - len / cone.range) * side;
+
+				float lightDiffuse = saturate(dot(wN, toDir));
+				lightDiffuse *= atte;
+
+				outColor +=
+                (cone.color * lightDiffuse) *
+                baseDiffuse * baseColor.a;
+
+				float spec = BlinnPhong(-toDir, vCam, wN, specPower);
+				spec *= atte;
+
+				outColor +=
+                (cone.color * spec) *
+                baseSpecular * baseColor.a * 0.5f;
+			}
+		}
+	}
+
 	outColor += g_AmbientLight.rgb * baseColor.rgb * baseColor.a;
 	
 	// 自己発光色の適応

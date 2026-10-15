@@ -38,6 +38,13 @@ void KdShaderManager::Init()
 	KdDirect3D::Instance().WorkDevContext()->VSSetConstantBuffers(9, 1, m_cb9_Light.GetAddress());
 	KdDirect3D::Instance().WorkDevContext()->PSSetConstantBuffers(9, 1, m_cb9_Light.GetAddress());
 
+	// コーンライト専用定数バッファ
+	m_cb10_ConeLight.Create();
+	m_cb10_ConeLight.Write();
+
+	KdDirect3D::Instance().WorkDevContext()->PSSetConstantBuffers(
+		10, 1, m_cb10_ConeLight.GetAddress()
+	);
 	//============================================
 	// パイプラインステート関係
 	//============================================
@@ -488,6 +495,35 @@ void KdShaderManager::WriteCBPointLight(const std::list<PointLight>& pointLights
 	m_cb9_Light.Write();
 }
 
+void KdShaderManager::WriteCBConeLights(
+	const std::vector<ConeLight>& coneLights)
+{
+	cbConeLight& light = m_cb10_ConeLight.Work();
+
+	// 使用数を最大数以内に制限
+	light.ConeLight_Num = static_cast<int>(
+		std::min(
+			coneLights.size(),
+			static_cast<size_t>(cbConeLight::MaxConeLightNum)
+		)
+		);
+
+	// 一度すべて無効化
+	for (auto& cone : light.ConeLights)
+	{
+		cone = ConeLight{};
+	}
+
+	// 配列へコピー
+	for (int i = 0; i < light.ConeLight_Num; ++i)
+	{
+		light.ConeLights[i] = coneLights[i];
+	}
+
+	// GPUへ転送
+	m_cb10_ConeLight.Write();
+}
+
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // パラメータの解放：シェーダー本体・共通の定数バッファ・各パイプラインステート
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -501,6 +537,7 @@ void KdShaderManager::Release()
 	m_cb7_Camera.Release();
 	m_cb8_Fog.Release();
 	m_cb9_Light.Release();
+	m_cb10_ConeLight.Release();
 
 	//深度ステンシルステート開放
 	for (auto& state : m_depthStencilStates)

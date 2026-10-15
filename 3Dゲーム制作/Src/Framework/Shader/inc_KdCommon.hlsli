@@ -61,3 +61,23 @@ cbuffer cbLight : register(b9)
 	    int			IsBright;		// 明度用ライトかどうか
 	} g_PointLights[100];
 };
+
+struct ConeLight
+{
+	int enable;
+	float3 pos;
+
+	float3 dir;
+	float angle;
+
+	float range;
+	float3 color;
+};
+
+cbuffer cbConeLight : register(b10)
+{
+	int g_ConeLight_Num;
+	int3 g_ConeLight_Blank;
+
+	ConeLight g_ConeLights[100];
+};

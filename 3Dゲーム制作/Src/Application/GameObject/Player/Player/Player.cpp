@@ -595,12 +595,12 @@ void Player::UpdateDebug()
 	//}
 
 
-	//KdDebugGUI::Instance().AddLog(
-	//	"PlayerPos\nX : %f \nY : %f \nZ : %f",
-	//	m_nowPos.x,
-	//	m_nowPos.y,
-	//	m_nowPos.z
-	//);
+	KdDebugGUI::Instance().AddLog(
+		"PlayerPos\nX : %f \nY : %f \nZ : %f",
+		m_nowPos.x,
+		m_nowPos.y,
+		m_nowPos.z
+	);
 
 	//KdDebugGUI::Instance().AddLog(
 	//	"Gravity : %f\n",
