@@ -353,9 +353,9 @@ public:
 	//========================================
 	// スキル
 	//========================================
-	int m_skillGaugeMax = 100;
+	int m_skillGaugeMax = 500;
 
-	float m_skillGauge = 100.0f;
+	float m_skillGauge = 0;
 	float m_skillRegen = 0.25f;
 
 	const int m_skillCost = 50;

@@ -1806,7 +1806,7 @@ void GameScene::UpdateTutorialText()
 
 		m_tutorialBackground->Init();
 		m_tutorialBackground->InitTutorial(
-			{ 0.0f, 300.0f },
+			{ 0.0f, -270.0f },
 			450.0f,
 			100.0f
 		);
@@ -1831,7 +1831,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Move:
 		m_tutorialText->InitMessage(
 			"キャラクターの移動\nWASDで前後左右に移動",
-			{ 0.0f, 320.0f },
+			{ 0.0f, -250.0f },
 			1.0f
 		);
 		break;
@@ -1839,7 +1839,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::LockOn:
 		m_tutorialText->InitMessage(
 			"Qを押すと一番近い敵をロックオンする",
-			{ 0.0f, 320.0f },
+			{ 0.0f, -270.0f },
 			1.0f
 		);
 		break;
@@ -1847,7 +1847,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Attack:
 		m_tutorialText->InitMessage(
 			"左クリックで攻撃ができる\nコンボがあり３段まで攻撃できる ",
-			{ 0.0f, 330.0f },
+			{ 0.0f, -250.0f },
 			1.0f
 		);
 		break;
@@ -1855,7 +1855,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Skill:
 		m_tutorialText->InitMessage(
 			"赤紫のスキルゲージが一定量の以上なら\nEでスキル攻撃が可能",
-			{ 0.0f, 320.0f },
+			{ 0.0f, -250.0f },
 			1.0f
 		);
 		break;
@@ -1863,7 +1863,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Ultimate:
 		m_tutorialText->InitMessage(
 			"スキルゲージの下のポイントが500なった時\nSPACEを押すと強力な攻撃が可能",
-			{ 0.0f, 320.0f },
+			{ 0.0f, -250.0f },
 			1.0f
 		);
 		break;
@@ -1871,7 +1871,7 @@ void GameScene::UpdateTutorialText()
 	case TutorialStep::Dodge:
 		m_tutorialText->InitMessage(
 			"敵は攻撃してきたときに発光する\n発光時に右クリックすると回避",
-			{ 0.0f, 320.0f },
+			{ 0.0f, -250.0f },
 			1.0f
 		);
 		break;

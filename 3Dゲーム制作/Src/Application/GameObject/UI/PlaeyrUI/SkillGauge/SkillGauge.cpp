@@ -1,42 +1,73 @@
 ﻿#include "SkillGauge.h"
 
+#include <algorithm>
+#include <cmath>
+
 void SkillGauge::Init()
 {
-	// ゲージ本体
+	// MPゲージ本体
 	m_barTex = std::make_shared<KdTexture>();
-	m_barTex->Load("Asset/Textures/UI/Gauge/Skill/SkillGauge1.png");
+	m_barTex->Load(
+		"Asset/Textures/UI/Gauge/Skill/SkillGauge1.png"
+	);
+
+	m_gauge = 0.0f;
+	m_gaugeMax = 500.0f;
+
+	m_blinkTimer = 0.0f;
+	m_blinkAlpha = 1.0f;
+	m_visible = true;
+}
+
+void SkillGauge::Update()
+{
+	// MP満タン時だけ点滅
+	if (m_gaugeMax > 0.0f && m_gauge >= m_gaugeMax)
+	{
+		m_blinkTimer += 1.0f / 60.0f;
+
+		m_blinkAlpha =
+			0.675f + 0.325f * std::sin(m_blinkTimer * 6.0f);
+	}
+	else
+	{
+		m_blinkTimer = 0.0f;
+		m_blinkAlpha = 1.0f;
+	}
 }
 
 void SkillGauge::SetGauge(float gauge, float gaugeMax)
 {
-	m_gauge = gauge;
-	m_gaugeMax = gaugeMax;
+	m_gaugeMax = (gaugeMax > 0.0f) ? gaugeMax : 1.0f;
+	m_gauge = std::clamp(gauge, 0.0f, m_gaugeMax);
 }
 
 void SkillGauge::DrawSprite()
 {
 	if (!m_visible) { return; }
-
-	// 最大値が0以下なら描画しない
 	if (m_gaugeMax <= 0.0f) { return; }
-
-	// ゲージ割合を0～1に制限
-	float rate = m_gauge / m_gaugeMax;
-	rate = std::clamp(rate, 0.0f, 1.0f);
-
-	float fullWidth = 225.0f;  // ゲージ最大幅
-	float nowWidth = fullWidth * rate;
-	float barHeight = 20.0f;
-
-	float x = -575.0f;
-	float y = 290.0f;
+	if (!m_barTex) { return; }
 
 	auto& sprite = KdShaderManager::Instance().m_spriteShader;
 
-	//===========================
-	// ① 最大ゲージ背景（黒）
-	//===========================
-	Math::Color backColor = { 0, 0, 0, 1 };
+	// MPの割合
+	const float rate = std::clamp(
+		m_gauge / m_gaugeMax,
+		0.0f,
+		1.0f
+	);
+
+	const bool isMax = (m_gauge >= m_gaugeMax);
+
+	// ゲージの位置とサイズ
+	const float x = -575.0f;
+	const float y = -320.0f;
+	const float fullWidth = 225.0f;
+	const float barHeight = 20.0f;
+	const float nowWidth = fullWidth * rate;
+
+	// 背景ゲージ
+	Math::Color backColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	sprite.DrawTex(
 		m_barTex.get(),
@@ -47,32 +78,48 @@ void SkillGauge::DrawSprite()
 		{ 0, 0 }
 	);
 
-	//===========================
-	// ② 現在のスキルゲージ
-	//===========================
+	// 現在のMPゲージ
 	if (rate > 0.0f)
 	{
-		Math::Color color = { 1.0f, 0.2f, 0.8f, 1.0f };
+		Math::Color gaugeColor;
 
+		if (isMax)
+		{
+			// 満タン時はピンク色で点滅
+			gaugeColor = {
+				1.0f,
+				0.35f,
+				0.9f,
+				m_blinkAlpha
+			};
+		}
+		else
+		{
+			// 通常時はピンク色
+			gaugeColor = {
+				1.0f,
+				0.2f,
+				0.8f,
+				1.0f
+			};
+		}
+
+		// 左から右へ伸びるゲージ
 		sprite.DrawTex(
 			m_barTex.get(),
 			x, y,
 			nowWidth, barHeight,
 			nullptr,
-			&color,
+			&gaugeColor,
 			{ 0, 0 }
 		);
 	}
 
-	//===========================
-	// ③ MPラベル
-	//===========================
+	// MPラベル
 	auto& spriteShader =
 		KdShaderManager::Instance().m_spriteShader;
 
 	KdSpriteShader::FontParam param;
-
-	param.pos = { x - 35.0f, y };
 	param.scale = 1.25f;
 	param.pivot = { 0.5f, 0.5f };
 
@@ -90,27 +137,24 @@ void SkillGauge::DrawSprite()
 
 	for (const auto& offset : offsets)
 	{
-		param.pos =
-		{
+		param.pos = {
 			x - 20.0f + offset.x,
-			y + 10.0f + offset.y
+			y + offset.y
 		};
 
 		param.color = outlineColor;
-
-		spriteShader.DrawFontEx(
-			param,
-			"%s",
-			"MP"
-		);
+		spriteShader.DrawFontEx(param, "%s", "MP");
 	}
 
-	param.pos = { x - 20.0f, y + 10.0f };
-	param.color = { 1.0f, 0.2f, 0.8f, 1.0f };
+	// MP文字本体
+	param.pos = { x - 20.0f, y };
+	param.color = isMax
+		? Math::Color(
+			1.0f, 0.35f, 0.9f, m_blinkAlpha
+		)
+		: Math::Color(
+			1.0f, 0.2f, 0.8f, 1.0f
+		);
 
-	spriteShader.DrawFontEx(
-		param,
-		"%s",
-		"MP"
-	);
+	spriteShader.DrawFontEx(param, "%s", "MP");
 }

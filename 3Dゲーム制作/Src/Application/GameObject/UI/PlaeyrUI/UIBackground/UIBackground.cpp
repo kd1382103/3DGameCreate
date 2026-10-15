@@ -50,7 +50,6 @@ void UIBackground::InitTutorial(
 // DrawBoxのx,yは中心座標
 // halfWidth,halfHeightは半分のサイズ
 //==================================================
-
 void UIBackground::DrawPanel(
 	int x,
 	int y,
@@ -63,7 +62,7 @@ void UIBackground::DrawPanel(
 	// 半透明描画を有効にする
 	shaderManager.ChangeBlendState(KdBlendState::Alpha);
 
-	// 内側：明るい灰色で半透明に塗りつぶす
+	// 内側：灰色の半透明パネル
 	Math::Color panelColor = {
 		0.75f, 0.75f, 0.75f, 0.25f
 	};
@@ -71,29 +70,16 @@ void UIBackground::DrawPanel(
 	shader.DrawBox(
 		x,
 		y,
-		halfWidth - 2,
-		halfHeight - 2,
-		&panelColor,
-		true
-	);
-
-	// 外枠：白い線だけを描画する
-	Math::Color borderColor = {
-		1.0f, 1.0f, 1.0f, 1.0f
-	};
-
-	shader.DrawBox(
-		x,
-		y,
 		halfWidth,
 		halfHeight,
-		&borderColor,
-		false
+		&panelColor,
+		true
 	);
 
 	// 描画前のブレンド状態に戻す
 	shaderManager.UndoBlendState();
 }
+
 //==================================================
 // 描画
 //==================================================
@@ -126,7 +112,7 @@ void UIBackground::DrawSprite()
 	// ひとつの四角形パネルにまとめる
 	DrawPanel(
 		-485,
-		300,
+		-300,
 		150,
 		60
 	);

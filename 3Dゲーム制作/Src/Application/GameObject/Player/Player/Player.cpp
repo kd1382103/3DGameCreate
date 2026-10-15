@@ -191,11 +191,16 @@ void Player::Update()
 	UpdateDodgeSlow(scaledFrameScale);
 
 	//========================================
-	// 必殺技ポイント加算
+	// 攻撃を当てたらポイント増加
 	//========================================
 	if (m_canGainUltimate && m_attackContact)
 	{
-		AddUltimateEnergy(2.0f * frameScale);
+		m_skillGauge += 2.0f * frameScale;
+
+		if (m_skillGauge > m_skillGaugeMax)
+		{
+			m_skillGauge = m_skillGaugeMax;
+		}
 	}
 
 	//========================================
@@ -261,7 +266,12 @@ void Player::UpdateInput()
 				//========================================
 				if (!m_isTutorial)
 				{
-					AddUltimateEnergy(10.0f);
+					m_skillGauge += 10.0f;
+
+					if (m_skillGauge > m_skillGaugeMax)
+					{
+						m_skillGauge = m_skillGaugeMax;
+					}
 				}
 
 				//========================================
@@ -433,13 +443,6 @@ void Player::UpdateGravity(float dt)
 
 void Player::UpdateUIGauge(float dt)
 {
-	m_skillGauge += m_skillRegen * dt;
-
-	if (m_skillGauge > m_skillGaugeMax)
-	{
-		m_skillGauge = m_skillGaugeMax;
-	}
-
 	//========================================
 	// UI更新
 	//========================================
@@ -459,6 +462,8 @@ void Player::UpdateUIGauge(float dt)
 			m_nowHp,
 			m_hpGaugeMax
 		);
+
+		ui->Update();
 	}
 
 	if (auto ui =
@@ -1179,6 +1184,7 @@ void Player::DoAttackHitCheckMulti(
 		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
 		BossBase* boss = dynamic_cast<BossBase*>(obj.get());
 
+		if (!enemy && !boss) continue;
 		if (!enemy && !boss) continue;
 
 		if (enemy && !enemy->IsAlive()) continue;

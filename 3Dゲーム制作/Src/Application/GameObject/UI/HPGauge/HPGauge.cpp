@@ -68,7 +68,7 @@ void HPGauge::DrawSprite()
 	{
 		// プレイヤー用固定座標
 		x = -575.0f;
-		y = 320.0f;
+		y = -290.0f;
 	}
 	else
 	{
@@ -212,7 +212,7 @@ void HPGauge::DrawSprite()
 			);
 		}
 
-		param.pos = { x - 20.0f, y + 10.0f };
+		param.pos = { x - 20.0f, y +10.0f};
 		param.color = { 0, 1, 0, 1 };
 
 		spriteShader.DrawFontEx(
