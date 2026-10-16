@@ -588,8 +588,9 @@ void PlayerStateSkill::Update(Player& owner)
 		owner.DoAttackHitCheckMulti(
 			2.5f,
 			100.0f,
-			100,
-			3.0f
+			20,
+			3.0f,
+			true
 		);
 	}
 

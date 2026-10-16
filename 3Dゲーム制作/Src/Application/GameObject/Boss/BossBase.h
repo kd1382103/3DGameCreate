@@ -37,12 +37,13 @@ public:
 		m_wpCamera = cam;
 	}
 
-	void Damage(
+	void DamageBoss(
 		float dmg,
 		bool isUltimate,
 		bool finalHit,
-		float knockBackRate
-	) override;
+		float knockBackRate = 1.0f,
+		bool interruptAttack = false
+	);
 
 	//==============================================================
 	// 攻撃判定
@@ -363,7 +364,8 @@ public:
 	float m_collisionHeight = 1.0f;
 
 private:
-		//==============================================================
+
+	//==============================================================
 	// Resolve
 	//==============================================================
 

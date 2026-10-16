@@ -64,3 +64,13 @@ public:
 	void Enter(BossBase& owner) override;
 	void Update(BossBase& owner) override;
 };
+
+//==============================================================
+// 被弾
+//==============================================================
+class BossStateHit : public StateBase<BossBase>
+{
+public:
+	void Enter(BossBase& owner) override;
+	void Update(BossBase& owner) override;
+};

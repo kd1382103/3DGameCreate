@@ -727,3 +727,33 @@ void BossStateAttackBase::GoNextAttack(
 		break;
 	}
 }
+
+// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+// 被弾ステート
+// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+
+void BossStateHit::Enter(BossBase& owner)
+{
+	// 被弾アニメーション再生
+	owner.PlayAnimationAuto("Hit", false);
+}
+
+
+void BossStateHit::Update(BossBase& owner)
+{
+	// 被弾アニメーションが終了するまで待つ
+	if (!owner.m_animator.IsAnimationEnd())
+	{
+		return;
+	}
+
+	// 被弾アニメーション終了後、待機状態へ
+	owner.m_isComboStarted = false;
+	owner.m_attackPatternIndex = 0;
+	owner.m_attackPattern.clear();
+
+	owner.stateMachine->ChangeState(
+		std::make_unique<BossStateIdle>()
+	);
+}
+

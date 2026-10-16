@@ -602,26 +602,29 @@ void BossBase::GenerateDepthMapFromLight()
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
+
 //==============================================================
-// Damage
+// ボスへのダメージ処理
 //==============================================================
-void BossBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRate)
+void BossBase::DamageBoss(
+	float dmg,
+	bool isUltimate,
+	bool finalHit,
+	float knockBackRate,
+	bool interruptAttack
+)
 {
 	//==========================================================
 	// ダメージ表示
 	//==========================================================
-	auto fly =
-		std::make_shared<FontText>();
+	auto fly = std::make_shared<FontText>();
 
 	fly->Init(
-		m_nowPos +
-		Math::Vector3(0, 2.0f, 0),
+		m_nowPos + Math::Vector3(0, 2.0f, 0),
 		(int)dmg
 	);
 
-	fly->SetCamera(
-		m_wpCamera.lock()
-	);
+	fly->SetCamera(m_wpCamera.lock());
 
 	SceneManager::Instance().AddObject(fly);
 
@@ -634,27 +637,19 @@ void BossBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBack
 	);
 
 	//==========================================================
-	// HP
+	// HP更新
 	//==========================================================
 	float before = m_hp;
 
-	float after =
-		std::max(
-			0.0f,
-			before - dmg
-		);
+	float after = std::max(
+		0.0f,
+		before - dmg
+	);
 
 	if (m_hpGauge)
 	{
-		m_hpGauge->OnDamage(
-			before,
-			after
-		);
-
-		m_hpGauge->SetGauge(
-			after,
-			m_hpMax
-		);
+		m_hpGauge->OnDamage(before, after);
+		m_hpGauge->SetGauge(after, m_hpMax);
 	}
 
 	m_hp = after;
@@ -662,17 +657,61 @@ void BossBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBack
 	//==========================================================
 	// 死亡
 	//==========================================================
-	if (m_hp <= 0)
+	if (m_hp <= 0.0f)
 	{
 		m_isExpired = true;
-
 		return;
+	}
+
+	//==========================================================
+	// ノックバック
+	// 通常攻撃・スキル・必殺技で実行
+	//==========================================================
+	if (auto player = m_wpPlayer.lock())
+	{
+		Math::Vector3 knockDir =
+			m_nowPos - player->GetPos();
+
+		knockDir.y = 0.0f;
+
+		if (knockDir.LengthSquared() > 0.00001f)
+		{
+			knockDir.Normalize();
+
+			m_nowPos +=
+				knockDir *
+				(m_knockBackPower * knockBackRate);
+		}
+
+		// 必殺技の攻撃時は回避受付を終了
+		if (isUltimate)
+		{
+			player->m_canDodge = false;
+		}
+	}
+
+	//==========================================================
+	// 強攻撃・必殺技でボスの攻撃を中断
+	//==========================================================
+	if (!interruptAttack && !isUltimate)
+	{
+		return;
+	}
+
+	//==========================================================
+	// 被弾ステートへ移行
+	//==========================================================
+	if (stateMachine)
+	{
+		stateMachine->ChangeState(
+			std::make_unique<BossStateHit>()
+		);
 	}
 
 	//==========================================================
 	// ヒットストップ
 	//==========================================================
-	m_hitStopTimer = 0.35f;
+	m_hitStopTimer = finalHit ? 0.5f : 0.35f;
 
 	//==========================================================
 	// 攻撃予知解除
@@ -680,44 +719,7 @@ void BossBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBack
 	m_preAttackActive = false;
 	m_preAttackAlpha = 0.0f;
 	m_preAttackTimer = 0.0f;
-
-	//==========================================================
-	// 回避受付終了・ノックバック
-	//==========================================================
-	if (auto player = m_wpPlayer.lock())
-	{
-		player->m_canDodge = false;
-
-		Math::Vector3 knockDir =
-			m_nowPos -
-			player->GetPos();
-
-		knockDir.y = 0.0f;
-
-		if (knockDir.LengthSquared() >
-			0.00001f)
-		{
-			knockDir.Normalize();
-
-			if (isUltimate)
-			{
-				if (finalHit)
-				{
-					m_nowPos += knockDir * m_knockBackPower;
-				}
-				else
-				{
-					m_nowPos += knockDir * (m_knockBackPower * 0.2f);
-				}
-			}
-			else
-			{
-				m_nowPos += knockDir * m_knockBackPower;
-			}
-		}
-	}
 }
-
 //==============================================================
 // 攻撃判定
 //==============================================================

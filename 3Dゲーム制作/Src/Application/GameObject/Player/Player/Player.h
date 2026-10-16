@@ -109,7 +109,7 @@ public:
 	//========================================
 	// 攻撃判定
 	//========================================
-	void DoAttackHitCheckMulti(float range, float width, int damage, float knockBackRate);
+	void DoAttackHitCheckMulti(float range, float width, int damage, float knockBackRate ,bool bossHitAnimation = false);
 
 	//必殺技用
 	void DoUltimateHitCheck(float range, float width, int damage, float knockBackRate);

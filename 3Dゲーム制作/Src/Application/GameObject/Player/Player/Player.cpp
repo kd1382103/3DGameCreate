@@ -1163,7 +1163,8 @@ void Player::DoAttackHitCheckMulti(
 	float range,
 	float width,
 	int damage,
-	float knockBackRate
+	float knockBackRate,
+	bool bossHitAnimation
 )
 {
 	if (m_attackHitOnce) return;
@@ -1233,13 +1234,15 @@ void Player::DoAttackHitCheckMulti(
 				knockBackRate
 			);
 		}
+
 		else if (boss)
 		{
-			boss->Damage(
+			boss->DamageBoss(
 				damage,
-				false,
-				false,
-				knockBackRate
+				false,              // 必殺技ではない
+				false,              // 最終段ではない
+				knockBackRate,      // ノックバック倍率
+				bossHitAnimation    // 強攻撃ならボスの攻撃を中断
 			);
 		}
 
@@ -1357,13 +1360,15 @@ void Player::DoUltimateHitCheck(float range, float width, int damage, float knoc
 					1.0f
 				);
 			}
+
 			else if (boss)
 			{
-				boss->Damage(
+				boss->DamageBoss(
 					damage,
-					true,
-					finalHit,
-					1.0f
+					true,       // 必殺技
+					finalHit,   // 必殺技の最終段か
+					1.0f,       // ノックバック倍率
+					true        // ボスの攻撃を中断
 				);
 			}
 

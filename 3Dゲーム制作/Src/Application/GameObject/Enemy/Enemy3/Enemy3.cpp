@@ -3,7 +3,7 @@
 void Enemy3::Init(int battleNo)
 {
 	m_model = std::make_shared<KdModelWork>();
-	m_model->SetModelData("Asset/Models/Enemy/EnemyRobot/Enemy.gltf");
+	m_model->SetModelData("Asset/Models/Enemy/EnemyRobot/Enemy3/Enemy.gltf");
 
 	EnemyBase::Init();
 
