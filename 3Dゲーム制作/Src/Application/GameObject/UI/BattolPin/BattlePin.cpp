@@ -404,8 +404,14 @@ void BattlePin::DrawSprite()
 	//==========================================================
 	// ワールド座標 → スクリーン座標
 	//==========================================================
+	Math::Vector3 pinDrawPos = m_pos;
+
+	// 地面から少し浮かせる
+	pinDrawPos.y += m_pinHeight;
+
+	// 浮かせた位置をスクリーン座標に変換
 	Math::Vector2 screen =
-		m_camera->WorldToScreen(m_pos);
+		m_camera->WorldToScreen(pinDrawPos);
 
 	const float halfWidth = 640.0f;
 	const float halfHeight = 360.0f;
@@ -422,11 +428,28 @@ void BattlePin::DrawSprite()
 	//==========================================================
 	// 画面内：通常のピンと距離表示
 	//==========================================================
+
 	if (insideScreen)
 	{
-		const float size = 128.0f * m_scale;
+		// 基本サイズ
+		const float baseSize = 128.0f * m_scale;
 
-		auto& sprite =
+		// プレイヤーとピンの距離から拡大率を計算
+		float t = 0.0f;
+
+		if (m_pinGrowDistance > 0.0f)
+		{
+			t = (m_pinGrowDistance - distance)
+				/ m_pinGrowDistance;
+
+			t = std::clamp(t, 0.0f, 1.0f);
+		}
+
+		// 遠いときは1倍、近づくと最大2.5倍
+		const float scale =
+			1.0f + (m_pinMaxScale - 1.0f) * t;
+
+		const float size = baseSize * scale;		auto& sprite =
 			KdShaderManager::Instance().m_spriteShader;
 
 		Math::Color pinColor =
@@ -448,6 +471,7 @@ void BattlePin::DrawSprite()
 			{ 0.5f, 0.5f }
 		);
 
+		// 距離表示
 		if (m_distanceText)
 		{
 			Math::Vector2 distancePos = screen;
@@ -467,6 +491,7 @@ void BattlePin::DrawSprite()
 
 		return;
 	}
+
 
 	//==========================================================
 	// 画面外：最寄りの画面端を求める

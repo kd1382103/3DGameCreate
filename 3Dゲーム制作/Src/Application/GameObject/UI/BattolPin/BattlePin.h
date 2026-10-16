@@ -138,6 +138,15 @@ private:
 	std::shared_ptr<KdSquarePolygon> m_pinPoly;
 	float m_scale = 0.6f;
 
+	// この距離以内に入ると拡大する
+	float m_pinGrowDistance = 20.0f;
+
+	// 最接近時の最大倍率
+	float m_pinMaxScale = 2.5f;
+
+	// 地面から浮かせる高さ
+	float m_pinHeight = 1.5f;
+
 	//==========================================================
 	// 距離表示
 	//==========================================================
