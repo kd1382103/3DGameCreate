@@ -29,6 +29,9 @@ public:
 		const std::vector<LightData>& lights
 	);
 
+	// ボスエリア専用コーンライト
+	void SetBossConeLight(const LightData& light);
+
 private:
 	std::shared_ptr<KdModelData> m_model;
 	std::shared_ptr<KdModelData> m_lightModel;

@@ -61,7 +61,7 @@ void SkillGauge::DrawSprite()
 
 	// ゲージの位置とサイズ
 	const float x = -575.0f;
-	const float y = -320.0f;
+	const float y = -335.0f;
 	const float fullWidth = 225.0f;
 	const float barHeight = 20.0f;
 	const float nowWidth = fullWidth * rate;
@@ -139,15 +139,15 @@ void SkillGauge::DrawSprite()
 	{
 		param.pos = {
 			x - 20.0f + offset.x,
-			y + offset.y
+			y +10.0f+ offset.y
 		};
 
 		param.color = outlineColor;
-		spriteShader.DrawFontEx(param, "%s", "MP");
+		spriteShader.DrawFontEx(param, "%s", "ULT");
 	}
 
 	// MP文字本体
-	param.pos = { x - 20.0f, y };
+	param.pos = { x - 20.0f, y + 10.0f };
 	param.color = isMax
 		? Math::Color(
 			1.0f, 0.35f, 0.9f, m_blinkAlpha
@@ -156,5 +156,5 @@ void SkillGauge::DrawSprite()
 			1.0f, 0.2f, 0.8f, 1.0f
 		);
 
-	spriteShader.DrawFontEx(param, "%s", "MP");
+	spriteShader.DrawFontEx(param, "%s", "ULT");
 }

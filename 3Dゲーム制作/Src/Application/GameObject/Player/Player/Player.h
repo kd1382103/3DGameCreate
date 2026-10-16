@@ -140,9 +140,14 @@ public:
 		return m_hpGaugeMax;
 	}
 
-	void SetUltimateEnergyMax()
+	void SetSkillGaugeMax()
 	{
-		m_ultimateEnergy = m_ultimateEnergyMax;
+		m_skillGauge = m_skillGaugeMax;
+	}
+
+	void ResetSkillGauge()
+	{
+		m_skillGauge = 0.0f;
 	}
 
 	bool IsUltimateActivated() const
@@ -358,7 +363,7 @@ public:
 	float m_skillGauge = 0;
 	float m_skillRegen = 0.25f;
 
-	const int m_skillCost = 50;
+	const int m_skillCost = m_skillGaugeMax;
 
 	//========================================
 	// 必殺技

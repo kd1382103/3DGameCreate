@@ -3,10 +3,10 @@
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/Boss/BossBase.h>
-#include <Application/GameObject/Stages/BattleArea/BattleArea.h>
+//#include <Application/GameObject/Stages/BattleArea/BattleArea.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
-#include <Application/GameObject/UI/PlaeyrUI/UltimateGauge/UltimateGauge.h>
+//#include <Application/GameObject/UI/PlaeyrUI/UltimateGauge/UltimateGauge.h>
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/main.h>
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
@@ -466,17 +466,17 @@ void Player::UpdateUIGauge(float dt)
 		ui->Update();
 	}
 
-	if (auto ui =
-		GetUI<UltimateGauge>(UIType::UltimateGauge))
-	{
-		ui->SetGauge(
-			m_ultimateEnergy,
-			m_ultimateEnergyMax
-		);
+	//if (auto ui =
+	//	GetUI<UltimateGauge>(UIType::UltimateGauge))
+	//{
+	//	ui->SetGauge(
+	//		m_ultimateEnergy,
+	//		m_ultimateEnergyMax
+	//	);
 
-		// 満タン時の点滅を更新
-		ui->Update();
-	}
+	//	// 満タン時の点滅を更新
+	//	ui->Update();
+	//}
 }
 
 void Player::UpdatePendingDamage()
@@ -651,9 +651,8 @@ void Player::UpdateDebug()
 
 	if (GetAsyncKeyState('2') & 0x8000)
 	{
-		m_ultimateEnergy =
-			m_ultimateEnergyMax;
-	}	
+		m_skillGauge = static_cast<float>(m_skillGaugeMax);
+	}
 }
 
 void Player::DrawDebug()
@@ -832,14 +831,14 @@ void Player::DrawSprite()
 		ui->DrawSprite();
 	}
 
-	// 必殺技ポイントUI
-	if (m_ultimatePointVisible)
-	{
-		if (auto ui = GetUI<UltimateGauge>(UIType::UltimateGauge))
-		{
-			ui->DrawSprite();
-		}
-	}
+	//// 必殺技ポイントUI
+	//if (m_ultimatePointVisible)
+	//{
+	//	if (auto ui = GetUI<UltimateGauge>(UIType::UltimateGauge))
+	//	{
+	//		ui->DrawSprite();
+	//	}
+	//}
 }
 
 void Player::GenerateDepthMapFromLight()

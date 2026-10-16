@@ -102,7 +102,7 @@ private:
 	void InitTutorialEnemy();
 	void InitUI();
 
-	void InitPointLights();
+	void InitLights();
 
 	//========================================
 	// ゲーム進行
@@ -113,13 +113,12 @@ private:
 	// チュートリアル
 	//========================================
 	void UpdateTutorial();
-
 	void UpdateTutorialComplete();
 	void UpdatePrepare();
 	void UpdateBattle();
 	void UpdateBoss();
 	void UpdateGameEnd();
-
+	void UpdateLight();
 	//========================================
 	// ゲーム終了
 	//========================================

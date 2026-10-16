@@ -17,10 +17,9 @@ void PlayerStateIdle::Enter(Player& owner)
 void PlayerStateIdle::Update(Player& owner)
 {
 	//========================================
-	// スキル
+	// 強通常攻撃（Eキー）
 	//========================================
-	if (owner.IsSkillInput() &&
-		owner.m_skillGauge >= owner.m_skillCost)
+	if (owner.IsSkillInput())
 	{
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerStateSkill>()
@@ -29,10 +28,11 @@ void PlayerStateIdle::Update(Player& owner)
 	}
 
 	//========================================
-	// 必殺技
+	// スキル（Spaceキー）
+	// MPが足りている場合のみ発動
 	//========================================
 	if (owner.IsUltimateInput() &&
-		owner.m_ultimateEnergy >= owner.m_ultimateEnergyMax)
+		owner.m_skillGauge >= owner.m_skillCost)
 	{
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerUltimate>()
@@ -41,7 +41,7 @@ void PlayerStateIdle::Update(Player& owner)
 	}
 
 	//========================================
-	// 攻撃
+	// 弱通常攻撃（左クリック）
 	//========================================
 	if (owner.IsAttackInput())
 	{
@@ -52,7 +52,7 @@ void PlayerStateIdle::Update(Player& owner)
 	}
 
 	//========================================
-	// 回避
+	// 回避（右クリック）
 	//========================================
 	if (owner.IsDodgeInput())
 	{
@@ -79,7 +79,6 @@ void PlayerStateIdle::Update(Player& owner)
 				std::make_unique<PlayerStateWalk>()
 			);
 		}
-
 		return;
 	}
 }
@@ -90,21 +89,9 @@ void PlayerStateIdle::Update(Player& owner)
 void PlayerStateMove::Update(Player& owner)
 {
 	//========================================
-	// 移動入力が消えたら Idle
+	// 強通常攻撃（Eキー）
 	//========================================
-	if (!owner.IsMoveInput())
-	{
-		owner.stateMachine->ChangeState(
-			std::make_unique<PlayerStateIdle>()
-		);
-		return;
-	}
-
-	//========================================
-	// スキル
-	//========================================
-	if (owner.IsSkillInput() &&
-		owner.m_skillGauge >= owner.m_skillCost)
+	if (owner.IsSkillInput())
 	{
 		owner.stateMachine->ChangeStateImmediate(
 			std::make_unique<PlayerStateSkill>(),
@@ -114,10 +101,10 @@ void PlayerStateMove::Update(Player& owner)
 	}
 
 	//========================================
-	// 必殺技
+	// スキル（Spaceキー）
 	//========================================
 	if (owner.IsUltimateInput() &&
-		owner.m_ultimateEnergy >= owner.m_ultimateEnergyMax)
+		owner.m_skillGauge >= owner.m_skillCost)
 	{
 		owner.stateMachine->ChangeState(
 			std::make_unique<PlayerUltimate>()
@@ -126,7 +113,7 @@ void PlayerStateMove::Update(Player& owner)
 	}
 
 	//========================================
-	// 攻撃
+	// 弱通常攻撃（左クリック）
 	//========================================
 	if (owner.IsAttackInput())
 	{
@@ -148,16 +135,24 @@ void PlayerStateMove::Update(Player& owner)
 	}
 
 	//========================================
-	// 60FPS基準のフレーム倍率
+	// 移動入力がなくなったらIdle
+	//========================================
+	if (!owner.IsMoveInput())
+	{
+		owner.stateMachine->ChangeState(
+			std::make_unique<PlayerStateIdle>()
+		);
+		return;
+	}
+
+	//========================================
+	// フレーム倍率
 	//========================================
 	const float frameScale =
 		Application::Instance()
 		.GetFPSController()
 		.GetFrameScale();
 
-	//========================================
-	// ゲーム全体の速度
-	//========================================
 	const float timeScale =
 		SceneManager::Instance().GetTimeScale();
 
@@ -165,59 +160,54 @@ void PlayerStateMove::Update(Player& owner)
 		frameScale * timeScale;
 
 	//========================================
-	// キャラ回転
+	// キャラクター回転
 	//========================================
+	Math::Vector3 nowDir = owner.GetForward();
+	Math::Vector3 targetDir = owner.m_dir;
+
+	nowDir.y = 0.0f;
+	targetDir.y = 0.0f;
+
+	if (nowDir.LengthSquared() > 0.0001f &&
+		targetDir.LengthSquared() > 0.0001f)
 	{
-		Math::Vector3 nowDir = owner.GetForward();
-		Math::Vector3 targetDir = owner.m_dir;
+		nowDir.Normalize();
+		targetDir.Normalize();
 
-		nowDir.y = 0.0f;
-		targetDir.y = 0.0f;
+		const float dot = std::clamp(
+			nowDir.Dot(targetDir),
+			-1.0f,
+			1.0f
+		);
 
-		if (nowDir.LengthSquared() > 0.0001f &&
-			targetDir.LengthSquared() > 0.0001f)
+		float angle = acos(dot);
+
+		const Math::Vector3 cross =
+			nowDir.Cross(targetDir);
+
+		if (cross.y < 0.0f)
 		{
-			nowDir.Normalize();
-			targetDir.Normalize();
-
-			float dot =
-				std::clamp(
-					nowDir.Dot(targetDir),
-					-1.0f,
-					1.0f
-				);
-
-			float angle = acos(dot);
-
-			Math::Vector3 cross =
-				nowDir.Cross(targetDir);
-
-			if (cross.y < 0)
-			{
-				angle = -angle;
-			}
-
-			float rotSpeed =
-				DirectX::XMConvertToRadians(
-					owner.m_rotationSpeedDeg
-				);
-
-			// FPSに依存しないようにする
-			angle =
-				std::clamp(
-					angle,
-					-rotSpeed * scaledFrameScale,
-					rotSpeed * scaledFrameScale
-				);
-
-			owner.m_angleY += angle;
+			angle = -angle;
 		}
+
+		const float rotSpeed =
+			DirectX::XMConvertToRadians(
+				owner.m_rotationSpeedDeg
+			);
+
+		angle = std::clamp(
+			angle,
+			-rotSpeed * scaledFrameScale,
+			rotSpeed * scaledFrameScale
+		);
+
+		owner.m_angleY += angle;
 	}
 
 	//========================================
 	// 移動
 	//========================================
-	float moveSpeed =
+	const float moveSpeed =
 		owner.m_running
 		? owner.m_runSpeed
 		: owner.m_walkSpeed;
@@ -513,11 +503,6 @@ void PlayerStateSkill::Enter(Player& owner)
 	owner.PlayAnimationAuto("Skill", false);
 
 	//==========================================================
-	// スキルゲージ消費
-	//==========================================================
-	owner.m_skillGauge -= owner.m_skillCost;
-
-	//==========================================================
 	// 初期化
 	//==========================================================
 	owner.m_dir = Math::Vector3::Zero;
@@ -716,6 +701,16 @@ void PlayerStateDodge::Enter(Player& owner)
 	//========================================
 	owner.m_dir =
 		Math::Vector3::Zero;
+
+	//========================================
+	// 回避時のMP加算
+	//========================================
+	owner.m_skillGauge += 10.0f;
+
+	if (owner.m_skillGauge > owner.m_skillGaugeMax)
+	{
+		owner.m_skillGauge = owner.m_skillGaugeMax;
+	}
 }
 
 
@@ -826,11 +821,12 @@ void PlayerUltimate::Enter(Player& owner)
 	owner.m_attackSEPlayed = false;
 	owner.StartSwordTrail();
 
+	// ULT 消費
+	owner.m_skillGauge -= owner.m_skillCost;
 
-	//========================================
-	// ゲージ消費
-	//========================================
-	owner.m_ultimateEnergy = 0;
+	// 0未満にならないようにする
+	owner.m_skillGauge =
+		std::max(0.0f, owner.m_skillGauge);
 
 	//========================================
 	// 必殺技ヒット情報リセット
