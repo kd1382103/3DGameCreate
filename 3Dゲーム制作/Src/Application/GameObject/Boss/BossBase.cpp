@@ -59,6 +59,20 @@ void BossBase::Update()
 	}
 
 	//========================================
+	// Death（死亡演出）
+	//========================================
+	if (m_isDying)
+	{
+		const float frameScale =
+			Application::Instance()
+			.GetFPSController()
+			.GetFrameScale();
+
+		UpdateDeath(frameScale);
+		return;
+	}
+
+	//========================================
 	// Resolve（出現演出）
 	//========================================
 	if (m_isResolving)
@@ -70,9 +84,7 @@ void BossBase::Update()
 
 		UpdateResolve(frameScale);
 
-		//========================================
 		// リゾルブ中もIdleアニメーションを再生
-		//========================================
 		if (m_model)
 		{
 			m_animator.AdvanceTime(
@@ -413,10 +425,38 @@ void BossBase::PostUpdate()
 //==============================================================
 // DrawLit
 //==============================================================
+//==============================================================
+// DrawLit
+//==============================================================
 void BossBase::DrawLit()
 {
 	if (!m_model) return;
 
+	//========================================
+	// 死亡演出
+	//========================================
+	if (m_isDying)
+	{
+		KdShaderManager::Instance()
+			.m_StandardShader.SetDissolve(
+				m_deathDissolve,
+				&m_deathEdgeRange,
+				&m_deathEmissive
+			);
+
+		KdShaderManager::Instance()
+			.m_StandardShader.DrawModel(
+				*m_model,
+				m_mWorld,
+				{ 0.6f, 0.35f, 1.0f, 1.0f }
+			);
+
+		return;
+	}
+
+	//========================================
+	// 出現演出
+	//========================================
 	if (m_isResolving)
 	{
 		KdShaderManager::Instance()
@@ -436,7 +476,9 @@ void BossBase::DrawLit()
 		return;
 	}
 
+	//========================================
 	// 通常描画
+	//========================================
 	KdShaderManager::Instance()
 		.m_StandardShader.DrawModel(
 			*m_model,
@@ -450,7 +492,7 @@ void BossBase::DrawLit()
 //==============================================================
 void BossBase::DrawSprite()
 {
-	if (m_isResolving)
+	if (m_isDying || m_isResolving)
 	{
 		return;
 	}
@@ -614,6 +656,12 @@ void BossBase::DamageBoss(
 	bool interruptAttack
 )
 {
+	// 死亡中・出現中はダメージを受け付けない
+	if (m_isDying || m_isResolving)
+	{
+		return;
+	}
+
 	//==========================================================
 	// ダメージ表示
 	//==========================================================
@@ -655,11 +703,11 @@ void BossBase::DamageBoss(
 	m_hp = after;
 
 	//==========================================================
-	// 死亡
+	// 死亡演出開始
 	//==========================================================
 	if (m_hp <= 0.0f)
 	{
-		m_isExpired = true;
+		StartDeath();
 		return;
 	}
 
@@ -821,6 +869,103 @@ void BossBase::StartResolve()
 	SetHPGaugeVisible(false);
 
 	PlayAnimationAuto("Idel", true);
+}
+
+//==============================================================
+// Death開始
+//==============================================================
+void BossBase::StartDeath()
+{
+	// 二重開始を防ぐ
+	if (m_isDying)
+	{
+		return;
+	}
+
+	m_isDying = true;
+
+	m_isDeathDissolving = false;
+	m_deathTimer = 0.0f;
+	m_deathDissolve = 0.0f;
+
+	// 攻撃関連を停止
+	m_preAttackActive = false;
+	m_preAttackAlpha = 0.0f;
+	m_preAttackTimer = 0.0f;
+
+	m_attackHitOnce = true;
+	m_attackSEPlayed = false;
+
+	// ロックオンを解除
+	m_lockOnActive = false;
+
+	// HPゲージを非表示
+	SetHPGaugeVisible(false);
+
+	// 死亡アニメーションを再生
+	PlayAnimationAuto("Death", false);
+}
+
+//==============================================================
+// Death更新
+//==============================================================
+void BossBase::UpdateDeath(float frameScale)
+{
+	if (!m_model)
+	{
+		m_isExpired = true;
+		return;
+	}
+
+	//========================================
+	// 死亡アニメーション
+	//========================================
+	if (!m_isDeathDissolving)
+	{
+		m_animator.AdvanceTime(
+			m_model->WorkNodes(),
+			frameScale
+		);
+
+		if (m_model->NeedCalcNodeMatrices())
+		{
+			m_model->CalcNodeMatrices();
+		}
+
+		// アニメーションが終了したらディゾルブ開始
+		if (m_animator.IsAnimationEnd())
+		{
+			m_isDeathDissolving = true;
+			m_deathTimer = 0.0f;
+			m_deathDissolve = 0.0f;
+		}
+
+		return;
+	}
+
+	//========================================
+	// ディゾルブで消滅
+	//========================================
+	m_deathTimer += frameScale;
+
+	float t =
+		m_deathTimer / m_deathDuration;
+
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	// 0.0 → 1.0 で消える
+	m_deathDissolve = t;
+
+	//========================================
+	// 演出終了
+	//========================================
+	if (m_deathTimer >= m_deathDuration)
+	{
+		m_deathTimer = m_deathDuration;
+		m_deathDissolve = 1.0f;
+
+		m_isExpired = true;
+	}
 }
 
 //==============================================================

@@ -88,34 +88,22 @@ void TitleImage::Update()
 
 void TitleImage::DrawSprite()
 {
-	////---------------------------------------
-	//// タイトル背景
-	////---------------------------------------
-	//KdShaderManager::Instance().m_spriteShader.DrawTex(
-	//	m_titleTex.get(),
-	//	-640.0f,
-	//	-360.0f,
-	//	1280.0f,
-	//	720.0f,
-	//	nullptr,
-	//	nullptr,
-	//	{ 0, 0 }
-	//);
-	
 	//==========================================================
-	// NEON BLADE
+	// NEON BLADE ロゴ
+	// 左側に大きく表示
 	//==========================================================
-
 	if (m_logoTex)
 	{
 		KdShaderManager::Instance().m_spriteShader.DrawTex(
 			m_logoTex.get(),
 
-			-350.0f,
-			200.0f,
+			// 表示位置
+			-200.0f,
+			180.0f,
 
-			600.0f,
-			240.0f,
+			// サイズ（変更前：600 x 240）
+			900.0f,
+			360.0f,
 
 			nullptr,
 			nullptr,
@@ -123,9 +111,10 @@ void TitleImage::DrawSprite()
 		);
 	}
 
-	//---------------------------------------
-	// PRESS ANY BUTTON
-	//---------------------------------------
+	//==========================================================
+	// PRESS ANY KEY
+	// ロゴの下に配置
+	//==========================================================
 	Math::Color pressColor = {
 		1.0f,
 		1.0f,
@@ -133,14 +122,22 @@ void TitleImage::DrawSprite()
 		m_pressAlpha
 	};
 
-	KdShaderManager::Instance().m_spriteShader.DrawTex(
-		m_pressTex.get(),
-		0.0f,
-		-300.0f, 
-		600.0f, 
-		180.0f,
-		nullptr,
-		&pressColor,
-		{ 0.5f, 0.5f }
-	);
+	if (m_pressTex)
+	{
+		KdShaderManager::Instance().m_spriteShader.DrawTex(
+			m_pressTex.get(),
+
+			// 表示位置
+			-200.0f,
+			-100.0f,
+
+			// サイズ
+			900.0f,
+			250.0f,
+
+			nullptr,
+			&pressColor,
+			{ 0.5f, 0.5f }
+		);
+	}
 }

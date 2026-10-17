@@ -1727,6 +1727,53 @@ void Player::FinishLockOnAfterAction()
 	m_pendingLockOn = false;
 }
 
+//========================================
+// ロックオン対象の方向へ向く
+//========================================
+void TurnToLockOnTarget(Player& owner)
+{
+	if (!owner.IsLockOn() || !owner.m_lockOnTarget)
+	{
+		return;
+	}
+
+	Math::Vector3 targetPos;
+
+	bool hasTarget = false;
+
+	if (auto enemy = dynamic_cast<EnemyBase*>(owner.m_lockOnTarget))
+	{
+		if (enemy->IsAlive())
+		{
+			targetPos = enemy->GetHitCenter();
+			hasTarget = true;
+		}
+	}
+
+	if (!hasTarget)
+	{
+		if (auto boss = dynamic_cast<BossBase*>(owner.m_lockOnTarget))
+		{
+			if (boss->IsAlive())
+			{
+				targetPos = boss->GetHitCenter();
+				hasTarget = true;
+			}
+		}
+	}
+
+	if (!hasTarget) return;
+
+	Math::Vector3 dir = targetPos - owner.m_nowPos;
+	dir.y = 0.0f;
+
+	if (dir.LengthSquared() < 0.001f) return;
+
+	dir.Normalize();
+
+	owner.m_angleY = atan2f(dir.x, dir.z);
+}
+
 void Player::StartDeath()
 {
 	if (m_isDead) return;

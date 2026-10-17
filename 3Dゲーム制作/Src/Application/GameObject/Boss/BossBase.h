@@ -157,6 +157,17 @@ public:
 
 	void StartResolve();
 
+	//==============================================================
+	// Death（死亡演出）
+	//==============================================================
+	void StartDeath();
+	void UpdateDeath(float frameScale);
+
+	bool IsDying() const
+	{
+		return m_isDying;
+	}
+
 public:
 
 	//==============================================================
@@ -369,22 +380,50 @@ private:
 	// Resolve
 	//==============================================================
 
-		void UpdateResolve(float frameScale);
+	void UpdateResolve(float frameScale);
 
-		bool m_isResolving = false;
+	bool m_isResolving = false;
 
-		float m_resolveTimer = 0.0f;
+	float m_resolveTimer = 0.0f;
 
-		static constexpr float m_resolveDuration = 45.0f;
+	static constexpr float m_resolveDuration = 45.0f;
 
-		float m_resolveDissolve = 1.0f;
+	float m_resolveDissolve = 1.0f;
 
-		float m_resolveEdgeRange = 0.08f;
+	float m_resolveEdgeRange = 0.08f;
 
-		Math::Vector3 m_resolveEmissive =
-		{
-			0.1f,
-			0.8f,
-			1.0f
-		};
+	Math::Vector3 m_resolveEmissive =
+	{
+		0.1f,
+		0.8f,
+		1.0f
+	};
+
+	//==============================================================
+	// Death（死亡演出）
+	//==============================================================
+	bool m_isDying = false;
+
+	// Deathアニメーション終了後のディゾルブ中か
+	bool m_isDeathDissolving = false;
+
+	// ディゾルブ開始後の経過フレーム
+	float m_deathTimer = 0.0f;
+
+	// ディゾルブ値：0.0 = 表示、1.0 = 消滅
+	float m_deathDissolve = 0.0f;
+
+	// ディゾルブ時間
+	static constexpr float m_deathDuration = 45.0f;
+
+	// ディゾルブの縁の範囲
+	float m_deathEdgeRange = 0.08f;
+
+	// ディゾルブの縁の発光色
+	Math::Vector3 m_deathEmissive =
+	{
+		0.1f,
+		0.8f,
+		1.0f
+	};
 };

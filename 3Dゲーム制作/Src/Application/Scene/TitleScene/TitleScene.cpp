@@ -222,9 +222,9 @@ void TitleScene::InitCamera()
 
 	m_tpsCamera->SetActive(true);
 
-	m_tpsCamera->SetLocalPos({ 0.0f, 1.5f, -3.0f });
+	m_tpsCamera->SetLocalPos({ -2.0f, 1.0f, -2.3f });
 	m_tpsCamera->SetAngleY(125.0f);
-	m_tpsCamera->SetAngleX(-20.0f);
+	m_tpsCamera->SetAngleX(-25.0f);
 
 	m_tpsCamera->m_mouseFree = true;
 
@@ -260,7 +260,7 @@ void TitleScene::InitPlayer()
 	m_player->Init();
 
 	m_player->SetPos(Math::Vector3{ -55.0f, 0.0f, 50.0f });
-	m_player->SetAngleY(125.0f);
+	m_player->SetAngleY(180.0f);
 
 	// タイトル画面では操作させない
 	m_player->SetTitleMode(true);

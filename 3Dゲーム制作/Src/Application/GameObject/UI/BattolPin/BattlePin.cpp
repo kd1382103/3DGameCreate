@@ -431,26 +431,50 @@ void BattlePin::DrawSprite()
 
 	if (insideScreen)
 	{
+
+		//==========================================================
+		// 距離によるピンの拡大・一定・縮小
+		//==========================================================
+
 		// 基本サイズ
 		const float baseSize = 128.0f * m_scale;
 
-		// プレイヤーとピンの距離から拡大率を計算
-		float t = 0.0f;
+		float scale = 1.0f;
 
-		if (m_pinGrowDistance > 0.0f)
+		if (distance <= 20.0f)
 		{
-			t = (m_pinGrowDistance - distance)
-				/ m_pinGrowDistance;
+			// 0～20m：最大2.5倍まで拡大
+			float t = (20.0f - distance) / 20.0f;
+			t = std::clamp(t, 0.0f, 1.0f);
+
+			scale = 1.0f
+				+ (m_pinMaxScale - 1.0f) * t;
+		}
+		else if (distance <= 40.0f)
+		{
+			// 20～40m：基本サイズで一定
+			scale = 1.0f;
+		}
+		else
+		{
+			// 40m以上：徐々に縮小
+			// 100mで0.5倍になり、それ以上は維持
+			const float shrinkDistance = 60.0f;
+
+			float t = (distance - 40.0f)
+				/ shrinkDistance;
 
 			t = std::clamp(t, 0.0f, 1.0f);
+
+			scale = 1.0f - 0.5f * t;
+
+			// 最小サイズを0.5倍に制限
+			scale = std::max(scale, 0.5f);
 		}
 
-		// 遠いときは1倍、近づくと最大2.5倍
-		const float scale =
-			1.0f + (m_pinMaxScale - 1.0f) * t;
+		const float size = baseSize * scale;
 
-		const float size = baseSize * scale;		auto& sprite =
-			KdShaderManager::Instance().m_spriteShader;
+		auto& sprite = KdShaderManager::Instance().m_spriteShader;
 
 		Math::Color pinColor =
 		{

@@ -3,6 +3,9 @@
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/Effect/EffectManager.h>
 
+#include <Application/GameObject/Enemy/EnemyBase.h>
+#include <Application/GameObject/Boss/BossBase.h>
+
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/main.h>
@@ -544,14 +547,99 @@ void PlayerStateSkill::Update(Player& owner)
 	// 5～28F
 	// 突進
 	//==========================================================
+
 	else if (t < 28.0f)
 	{
-		Math::Vector3 forward =
-			owner.GetForward();
-
+		Math::Vector3 forward = owner.GetForward();
 		forward.y = 0.0f;
 
-		if (forward.LengthSquared() > 0.0001f)
+		if (forward.LengthSquared() > 0.001f)
+		{
+			forward.Normalize();
+		}
+
+		//========================================
+		// ロックオン対象を取得
+		//========================================
+		bool hasTarget = false;
+		Math::Vector3 targetPos = Math::Vector3::Zero;
+
+		if (owner.IsLockOn() && owner.m_lockOnTarget)
+		{
+			if (auto enemy =
+				dynamic_cast<EnemyBase*>(owner.m_lockOnTarget))
+			{
+				if (enemy->IsAlive())
+				{
+					targetPos = enemy->GetHitCenter();
+					hasTarget = true;
+				}
+			}
+			else if (auto boss =
+				dynamic_cast<BossBase*>(owner.m_lockOnTarget))
+			{
+				if (boss->IsAlive())
+				{
+					targetPos = boss->GetHitCenter();
+					hasTarget = true;
+				}
+			}
+		}
+
+		//========================================
+		// ロックオン対象へ旋回
+		//========================================
+		if (hasTarget)
+		{
+			Math::Vector3 toTarget =
+				targetPos - owner.m_nowPos;
+
+			toTarget.y = 0.0f;
+
+			if (toTarget.LengthSquared() > 0.001f)
+			{
+				toTarget.Normalize();
+
+				const float dot = std::clamp(
+					forward.Dot(toTarget),
+					-1.0f,
+					1.0f
+				);
+
+				const float crossY =
+					forward.z * toTarget.x -
+					forward.x * toTarget.z;
+
+				const float angleDiff =
+					atan2f(crossY, dot);
+
+				const float maxTurn =
+					DirectX::XMConvertToRadians(6.5f)
+					* frameScale;
+
+				const float turnAngle = std::clamp(
+					angleDiff,
+					-maxTurn,
+					maxTurn
+				);
+
+				owner.m_angleY += turnAngle;
+
+				// 旋回後の方向を取得
+				forward = owner.GetForward();
+				forward.y = 0.0f;
+
+				if (forward.LengthSquared() > 0.001f)
+				{
+					forward.Normalize();
+				}
+			}
+		}
+
+		//========================================
+		// 突進
+		//========================================
+		if (forward.LengthSquared() > 0.001f)
 		{
 			forward.Normalize();
 
@@ -564,6 +652,7 @@ void PlayerStateSkill::Update(Player& owner)
 		owner.m_dir = Math::Vector3::Zero;
 		owner.m_attackContact = false;
 	}
+
 
 	//==========================================================
 	// 28～43F
@@ -802,12 +891,55 @@ void PlayerStateDodge::Update(Player& owner)
 	}
 }
 
-
 //==============================================================
 // Ultimate
 //==============================================================
 void PlayerUltimate::Enter(Player& owner)
 {
+	if (owner.IsLockOn() && owner.m_lockOnTarget)
+	{
+		Math::Vector3 targetPos = Math::Vector3::Zero;
+		bool hasTarget = false;
+
+		// 敵へのロックオン
+		if (auto enemy = dynamic_cast<EnemyBase*>(
+			owner.m_lockOnTarget))
+		{
+			if (enemy->IsAlive())
+			{
+				targetPos = enemy->GetHitCenter();
+				hasTarget = true;
+			}
+		}
+
+		// ボスへのロックオン
+		if (!hasTarget)
+		{
+			if (auto boss = dynamic_cast<BossBase*>(
+				owner.m_lockOnTarget))
+			{
+				if (boss->IsAlive())
+				{
+					targetPos = boss->GetHitCenter();
+					hasTarget = true;
+				}
+			}
+		}
+
+		// 対象の方向へ即座に向く
+		if (hasTarget)
+		{
+			Math::Vector3 dir = targetPos - owner.m_nowPos;
+			dir.y = 0.0f;
+
+			if (dir.LengthSquared() > 0.001f)
+			{
+				dir.Normalize();
+				owner.m_angleY = atan2f(-dir.x, -dir.z);
+			}
+		}
+	}
+
 	owner.FinishLockOnAfterAction();
 
 	owner.PlayAnimationAuto("Ultimate", false);
@@ -980,19 +1112,16 @@ void PlayerAttackStateBase::EnterAttack(Player& owner)
 //==============================================================
 // Attack State 共通 Update
 //==============================================================
-void PlayerAttackStateBase::UpdateAttack(Player& owner,float t)
+void PlayerAttackStateBase::UpdateAttack(Player& owner, float t)
 {
 	//========================================
-	// 60FPS基準のフレーム倍率
+	// フレーム倍率
 	//========================================
 	const float frameScale =
 		Application::Instance()
 		.GetFPSController()
 		.GetFrameScale();
 
-	//========================================
-	// ゲーム全体の速度
-	//========================================
 	const float timeScale =
 		SceneManager::Instance().GetTimeScale();
 
@@ -1000,26 +1129,143 @@ void PlayerAttackStateBase::UpdateAttack(Player& owner,float t)
 		frameScale * timeScale;
 
 	//========================================
-	// 踏み込み
+	// 踏み込み時間
 	//========================================
 	const float lungeStartFrame = 20.0f;
 	const float lungeEndFrame = 30.0f;
 
 	if (t > lungeStartFrame && t < lungeEndFrame)
 	{
-		Math::Vector3 f = owner.GetForward();
-		f.Normalize();
+		//========================================
+		// 現在のプレイヤー正面方向
+		//========================================
+		Math::Vector3 forward = owner.GetForward();
+		forward.y = 0.0f;
 
-		const float lungeDistance =
-			StateMachineParameter::KnockBackPower;
+		if (forward.LengthSquared() > 0.001f)
+		{
+			forward.Normalize();
+		}
 
-		const float lungeFrameCount =
-			lungeEndFrame - lungeStartFrame;
+		//========================================
+		// ロックオン対象の取得
+		//========================================
+		bool hasTarget = false;
+		Math::Vector3 targetPos = Math::Vector3::Zero;
 
-		owner.m_nowPos +=
-			f *
-			(lungeDistance / lungeFrameCount) *
-			scaledFrameScale;
+		if (owner.IsLockOn() && owner.m_lockOnTarget)
+		{
+			if (auto enemy =
+				dynamic_cast<EnemyBase*>(owner.m_lockOnTarget))
+			{
+				if (enemy->IsAlive())
+				{
+					targetPos = enemy->GetHitCenter();
+					hasTarget = true;
+				}
+			}
+			else if (auto boss =
+				dynamic_cast<BossBase*>(owner.m_lockOnTarget))
+			{
+				if (boss->IsAlive())
+				{
+					targetPos = boss->GetHitCenter();
+					hasTarget = true;
+				}
+			}
+		}
+
+		//========================================
+		// ロックオン中だけ対象方向へ旋回
+		//========================================
+		float assistDistance = 0.0f;
+
+		if (hasTarget)
+		{
+			Math::Vector3 toTarget =
+				targetPos - owner.m_nowPos;
+
+			toTarget.y = 0.0f;
+
+			const float distance = toTarget.Length();
+
+			if (distance > 0.001f)
+			{
+				toTarget.Normalize();
+
+				// 現在の正面と対象方向の角度差
+				const float dot = std::clamp(
+					forward.Dot(toTarget),
+					-1.0f,
+					1.0f
+				);
+
+				const float crossY =
+					forward.z * toTarget.x -
+					forward.x * toTarget.z;
+
+				const float angleDiff =
+					atan2f(crossY, dot);
+
+				// 1フレーム最大10度旋回
+				// 横にいる敵にも向きやすくする
+				const float maxTurn =
+					DirectX::XMConvertToRadians(10.0f)
+					* scaledFrameScale;
+
+				const float turnAngle = std::clamp(
+					angleDiff,
+					-maxTurn,
+					maxTurn
+				);
+
+				owner.m_angleY += turnAngle;
+
+				// 旋回後の正面方向を取得
+				forward = owner.GetForward();
+				forward.y = 0.0f;
+
+				if (forward.LengthSquared() > 0.001f)
+				{
+					forward.Normalize();
+				}
+
+				//====================================
+				// 対象との距離に応じた追加踏み込み
+				//====================================
+				const float assistRate = std::clamp(
+					(distance - 1.0f) / 3.0f,
+					0.0f,
+					1.0f
+				);
+
+				assistDistance = 0.08f * assistRate;
+			}
+		}
+
+		//========================================
+		// 踏み込み移動
+		//========================================
+		// ロックオン中：旋回後の対象方向
+		// ロックオンなし：プレイヤーの正面方向
+		if (forward.LengthSquared() > 0.001f)
+		{
+			forward.Normalize();
+
+			const float lungeDistance =
+				StateMachineParameter::KnockBackPower;
+
+			const float lungeFrameCount =
+				lungeEndFrame - lungeStartFrame;
+
+			owner.m_nowPos +=
+				forward *
+				(
+					lungeDistance / lungeFrameCount
+					+ assistDistance
+					) *
+				scaledFrameScale;
+		}
 	}
 }
 
