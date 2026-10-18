@@ -128,6 +128,28 @@ void UltimateEffect::DrawEffect()
 	angle -= DirectX::XM_PIDIV2;
 
 	//==========================================================
+	// 斬撃の描画位置
+	//==========================================================
+	Math::Vector3 pos = GetPos();
+	pos.y += 1.0f;
+
+	//==========================================================
+	// 縦向きの斬撃と横向きの斬撃の回転
+	//
+	// 先に進行方向へ向け、その後Z軸で90度回転する
+	//==========================================================
+	Math::Matrix verticalRotation =
+		Math::Matrix::CreateRotationY(angle);
+
+	Math::Matrix horizontalRotation =
+		Math::Matrix::CreateRotationY(angle);
+
+	horizontalRotation *=
+		Math::Matrix::CreateRotationZ(
+			DirectX::XM_PIDIV2
+		);
+
+	//==========================================================
 	// 残像描画
 	//==========================================================
 	for (int i = static_cast<int>(m_trailPositions.size()) - 1;
@@ -139,9 +161,22 @@ void UltimateEffect::DrawEffect()
 			static_cast<float>(i) /
 			static_cast<float>(kTrailCount);
 
-		float scaleX = m_width * (0.65f + ratio * 0.2f);
-		float scaleY = m_height * (0.65f + ratio * 0.2f);
+		float scaleX =
+			m_width * (0.65f + ratio * 0.2f);
 
+		float scaleY =
+			m_height * (0.65f + ratio * 0.2f);
+
+		Math::Vector3 trailPos =
+			m_trailPositions[i];
+
+		trailPos.y += 1.0f;
+
+		float alpha =
+			0.06f +
+			0.12f * (1.0f - ratio);
+
+		// 縦向きの残像
 		Math::Matrix trailMat =
 			Math::Matrix::CreateScale(
 				scaleX,
@@ -149,19 +184,8 @@ void UltimateEffect::DrawEffect()
 				1.0f
 			);
 
-		trailMat *=
-			Math::Matrix::CreateRotationY(angle);
-
-		Math::Vector3 trailPos =
-			m_trailPositions[i];
-
-		trailPos.y += 1.0f;
-
+		trailMat *= verticalRotation;
 		trailMat.Translation(trailPos);
-
-		float alpha =
-			0.06f +
-			0.12f * (1.0f - ratio);
 
 		KdShaderManager::Instance()
 			.m_StandardShader.DrawPolygon(
@@ -174,10 +198,33 @@ void UltimateEffect::DrawEffect()
 					alpha
 				)
 			);
+
+		// 横向きの残像
+		Math::Matrix horizontalTrailMat =
+			Math::Matrix::CreateScale(
+				scaleX,
+				scaleY,
+				1.0f
+			);
+
+		horizontalTrailMat *= horizontalRotation;
+		horizontalTrailMat.Translation(trailPos);
+
+		KdShaderManager::Instance()
+			.m_StandardShader.DrawPolygon(
+				*m_polygon,
+				horizontalTrailMat,
+				Math::Color(
+					0.15f,
+					0.85f,
+					1.0f,
+					alpha
+				)
+			);
 	}
 
 	//==========================================================
-	// 本体の外側：青白い大きな斬撃
+	// 縦向き：外側の青白い大きな斬撃
 	//==========================================================
 	Math::Matrix outerMat =
 		Math::Matrix::CreateScale(
@@ -186,12 +233,7 @@ void UltimateEffect::DrawEffect()
 			1.0f
 		);
 
-	outerMat *=
-		Math::Matrix::CreateRotationY(angle);
-
-	Math::Vector3 pos = GetPos();
-	pos.y += 1.0f;
-
+	outerMat *= verticalRotation;
 	outerMat.Translation(pos);
 
 	KdShaderManager::Instance()
@@ -207,7 +249,7 @@ void UltimateEffect::DrawEffect()
 		);
 
 	//==========================================================
-	// 本体の内側：明るいシアンの斬撃
+	// 縦向き：内側の明るいシアンの斬撃
 	//==========================================================
 	Math::Matrix innerMat =
 		Math::Matrix::CreateScale(
@@ -216,9 +258,7 @@ void UltimateEffect::DrawEffect()
 			1.0f
 		);
 
-	innerMat *=
-		Math::Matrix::CreateRotationY(angle);
-
+	innerMat *= verticalRotation;
 	innerMat.Translation(pos);
 
 	KdShaderManager::Instance()
@@ -234,7 +274,7 @@ void UltimateEffect::DrawEffect()
 		);
 
 	//==========================================================
-	// 本体：元の斬撃
+	// 縦向き：元の斬撃本体
 	//==========================================================
 	Math::Matrix mat =
 		Math::Matrix::CreateScale(
@@ -243,15 +283,88 @@ void UltimateEffect::DrawEffect()
 			1.0f
 		);
 
-	mat *=
-		Math::Matrix::CreateRotationY(angle);
-
+	mat *= verticalRotation;
 	mat.Translation(pos);
 
 	KdShaderManager::Instance()
 		.m_StandardShader.DrawPolygon(
 			*m_polygon,
 			mat,
+			Math::Color(
+				1.0f,
+				1.0f,
+				1.0f,
+				1.0f
+			)
+		);
+
+	//==========================================================
+	// 横向き：外側の青白い大きな斬撃
+	//==========================================================
+	Math::Matrix horizontalOuterMat =
+		Math::Matrix::CreateScale(
+			m_width * 1.15f,
+			m_height * 1.1f,
+			1.0f
+		);
+
+	horizontalOuterMat *= horizontalRotation;
+	horizontalOuterMat.Translation(pos);
+
+	KdShaderManager::Instance()
+		.m_StandardShader.DrawPolygon(
+			*m_polygon,
+			horizontalOuterMat,
+			Math::Color(
+				0.1f,
+				0.65f,
+				1.0f,
+				0.45f
+			)
+		);
+
+	//==========================================================
+	// 横向き：内側の明るいシアンの斬撃
+	//==========================================================
+	Math::Matrix horizontalInnerMat =
+		Math::Matrix::CreateScale(
+			m_width * 0.72f,
+			m_height * 0.85f,
+			1.0f
+		);
+
+	horizontalInnerMat *= horizontalRotation;
+	horizontalInnerMat.Translation(pos);
+
+	KdShaderManager::Instance()
+		.m_StandardShader.DrawPolygon(
+			*m_polygon,
+			horizontalInnerMat,
+			Math::Color(
+				0.45f,
+				1.0f,
+				1.0f,
+				0.9f
+			)
+		);
+
+	//==========================================================
+	// 横向き：白い斬撃本体
+	//==========================================================
+	Math::Matrix horizontalMat =
+		Math::Matrix::CreateScale(
+			m_width,
+			m_height,
+			1.0f
+		);
+
+	horizontalMat *= horizontalRotation;
+	horizontalMat.Translation(pos);
+
+	KdShaderManager::Instance()
+		.m_StandardShader.DrawPolygon(
+			*m_polygon,
+			horizontalMat,
 			Math::Color(
 				1.0f,
 				1.0f,

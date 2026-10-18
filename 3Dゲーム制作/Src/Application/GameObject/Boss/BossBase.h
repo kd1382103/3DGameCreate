@@ -372,6 +372,9 @@ public:
 
 	float m_knockBackPower = 0.75f;
 
+	// ノックバック移動の保留
+	Math::Vector3 m_knockBackMove = Math::Vector3::Zero;
+	bool m_hasPendingKnockBack = false;
 
 	//==============================================================
 	// 攻撃ヒット済み

@@ -243,6 +243,143 @@ void BossBase::Update()
 void BossBase::PostUpdate()
 {
 	//==========================================================
+	// ノックバック移動（障害物に当たったら壁沿いに滑る）
+	//==========================================================
+	if (m_hasPendingKnockBack)
+	{
+		Math::Vector3 move = m_knockBackMove;
+		move.y = 0.0f;
+
+		m_knockBackMove = Math::Vector3::Zero;
+		m_hasPendingKnockBack = false;
+
+		if (move.LengthSquared() > 0.00001f)
+		{
+			// 指定位置に壁があるか確認
+			auto CheckWall =
+				[&](const Math::Vector3& pos,
+					Math::Vector3& hitNormal) -> bool
+				{
+					KdCollider::CapsuleInfo capsule;
+
+					capsule.m_type = KdCollider::TypeBump;
+					capsule.m_radius = 0.3f;
+					capsule.m_start =
+						pos + Math::Vector3(0, 0.5f, 0);
+					capsule.m_end =
+						pos + Math::Vector3(0, 1.5f, 0);
+
+					Math::Matrix rotMat =
+						Math::Matrix::CreateRotationY(m_angleY);
+
+					Math::Matrix transMat =
+						Math::Matrix::CreateTranslation(pos);
+
+					capsule.m_ownerWorld = rotMat * transMat;
+
+					std::list<KdCollider::CollisionResult> results;
+
+					for (auto& obj :
+						SceneManager::Instance().GetObjList())
+					{
+						if (obj.get() == this) continue;
+
+						obj->Intersects(capsule, &results);
+					}
+
+					float maxOverlap = 0.0f;
+					hitNormal = Math::Vector3::Zero;
+
+					for (auto& ret : results)
+					{
+						if (ret.m_overlapDistance <= 0.0001f)
+						{
+							continue;
+						}
+
+						Math::Vector3 normal = ret.m_hitNDir;
+						normal.y = 0.0f;
+
+						if (normal.LengthSquared() < 0.00001f)
+						{
+							continue;
+						}
+
+						normal.Normalize();
+
+						if (ret.m_overlapDistance > maxOverlap)
+						{
+							maxOverlap = ret.m_overlapDistance;
+							hitNormal = normal;
+						}
+					}
+
+					return maxOverlap > 0.0001f;
+				};
+
+			Math::Vector3 wallNormal = Math::Vector3::Zero;
+
+			//==================================================
+			// ① 通常のノックバック先を確認
+			//==================================================
+			if (!CheckWall(m_nowPos + move, wallNormal))
+			{
+				m_nowPos += move;
+			}
+			else
+			{
+				//==============================================
+				// ② 壁に垂直な移動成分を取り除く
+				//==============================================
+				Math::Vector3 slideMove =
+					move - wallNormal * move.Dot(wallNormal);
+
+				slideMove.y = 0.0f;
+
+				// 正面から壁に当たった場合は横方向へ
+				if (slideMove.LengthSquared() < 0.00001f)
+				{
+					slideMove = GetRight();
+					slideMove.y = 0.0f;
+
+					if (slideMove.LengthSquared() > 0.00001f)
+					{
+						slideMove.Normalize();
+						slideMove *= move.Length();
+					}
+				}
+				else
+				{
+					slideMove.Normalize();
+					slideMove *= move.Length();
+				}
+
+				//==============================================
+				// ③ 横滑り先を確認
+				//==============================================
+				Math::Vector3 slideNormal = Math::Vector3::Zero;
+
+				if (!CheckWall(m_nowPos + slideMove, slideNormal))
+				{
+					m_nowPos += slideMove;
+				}
+				else
+				{
+					// 反対方向にも滑れるか確認
+					Math::Vector3 reverseMove = -slideMove;
+
+					if (!CheckWall(
+						m_nowPos + reverseMove,
+						slideNormal))
+					{
+						m_nowPos += reverseMove;
+					}
+					// 両側が塞がれている場合は移動しない
+				}
+			}
+		}
+	}
+	//==========================================================
 	// 地面判定（レイ）
 	//==========================================================
 	{
@@ -731,9 +868,12 @@ void BossBase::DamageBoss(
 		{
 			knockDir.Normalize();
 
-			m_nowPos +=
+			// 既存のノックバック強度を維持
+			m_knockBackMove +=
 				knockDir *
 				(m_knockBackPower * knockBackRate);
+
+			m_hasPendingKnockBack = true;
 		}
 
 		// 必殺技の攻撃時は回避受付を終了

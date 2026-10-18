@@ -152,6 +152,141 @@ void EnemyBase::PostUpdate()
 {
 	UpdateGroundCollision();
 
+	//==========================================================
+// ノックバック移動（障害物に当たったら壁沿いに滑る）
+//==========================================================
+	if (m_hasPendingKnockBack)
+	{
+		Math::Vector3 move = m_knockBackMove;
+		move.y = 0.0f;
+
+		m_knockBackMove = Math::Vector3::Zero;
+		m_hasPendingKnockBack = false;
+
+		if (move.LengthSquared() > 0.00001f)
+		{
+			// 指定位置で壁に当たるか調べる
+			auto CheckWall =
+				[&](const Math::Vector3& pos,
+					Math::Vector3& hitNormal) -> bool
+				{
+					KdCollider::CapsuleInfo capsule;
+
+					capsule.m_type = KdCollider::TypeBump;
+					capsule.m_radius = 0.3f;
+					capsule.m_start = pos + Math::Vector3(0, 0.5f, 0);
+					capsule.m_end = pos + Math::Vector3(0, 1.5f, 0);
+
+					Math::Matrix rotMat =
+						Math::Matrix::CreateRotationY(m_angleY);
+
+					Math::Matrix transMat =
+						Math::Matrix::CreateTranslation(pos);
+
+					capsule.m_ownerWorld = rotMat * transMat;
+
+					std::list<KdCollider::CollisionResult> results;
+
+					for (auto& obj : SceneManager::Instance().GetObjList())
+					{
+						// 自分自身は判定しない
+						if (obj.get() == this) continue;
+
+						obj->Intersects(capsule, &results);
+					}
+
+					float maxOverlap = 0.0f;
+					hitNormal = Math::Vector3::Zero;
+
+					for (auto& ret : results)
+					{
+						if (ret.m_overlapDistance <= 0.0001f)
+						{
+							continue;
+						}
+
+						Math::Vector3 normal = ret.m_hitNDir;
+						normal.y = 0.0f;
+
+						if (normal.LengthSquared() < 0.00001f)
+						{
+							continue;
+						}
+
+						normal.Normalize();
+
+						if (ret.m_overlapDistance > maxOverlap)
+						{
+							maxOverlap = ret.m_overlapDistance;
+							hitNormal = normal;
+						}
+					}
+
+					return maxOverlap > 0.0001f;
+				};
+
+			// ノックバック先を確認
+			Math::Vector3 targetPos = m_nowPos + move;
+			Math::Vector3 wallNormal = Math::Vector3::Zero;
+
+			if (!CheckWall(targetPos, wallNormal))
+			{
+				// 障害物がなければ通常どおり移動
+				m_nowPos = targetPos;
+			}
+			else
+			{
+				//==============================================
+				// 壁に垂直な移動成分を除去し、壁沿いに滑らせる
+				//==============================================
+				Math::Vector3 slideMove =
+					move - wallNormal * move.Dot(wallNormal);
+
+				slideMove.y = 0.0f;
+
+				// 壁に正面から当たった場合は横方向を選ぶ
+				if (slideMove.LengthSquared() < 0.00001f)
+				{
+					slideMove = GetRight();
+
+					slideMove.y = 0.0f;
+
+					if (slideMove.LengthSquared() > 0.00001f)
+					{
+						slideMove.Normalize();
+
+						// 敵の右方向を基準に横へ移動
+						slideMove *= move.Length();
+					}
+				}
+				else
+				{
+					slideMove.Normalize();
+					slideMove *= move.Length();
+				}
+
+				// 横滑り先も障害物に当たるか確認
+				Math::Vector3 slideNormal = Math::Vector3::Zero;
+
+				if (!CheckWall(m_nowPos + slideMove, slideNormal))
+				{
+					m_nowPos += slideMove;
+				}
+				else
+				{
+					// 反対方向も試す
+					Math::Vector3 reverseMove = -slideMove;
+
+					if (!CheckWall(m_nowPos + reverseMove, slideNormal))
+					{
+						m_nowPos += reverseMove;
+					}
+					// 両方向が塞がれている場合は移動しない
+				}
+			}
+		}
+	}
+
 	//========================
 	// 壁判定（カプセル）
 	//========================
@@ -549,6 +684,9 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 		//======================================================
 		// ノックバック
 		//======================================================
+		//======================================================
+// ノックバック
+//======================================================
 		if (m_canKnockBack)
 		{
 			Math::Vector3 knockDir =
@@ -560,25 +698,20 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 			{
 				knockDir.Normalize();
 
-				if (isUltimate)
+				float knockPower =
+					StateMachineParameter::KnockBackPower *
+					knockBackRate;
+
+				// 必殺技の途中ヒットは弱くする
+				if (isUltimate && !finalHit)
 				{
-					if (finalHit)
-					{
-						m_nowPos +=
-							knockDir * StateMachineParameter::KnockBackPower * knockBackRate;
-					}
-					else
-					{
-						m_nowPos +=
-							knockDir *
-							(StateMachineParameter::KnockBackPower * 0.2f * knockBackRate);
-					}
+					knockPower *= 0.2f;
 				}
-				else
-				{
-					m_nowPos +=
-						knockDir * StateMachineParameter::KnockBackPower * knockBackRate;
-				}
+
+				// ノックバックの移動量を記録
+				// 実際の移動はPostUpdateで障害物を確認してから行う
+				m_knockBackMove += knockDir * knockPower;
+				m_hasPendingKnockBack = true;
 			}
 		}
 	}

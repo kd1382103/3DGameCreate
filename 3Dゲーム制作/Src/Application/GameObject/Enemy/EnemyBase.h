@@ -263,6 +263,10 @@ public:
 	// ノックバックするか
 	bool m_canKnockBack = true;
 
+	// ノックバック移動の保留
+	Math::Vector3 m_knockBackMove = Math::Vector3::Zero;
+	bool m_hasPendingKnockBack = false;
+
 	//チュートリアル専用
 	bool m_canAttack = false;
 
