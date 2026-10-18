@@ -10,30 +10,34 @@ float BGMVolume::s_volume = 1.0f;
 
 void BGMVolume::Init()
 {
+	// 保存済みの音量をスライダーに反映
+	s_volume = KdAudioManager::Instance().GetBGMVolume();
 }
 
 void BGMVolume::Update()
 {
-	//---------------------------------------
-	// マウスがバーの上にあるか
-	//---------------------------------------
 	bool mouseOver = IsMouseOverBar();
 
+	bool mouseDown =
+		(GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+
 	//---------------------------------------
-	// 左クリック開始
+	// バー上で左クリックしたらドラッグ開始
 	//---------------------------------------
-	if (mouseOver &&
-		(GetAsyncKeyState(VK_LBUTTON) & 0x8000))
+	if (mouseOver && mouseDown)
 	{
 		m_dragging = true;
 	}
 
 	//---------------------------------------
-	// 左クリックを離した
+	// ドラッグ終了
 	//---------------------------------------
-	if (!(GetAsyncKeyState(VK_LBUTTON) & 0x8000))
+	if (m_dragging && !mouseDown)
 	{
 		m_dragging = false;
+
+		// マウスを離したタイミングで保存
+		KdAudioManager::Instance().SaveVolumeSettings();
 	}
 
 	//---------------------------------------
@@ -43,7 +47,10 @@ void BGMVolume::Update()
 	{
 		POINT mousePos;
 
-		GetCursorPos(&mousePos);
+		if (!GetCursorPos(&mousePos))
+		{
+			return;
+		}
 
 		HWND hWnd = GetActiveWindow();
 
@@ -55,38 +62,41 @@ void BGMVolume::Update()
 		ScreenToClient(hWnd, &mousePos);
 
 		RECT rect;
-
 		GetClientRect(hWnd, &rect);
 
 		float screenWidth =
 			static_cast<float>(rect.right - rect.left);
 
+		if (screenWidth <= 0.0f)
+		{
+			return;
+		}
+
 		//---------------------------------------
-		// 画面中央基準のX座標
+		// 実画面座標 → 1280基準の座標
 		//---------------------------------------
+		float scaleX = screenWidth / 1280.0f;
+
 		float mouseX =
-			static_cast<float>(mousePos.x)
-			- screenWidth * 0.5f;
+			static_cast<float>(mousePos.x) / scaleX
+			- 640.0f;
 
 		//---------------------------------------
 		// 音量計算
 		//---------------------------------------
-		s_volume =(mouseX - static_cast<float>(m_barX)) / static_cast<float>(m_barWidth);
+		s_volume =
+			(mouseX - static_cast<float>(m_barX))
+			/ static_cast<float>(m_barWidth);
+
+		s_volume = std::clamp(s_volume, 0.0f, 1.0f);
 
 		//---------------------------------------
-		// 0～1に制限
+		// 音量をゲーム内の音に反映
 		//---------------------------------------
-		if (s_volume < 0.0f)
-		{
-			s_volume = 0.0f;
-		}
-
-		if (s_volume > 1.0f)
-		{
-			s_volume = 1.0f;
-		}
+		KdAudioManager::Instance().SetBGMVolume(s_volume);
 	}
 }
+
 void BGMVolume::DrawSprite()
 {
 	auto& sprite =

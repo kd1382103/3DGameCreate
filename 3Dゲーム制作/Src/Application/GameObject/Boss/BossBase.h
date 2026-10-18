@@ -163,9 +163,25 @@ public:
 	void StartDeath();
 	void UpdateDeath(float frameScale);
 
+	// 死亡演出を開始する前の待機
+	void SetDeathPending(bool pending)
+	{
+		m_isDeathPending = pending;
+	}
+
+	bool IsDeathPending() const
+	{
+		return m_isDeathPending;
+	}
+
 	bool IsDying() const
 	{
 		return m_isDying;
+	}
+
+	bool IsHPZero() const
+	{
+		return m_hp <= 0.0f;
 	}
 
 public:
@@ -418,6 +434,9 @@ private:
 
 	// ディゾルブの縁の範囲
 	float m_deathEdgeRange = 0.08f;
+
+	// 死亡演出を開始する前の待機フラグ
+	bool m_isDeathPending = false;
 
 	// ディゾルブの縁の発光色
 	Math::Vector3 m_deathEmissive =

@@ -30,6 +30,27 @@ class SwordTrail;
 
 class GameScene : public BaseScene
 {
+	//==============================================================
+	// クリア演出の進行状態
+	//==============================================================
+	enum class ClearSequence
+	{
+		None,           // 通常プレイ中
+		CameraToBoss,   // ボスを映す
+		CameraToPlayer, // プレイヤーへカメラを戻す
+		PlayerJump,     // プレイヤーの退場ジャンプ
+		BossDeath,
+		Finished        // 演出終了
+	};
+
+	ClearSequence m_clearSequence = ClearSequence::None;
+
+	// クリア演出の経過時間
+	float m_clearSequenceTimer = 0.0f;
+
+	// GAME CLEAR表示済みか
+	bool m_isClearResultShown = false;
+
 public:
 
 	GameScene() { Init(); }
@@ -182,6 +203,13 @@ private:
 	//全ての敵が死んでいるかどうかの判定
 	bool IsBattleEnemiesDead();
 
+	//==============================================================
+	// クリア演出
+	//==============================================================
+	void StartClearSequence();
+	void UpdateClearSequence();
+	void FinishClearSequence();
+
 private:
 
 	//========================================
@@ -324,6 +352,8 @@ private:
 	//=======================================
 	bool m_startLandingFinished = false;
 	
+	Math::Vector3 m_clearJumpStartPos = Math::Vector3::Zero;
+
 	//========================================
 	// デバッグ
 	//========================================
@@ -364,3 +394,4 @@ struct EnemySpawnInfo
 	Math::Vector3 offset;
 	float angleY; // 隊列全体のY軸回転角度
 };
+

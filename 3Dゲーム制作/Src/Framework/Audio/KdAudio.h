@@ -82,7 +82,13 @@ public:
 	void SetSEVolume(float volume);
 	float GetSEVolume() const { return m_seVolume; }
 
+	// 音量設定の保存
+	void SaveVolumeSettings();
+
 private:
+
+	void LoadVolumeSettings();
+
 	float GetAppliedVolume(SoundType type) const;
 
 private:

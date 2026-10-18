@@ -28,6 +28,23 @@ public:
 
 	bool m_mouseFree = false;
 
+	//=========================================================
+	// ゲームクリア演出用カメラ
+	//=========================================================
+	void StartClearCameraMove(
+		const Math::Vector3& cameraPos,
+		const Math::Vector3& lookAtPos,
+		float duration
+	);
+
+	bool IsClearCameraMoveFinished() const
+	{
+		return m_clearCameraMode && !m_clearCameraMoving;
+	}
+
+	void UpdateClearCameraLookAt(const Math::Vector3& lookAtPos);
+
+
 private:
 
 	float m_nowFov = 60.0f;
@@ -71,4 +88,16 @@ private:
 	// プレイヤーに対する角度(正面からの距離)
 	float m_ultimateCameraAngle = -150.0f;
 
+	//=========================================================
+	// クリア演出用カメラ制御
+	//=========================================================
+	bool m_clearCameraMode = false;
+	bool m_clearCameraMoving = false;
+
+	Math::Vector3 m_clearCameraStartPos = Math::Vector3::Zero;
+	Math::Vector3 m_clearCameraTargetPos = Math::Vector3::Zero;
+	Math::Vector3 m_clearCameraLookAt = Math::Vector3::Zero;
+
+	float m_clearCameraTimer = 0.0f;
+	float m_clearCameraDuration = 1.0f;
 };

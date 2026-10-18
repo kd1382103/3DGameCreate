@@ -29,6 +29,69 @@ void TPSCamera::Init()
 
 void TPSCamera::PostUpdate()
 {
+	//=============================================================
+	// ゲームクリア演出専用カメラ
+	//=============================================================
+	if (m_clearCameraMode)
+	{
+		if (m_clearCameraMoving)
+		{
+			m_clearCameraTimer +=
+				Application::Instance().GetDeltaTime();
+
+			float t = std::clamp(
+				m_clearCameraTimer / m_clearCameraDuration,
+				0.0f,
+				1.0f
+			);
+
+			// 滑らかに移動
+			float smoothT = t * t * (3.0f - 2.0f * t);
+
+			Math::Vector3 cameraPos =
+				Math::Vector3::Lerp(
+					m_clearCameraStartPos,
+					m_clearCameraTargetPos,
+					smoothT
+				);
+
+			m_mWorld = GetRotationMatrix();
+			m_mWorld.Translation(cameraPos);
+
+			if (t >= 1.0f)
+			{
+				m_clearCameraMoving = false;
+			}
+		}
+
+		// カメラを注視点に向ける
+		Math::Vector3 cameraPos = GetPos();
+
+		Math::Vector3 lookDir =
+			m_clearCameraLookAt - cameraPos;
+
+		if (lookDir.LengthSquared() > 0.0001f)
+		{
+			lookDir.Normalize();
+
+			float yaw = atan2f(lookDir.x, lookDir.z);
+			float pitch = asinf(-lookDir.y);
+
+			m_DegAng.y =
+				DirectX::XMConvertToDegrees(yaw);
+
+			m_DegAng.x =
+				DirectX::XMConvertToDegrees(pitch);
+		}
+
+		m_mRotation = GetRotationMatrix();
+		m_mWorld = m_mRotation;
+		m_mWorld.Translation(cameraPos);
+
+		// 通常カメラの更新・マウス回転・めり込み処理へ進ませない
+		return;
+	}
+
 	///////////////////////////////////////////////////////////////
 	// 入力
 	auto& input = KdInputManager::Instance();
@@ -630,4 +693,37 @@ void TPSCamera::EndUltimateCamera()
 
 	m_ultimateCameraMove =
 		UltimateCameraMove::End;
+}
+
+//=============================================================
+// クリア演出カメラ移動開始
+//=============================================================
+void TPSCamera::StartClearCameraMove(
+	const Math::Vector3& cameraPos,
+	const Math::Vector3& lookAtPos,
+	float duration)
+{
+	// クリア演出専用カメラに切り替える
+	m_clearCameraMode = true;
+	m_clearCameraMoving = true;
+
+	// 現在位置から移動する
+	m_clearCameraStartPos = GetPos();
+	m_clearCameraTargetPos = cameraPos;
+	m_clearCameraLookAt = lookAtPos;
+
+	m_clearCameraTimer = 0.0f;
+	m_clearCameraDuration = (std::max)(duration, 0.01f);
+
+	// マウスによるカメラ操作を無効にする
+	m_mouseFree = true;
+}
+
+//=============================================================
+// クリア演出中の注視点更新
+//=============================================================
+void TPSCamera::UpdateClearCameraLookAt(
+	const Math::Vector3& lookAtPos)
+{
+	m_clearCameraLookAt = lookAtPos;
 }

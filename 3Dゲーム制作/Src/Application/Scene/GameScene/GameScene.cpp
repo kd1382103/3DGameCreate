@@ -820,9 +820,20 @@ void GameScene::UpdateGameEnd()
 		!m_isGameOver &&
 		m_gamePhase == GamePhase::Boss &&
 		m_boss &&
-		!m_boss->IsAlive())
+		m_boss->IsHPZero() &&
+		m_clearSequence == ClearSequence::None)
 	{
-		GameClear();
+		m_boss->SetDeathPending(true);
+		StartClearSequence();
+	}
+
+	//---------------------------------------
+	// クリア演出更新
+	//---------------------------------------
+	if (m_clearSequence != ClearSequence::None &&
+		m_clearSequence != ClearSequence::Finished)
+	{
+		UpdateClearSequence();
 	}
 
 	//---------------------------------------
@@ -1561,6 +1572,231 @@ bool GameScene::IsBattleEnemiesDead()
 
 	// 全員倒されていれば戦闘終了
 	return true;
+}
+
+//==============================================================
+// クリア演出開始
+//==============================================================
+void GameScene::StartClearSequence()
+{
+	if (m_clearSequence != ClearSequence::None)
+	{
+		return;
+	}
+
+	m_clearSequence = ClearSequence::CameraToBoss;
+	m_clearSequenceTimer = 0.0f;
+
+	if (m_player)
+	{
+		m_player->SetInputLock(true);
+	}
+
+	if (m_tpsCamera)
+	{
+		m_tpsCamera->m_mouseFree = true;
+	}
+
+	// ボスの死亡開始時にカメラをボスへ近づける
+	if (m_boss && m_tpsCamera)
+	{
+		Math::Vector3 bossPos = m_boss->GetPos();
+
+		Math::Vector3 cameraPos =
+			bossPos + Math::Vector3(0.0f, 2.0f, -4.0f);
+
+		Math::Vector3 lookAtPos =
+			bossPos + Math::Vector3(0.0f, 1.5f, 0.0f);
+
+		m_tpsCamera->StartClearCameraMove(
+			cameraPos,
+			lookAtPos,
+			1.5f
+		);
+	}
+}
+
+//==============================================================
+// クリア演出更新
+//==============================================================
+void GameScene::UpdateClearSequence()
+{
+	const float deltaTime =
+		Application::Instance().GetDeltaTime();
+
+	m_clearSequenceTimer += deltaTime;
+
+	switch (m_clearSequence)
+	{
+		//---------------------------------------
+		// ボス側へのカメラ移動完了待ち
+		//---------------------------------------
+	case ClearSequence::CameraToBoss:
+	{
+		const bool cameraFinished =
+			!m_tpsCamera ||
+			m_tpsCamera->IsClearCameraMoveFinished();
+
+		if (cameraFinished)
+		{
+			// カメラがボスに寄り終わってから死亡演出を開始
+			if (m_boss)
+			{
+				m_boss->StartDeath();
+			}
+
+			// ボスの死亡演出待ちへ
+			m_clearSequence = ClearSequence::BossDeath;
+			m_clearSequenceTimer = 0.0f;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// ボスの死亡アニメーション・消滅待ち
+	//---------------------------------------
+	case ClearSequence::BossDeath:
+	{
+		// ボスの死亡アニメーションとディゾルブが
+		// 完了するまでプレイヤー側へ移動しない
+		if (!m_boss || !m_boss->IsAlive())
+		{
+			// プレイヤー側へのカメラ移動を開始
+			if (m_tpsCamera && m_player)
+			{
+				const Math::Vector3 playerPos =
+					m_player->GetPos();
+
+				// ボスがいた方向を基準にカメラを配置する
+				Math::Vector3 cameraDirection =
+					Math::Vector3(0.0f, 0.0f, 1.0f);
+
+				if (m_boss)
+				{
+					cameraDirection =
+						playerPos - m_boss->GetPos();
+
+					cameraDirection.y = 0.0f;
+
+					if (cameraDirection.LengthSquared() > 0.0001f)
+					{
+						cameraDirection.Normalize();
+					}
+					else
+					{
+						cameraDirection =
+							Math::Vector3(0.0f, 0.0f, 1.0f);
+					}
+				}
+
+				// プレイヤーの正面側から見下ろす位置
+				const Math::Vector3 cameraPos =
+					playerPos
+					- cameraDirection * 4.0f
+					+ Math::Vector3(0.0f, 2.0f, 0.0f);
+
+				// プレイヤーの上半身付近を見る
+				const Math::Vector3 lookAtPos =
+					playerPos
+					+ Math::Vector3(0.0f, 1.5f, 0.0f);
+
+				// 1.5秒かけてカメラを移動
+				m_tpsCamera->StartClearCameraMove(
+					cameraPos,
+					lookAtPos,
+					1.5f
+				);
+			}
+
+			// プレイヤー側カメラの移動待ちへ
+			m_clearSequence = ClearSequence::CameraToPlayer;
+			m_clearSequenceTimer = 0.0f;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// プレイヤー正面へのカメラ移動完了待ち
+	//---------------------------------------
+	case ClearSequence::CameraToPlayer:
+	{
+		const bool cameraFinished =
+			!m_tpsCamera ||
+			m_tpsCamera->IsClearCameraMoveFinished();
+
+		if (cameraFinished)
+		{
+			if (!m_player)
+			{
+				FinishClearSequence();
+				break;
+			}
+
+			// ジャンプ演出開始
+			m_clearSequence = ClearSequence::PlayerJump;
+			m_clearSequenceTimer = 0.0f;
+
+			// プレイヤーの操作をロック
+			m_player->SetInputLock(true);
+
+			// ジャンプアニメーションを再生
+			m_player->PlayAnimationAuto("Jump", false);
+
+			// ジャンプ開始位置を保存
+			m_clearJumpStartPos = m_player->GetPos();
+
+			// プレイヤー周辺にエフェクトを再生
+			EffectManager::Instance().Play(
+				EffectType::Ultimate,
+				m_player->GetPos()
+				+ Math::Vector3(0.0f, 1.0f, 0.0f)
+			);
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// プレイヤーのジャンプ演出
+	//---------------------------------------
+	case ClearSequence::PlayerJump:
+	{
+		if (!m_player)
+		{
+			FinishClearSequence();
+			break;
+		}
+
+		// ジャンプアニメーションの終了を待つ
+		if (m_player->m_animator.IsAnimationEnd())
+		{
+			FinishClearSequence();
+		}
+
+		break;
+	}
+
+	default:
+		break;
+	}
+}
+
+//==============================================================
+// クリア演出終了
+//==============================================================
+void GameScene::FinishClearSequence()
+{
+	if (m_clearSequence == ClearSequence::Finished)
+	{
+		return;
+	}
+
+	m_clearSequence = ClearSequence::Finished;
+
+	// 演出が終わってから結果画面を表示
+	GameClear();
 }
 
 void GameScene::InitBattleStartPin()

@@ -704,10 +704,15 @@ void BossBase::DamageBoss(
 
 	//==========================================================
 	// 死亡演出開始
+	// GameScene側でカメラ演出を行う場合は開始を保留
 	//==========================================================
 	if (m_hp <= 0.0f)
 	{
-		StartDeath();
+		if (!m_isDeathPending)
+		{
+			StartDeath();
+		}
+
 		return;
 	}
 
@@ -881,6 +886,9 @@ void BossBase::StartDeath()
 	{
 		return;
 	}
+
+	// 死亡演出の待機を解除
+	m_isDeathPending = false;
 
 	m_isDying = true;
 

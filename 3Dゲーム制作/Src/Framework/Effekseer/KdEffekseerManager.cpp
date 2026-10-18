@@ -204,8 +204,13 @@ std::weak_ptr<KdEffekseerObject> KdEffekseerManager::Play(const PlayEfkInfo& inf
 		auto effect = Effekseer::Effect::Create(m_efkManager,
 			(const EFK_CHAR*)sjis_to_wide(loadFileName).c_str());
 
+
 		if (effect == nullptr)
 		{
+			OutputDebugStringA(
+				("Effekseer load failed: " + loadFileName + "\n").c_str()
+			);
+
 #ifdef _DEBUG
 			assert(0 && "Effekseerのエフェクト作成失敗");
 #endif

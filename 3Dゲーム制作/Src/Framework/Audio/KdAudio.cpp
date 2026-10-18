@@ -20,6 +20,8 @@ void KdAudioManager::Init()
 	m_audioEng->SetReverb(DirectX::Reverb_Default);
 
 	m_listener.OrientFront = { 0, 0, 1 };
+
+	LoadVolumeSettings();
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -292,6 +294,67 @@ void KdAudioManager::SetSEVolume(float volume)
 			sound->SetVolume(
 				GetAppliedVolume(SoundType::SE)
 			);
+		}
+	}
+}
+
+//==============================================================
+// 音量設定の保存
+//==============================================================
+void KdAudioManager::SaveVolumeSettings()
+{
+	std::ofstream file("Asset/Data/AudioSettings.csv");
+
+	if (!file.is_open())
+	{
+		return;
+	}
+
+	file << m_bgmVolume << "," << m_seVolume;
+}
+
+//==============================================================
+// 音量設定の読み込み
+//==============================================================
+void KdAudioManager::LoadVolumeSettings()
+{
+	std::ifstream file("Asset/Data/AudioSettings.csv");
+
+	// ファイルが存在しなければ初期値を使用する
+	if (!file.is_open())
+	{
+		m_bgmVolume = 1.0f;
+		m_seVolume = 1.0f;
+
+		SaveVolumeSettings();
+		return;
+	}
+
+	std::string line;
+
+	if (std::getline(file, line))
+	{
+		std::stringstream ss(line);
+		std::string bgmText;
+		std::string seText;
+
+		if (std::getline(ss, bgmText, ',') &&
+			std::getline(ss, seText, ','))
+		{
+			try
+			{
+				float bgm = std::stof(bgmText);
+				float se = std::stof(seText);
+
+				m_bgmVolume = std::clamp(bgm, 0.0f, 1.0f);
+				m_seVolume = std::clamp(se, 0.0f, 1.0f);
+			}
+			catch (...)
+			{
+				// CSVの値が不正な場合は初期値に戻す
+				m_bgmVolume = 1.0f;
+				m_seVolume = 1.0f;
+			}
 		}
 	}
 }
