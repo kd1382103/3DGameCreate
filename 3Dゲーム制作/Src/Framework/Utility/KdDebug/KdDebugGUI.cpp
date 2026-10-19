@@ -27,9 +27,9 @@ void KdDebugGUI::GuiInit(int w, int h)
 #include "imgui/ja_glyph_ranges.h"
 	ImGuiIO& io = ImGui::GetIO();
 	ImFontConfig config;
-	config.MergeMode = true;
+
 	io.Fonts->AddFontDefault();
-	// 日本語対応
+	// 日本語対応	config.MergeMode = true;
 	io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\msgothic.ttc", 13.0f, &config, glyphRangesJapanese);
 	m_uqLog = std::make_unique<ImGuiAppLog>();
 }
@@ -59,7 +59,7 @@ void KdDebugGUI::GuiProcess()
 //	ImGui::End();
 
 	// ログウィンドウ
-	m_uqLog->Draw("Log Window");
+	//m_uqLog->Draw("Log Window");
 
 	//=====================================================
 	// ログ出力 ・・・ AddLog("～") で追加

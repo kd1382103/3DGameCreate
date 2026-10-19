@@ -501,7 +501,7 @@ void Application::Execute()
 		m_fpsController.Update();
 
 		std::string titleBar =
-			"アイアンフロンティア:DEMO FPS : "
+			"NEON BLADE FPS : "
 			+ std::to_string(
 				m_fpsController.m_nowfps
 			);

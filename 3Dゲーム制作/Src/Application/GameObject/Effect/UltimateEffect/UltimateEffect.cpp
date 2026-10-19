@@ -119,35 +119,77 @@ void UltimateEffect::DrawEffect()
 		return;
 	}
 
-	// 進行方向に合わせて回転
-	float angle = std::atan2f(
-		m_direction.x,
-		m_direction.z
-	);
+	//==========================================================
+	// 進行方向を基準にした直交する2枚の斬撃
+	//==========================================================
+	Math::Vector3 forward = m_direction;
+	forward.y = 0.0f;
 
-	angle -= DirectX::XM_PIDIV2;
+	if (forward.LengthSquared() > 0.0001f)
+	{
+		forward.Normalize();
+	}
+	else
+	{
+		forward = { 0.0f, 0.0f, 1.0f };
+	}
+
+	const Math::Vector3 up =
+	{ 0.0f, 1.0f, 0.0f };
+
+	// 進行方向に対する左右方向
+	Math::Vector3 right = up.Cross(forward);
+
+	if (right.LengthSquared() > 0.0001f)
+	{
+		right.Normalize();
+	}
+	else
+	{
+		right = { 1.0f, 0.0f, 0.0f };
+	}
+
+	//==========================================================
+	// 縦斬撃の回転
+	// X軸 = 進行方向
+	// Y軸 = 上方向
+	// Z軸 = 法線方向
+	//==========================================================
+	Math::Vector3 verticalNormal =
+		forward.Cross(up);
+
+	verticalNormal.Normalize();
+
+	Math::Matrix verticalRotation =
+		Math::Matrix::Identity;
+
+	verticalRotation.Right(forward);
+	verticalRotation.Up(up);
+	verticalRotation.Backward(verticalNormal);
+
+	//==========================================================
+	// 横斬撃の回転
+	// X軸 = 進行方向
+	// Y軸 = 左右方向
+	// Z軸 = 法線方向
+	//==========================================================
+	Math::Vector3 horizontalNormal =
+		forward.Cross(right);
+
+	horizontalNormal.Normalize();
+
+	Math::Matrix horizontalRotation =
+		Math::Matrix::Identity;
+
+	horizontalRotation.Right(forward);
+	horizontalRotation.Up(right);
+	horizontalRotation.Backward(horizontalNormal);
 
 	//==========================================================
 	// 斬撃の描画位置
 	//==========================================================
 	Math::Vector3 pos = GetPos();
 	pos.y += 1.0f;
-
-	//==========================================================
-	// 縦向きの斬撃と横向きの斬撃の回転
-	//
-	// 先に進行方向へ向け、その後Z軸で90度回転する
-	//==========================================================
-	Math::Matrix verticalRotation =
-		Math::Matrix::CreateRotationY(angle);
-
-	Math::Matrix horizontalRotation =
-		Math::Matrix::CreateRotationY(angle);
-
-	horizontalRotation *=
-		Math::Matrix::CreateRotationZ(
-			DirectX::XM_PIDIV2
-		);
 
 	//==========================================================
 	// 残像描画
