@@ -13,7 +13,7 @@
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
 
 #include <Application/GameObject/Effect/EffectManager.h>
-
+#include <Application/GameObject/UI/SettingIcon/SettingIcon.h>
 #include <Application/main.h>
 
 //============================================================
@@ -37,10 +37,20 @@ void TitleScene::Event()
 			if (m_settingUI->IsVisible())
 			{
 				m_settingUI->Close();
+
+				if (m_settingIcon)
+				{
+					m_settingIcon->SetVisible(true);
+				}
 			}
 			else
 			{
 				m_settingUI->Open();
+
+				if (m_settingIcon)
+				{
+					m_settingIcon->SetVisible(false);
+				}
 			}
 		}
 
@@ -152,6 +162,13 @@ void TitleScene::Init()
 	//---------------------------------------
 	InitAudio();
 
+	//---------------------------------------
+	// TAB設定アイコン
+	//---------------------------------------
+	m_settingIcon = std::make_shared<SettingIcon>();
+	m_settingIcon->Init();
+	AddObject(m_settingIcon);
+
 	//=======================================
 	// 環境光
 	//=======================================
@@ -165,7 +182,6 @@ void TitleScene::Init()
 		10.0f,
 		{ -60.0f, 0.0f, 55.0f }
 	);
-
 }
 
 //============================================================

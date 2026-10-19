@@ -143,7 +143,7 @@ void SkillGauge::DrawSprite()
 		};
 
 		param.color = outlineColor;
-		spriteShader.DrawFontEx(param, "%s", "ULT");
+		spriteShader.DrawFontEx(param, "%s", "SP");
 	}
 
 	// MP文字本体
@@ -156,5 +156,5 @@ void SkillGauge::DrawSprite()
 			1.0f, 0.2f, 0.8f, 1.0f
 		);
 
-	spriteShader.DrawFontEx(param, "%s", "ULT");
+	spriteShader.DrawFontEx(param, "%s", "SP");
 }

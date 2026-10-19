@@ -24,6 +24,7 @@
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/GameObject/UI/BattolPin/BattlePin.h>
 #include <Application/GameObject/UI/GameClearBotton/GameClearButton.h>
+#include <Application/GameObject/UI/SettingIcon/SettingIcon.h>
 #include <Application/GameObject/UI/SettingUI/SettingUI.h>
 #include <Application/GameObject/UI/PlaeyrUI/UIBackground/UIBackground.h>
 
@@ -134,6 +135,15 @@ void GameScene::Init()
 	InitUI();
 	InitBattleStartPin();
 
+	//---------------------------------------
+	// TAB設定アイコン
+	//---------------------------------------
+	m_settingIcon = std::make_shared<SettingIcon>();
+
+	m_settingIcon->Init();
+
+	AddObject(m_settingIcon);
+
 	//=======================================
 	// 剣の軌跡
 	//=======================================
@@ -161,6 +171,12 @@ void GameScene::InitSetting()
 	m_settingUI = std::make_shared<SettingUI>();
 	m_settingUI->Init();
 	AddObject(m_settingUI);
+
+	//=======================================
+	// TAB設定アイコン
+	//=======================================
+	//std::shared_ptr m_settingIconTex = std::make_shared<KdTexture>();
+	//m_settingIconTex->Load("Asset/Textures/UI/Setting/SettingIcon.png");
 }
 
 void GameScene::InitAudio()
@@ -474,18 +490,22 @@ void GameScene::UpdateGameFlow()
 		break;
 	}
 }
+
 void GameScene::UpdateTutorial()
 {
-	if (m_gamePhase != GamePhase::Tutorial) { return; }
+	if (m_gamePhase != GamePhase::Tutorial)
+	{
+		return;
+	}
 
 	// チュートリアル表示更新
 	UpdateTutorialText();
 
 	switch (m_tutorialStep)
 	{
-	//---------------------------------------
-	// 移動
-	//---------------------------------------
+		//---------------------------------------
+		// 移動
+		//---------------------------------------
 	case TutorialStep::Move:
 	{
 		if (m_player && m_player->IsMoving())
@@ -510,7 +530,7 @@ void GameScene::UpdateTutorial()
 	}
 
 	//---------------------------------------
-	// 通常攻撃(３段コンボ)
+	// 通常攻撃（3段コンボ）
 	//---------------------------------------
 	case TutorialStep::Attack:
 	{
@@ -524,32 +544,17 @@ void GameScene::UpdateTutorial()
 	}
 
 	//---------------------------------------
-	// スキル
+	// 強攻撃
 	//---------------------------------------
 	case TutorialStep::Skill:
 	{
 		if (m_player && m_player->IsSkillOnce())
 		{
-			m_tutorialStep = TutorialStep::Ultimate;
-
-			// ULTチュートリアル開始時にMPを最大にする
-			m_player->SetSkillGaugeMax();
-		}
-		break;
-	}
-
-	//---------------------------------------
-	// 必殺技
-	//---------------------------------------
-	case TutorialStep::Ultimate:
-	{
-		if (m_player && m_player->IsUltimateOnce())
-		{
-			m_player->ResetUltimateActivated();		//発動フラグをリセット
+			// 回避チュートリアルへ移行
 			m_tutorialStep = TutorialStep::Dodge;
 
 			//---------------------------------------
-			// チュートリアル敵の攻撃を許可
+			// 回避チュートリアル開始時に敵の攻撃を許可
 			//---------------------------------------
 			if (m_tutorialEnemy)
 			{
@@ -565,19 +570,69 @@ void GameScene::UpdateTutorial()
 	//---------------------------------------
 	case TutorialStep::Dodge:
 	{
-
-		if (m_tutorialEnemy && m_tutorialEnemy->IsTutorialAttackFinished())
+		if (m_tutorialEnemy &&
+			m_tutorialEnemy->IsTutorialAttackFinished())
 		{
-			//m_tutorialEnemy->ResetTutorialAttackFinished();
+			if (m_player)
+			{
+				m_player->ResetJustDodgeSuccess();
+			}
 
-			m_player->ResetJustDodgeSuccess();
+			//---------------------------------------
+			// 必殺技チュートリアルへ移行
+			//---------------------------------------
+			m_tutorialStep = TutorialStep::Ultimate;
 
-			m_tutorialStep = TutorialStep::Finish;
+			//---------------------------------------
+			// 必殺技チュートリアル開始時に敵のHPを変更
+			//---------------------------------------
+			if (m_tutorialEnemy)
+			{
+				m_tutorialEnemy->m_hpMax = 200.0f;
+				m_tutorialEnemy->m_hp = 200.0f;
+			}
+
+			// ULTゲージを最大にする
+			if (m_player)
+			{
+				m_player->SetSkillGaugeMax();
+			}
 		}
 
 		break;
 	}
 
+	//---------------------------------------
+	// 必殺技
+	//---------------------------------------
+	case TutorialStep::Ultimate:
+	{
+		if (m_player && m_player->IsUltimateOnce())
+		{
+			// 必殺技発動フラグをリセット
+			m_player->ResetUltimateActivated();
+
+			//---------------------------------------
+			// 敵撃破チュートリアルへ移行
+			//---------------------------------------
+			m_tutorialStep = TutorialStep::KillEnemy;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// チュートリアル敵の撃破
+	//---------------------------------------
+	case TutorialStep::KillEnemy:
+	{
+		if (m_tutorialEnemy && !m_tutorialEnemy->IsAlive())
+		{
+			m_tutorialStep = TutorialStep::Finish;
+		}
+
+		break;
+	}
 
 	//---------------------------------------
 	// チュートリアル終了
@@ -601,14 +656,12 @@ void GameScene::UpdateTutorial()
 		}
 
 		//---------------------------------------
-		// チュートリアル敵を削除
+		// チュートリアル敵は削除しない
 		//---------------------------------------
-		if (m_tutorialEnemy)
-		{
-			m_tutorialEnemy->SetExpired();
-			m_tutorialEnemy = nullptr;
-		}
 
+		//---------------------------------------
+		// 次のフェーズへ
+		//---------------------------------------
 		m_gamePhase = GamePhase::TutorialComplete;
 		m_phaseTimer = 0.0f;
 
@@ -1088,6 +1141,11 @@ void GameScene::OpenSetting()
 	//---------------------------------------
 	m_settingUI->Open();
 
+	if (m_settingIcon)
+	{
+		m_settingIcon->SetVisible(false);
+	}
+
 	//---------------------------------------
 	// ゲームUI非表示
 	//---------------------------------------
@@ -1149,6 +1207,11 @@ void GameScene::CloseSetting()
 	// 設定画面を閉じる
 	//---------------------------------------
 	m_settingUI->Close();
+
+	if (m_settingIcon)
+	{
+		m_settingIcon->SetVisible(true);
+	}
 
 	//---------------------------------------
 	// ゲームUI表示
@@ -2050,7 +2113,7 @@ void GameScene::UpdateTutorialText()
 		m_tutorialBackground->Init();
 		m_tutorialBackground->InitTutorial(
 			{ 0.0f, -270.0f },
-			600.0f,
+			650.0f,
 			150.0f
 		);
 
@@ -2073,48 +2136,48 @@ void GameScene::UpdateTutorialText()
 	{
 	case TutorialStep::Move:
 		m_tutorialText->InitMessage(
-			"キャラクターの移動\nＷＡＳＤで前後左右に移動",
-			{ 0.0f, -250.0f },
+			"目標チュートリアルをクリア\nキャラクターの移動\nＷＡＳＤで前後左右に移動",
+			{ 0.0f, -230.0f },
 			1.0f
 		);
 		break;
 
 	case TutorialStep::LockOn:
 		m_tutorialText->InitMessage(
-			"Ｑを押すと一番近い敵をロックオンする",
-			{ 0.0f, -270.0f },
+			"目標チュートリアルをクリア\nＱを押すと一番近い敵をロックオンする",
+			{ 0.0f, -250.0f },
 			1.0f
 		);
 		break;
 
 	case TutorialStep::Attack:
 		m_tutorialText->InitMessage(
-			"左クリックで攻撃ができる\nコンボがあり３段まで攻撃できる ",
-			{ 0.0f, -250.0f },
+			"目標チュートリアルをクリア\n左クリックで攻撃ができる\nコンボがあり３段まで攻撃できる ",
+			{ 0.0f, -230.0f },
 			1.0f
 		);
 		break;
 
 	case TutorialStep::Skill:
 		m_tutorialText->InitMessage(
-			"Ｅキーで強攻撃の突進斬りを使用する\nまた通常攻撃と強攻撃はＵＬＴゲージを貯ることができる",
-			{ 0.0f, -250.0f },
-			1.0f
-		);
-		break;
-
-	case TutorialStep::Ultimate:
-		m_tutorialText->InitMessage(
-			"ＵＬＴゲージがＭＡＸになった時\nＳＰＡＳＥを押すと強力な攻撃が可能",
-			{ 0.0f, -250.0f },
+			"目標チュートリアルをクリア\nＥキーで強攻撃の突進斬りを使用する\nまた通常攻撃と強攻撃はＵＬＴゲージを貯ることができる",
+			{ 0.0f, -230.0f },
 			1.0f
 		);
 		break;
 
 	case TutorialStep::Dodge:
 		m_tutorialText->InitMessage(
-			"敵は攻撃してきたときに発光する\n発光時に右クリックすると回避できる\nまた回避した時にＵＬＴゲージを少し貯める",
+			"目標チュートリアルをクリア\n敵は攻撃してきたときに発光する\n発光時に右クリックすると回避を行いＵＬＴゲージを少し貯める",
 			{ 0.0f, -235.0f },
+			1.0f
+		);
+		break;
+
+	case TutorialStep::Ultimate:
+		m_tutorialText->InitMessage(
+			"目標チュートリアルをクリア\nＳＰゲージがＭＡＸになった時\nＳＰＡＳＥを押すと強力な攻撃が可能",
+			{ 0.0f, -250.0f },
 			1.0f
 		);
 		break;

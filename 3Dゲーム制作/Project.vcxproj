@@ -308,6 +308,7 @@
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.h" />
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\UIBackground\UIBackground.h" />
     <ClInclude Include="Src\Application\GameObject\UI\PlaeyrUI\UltimateGauge\UltimateGauge.h" />
+    <ClInclude Include="Src\Application\GameObject\UI\SettingIcon\SettingIcon.h" />
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume\BGMVolume.h" />
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SettingAudio.h" />
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume\SEVolume.h" />
@@ -402,6 +403,7 @@
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\SkillGauge\SkillGauge.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\UIBackground\UIBackground.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\PlaeyrUI\UltimateGauge\UltimateGauge.cpp" />
+    <ClCompile Include="Src\Application\GameObject\UI\SettingIcon\SettingIcon.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\BGMVolume\BGMVolume.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SettingAudio.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingAudio\SEVolume\SEVolume.cpp" />

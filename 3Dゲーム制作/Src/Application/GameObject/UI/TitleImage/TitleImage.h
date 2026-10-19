@@ -24,6 +24,9 @@ private:
 	//---------------------------------------
 	std::shared_ptr<KdTexture> m_pressTex;
 
+	// TAB設定アイコン
+	std::shared_ptr<KdTexture> m_settingIconTex;
+
 	//---------------------------------------
 	// PRESS ANY BUTTON フェード
 	//---------------------------------------

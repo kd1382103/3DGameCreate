@@ -27,6 +27,7 @@ class SettingUI;
 class BattlePin;
 class UIBackground;
 class SwordTrail;
+class SettingIcon;
 
 class GameScene : public BaseScene
 {
@@ -97,6 +98,7 @@ public:
 		Ultimate,	// 必殺技
 		Dodge,		// 回避
 		LockOn,		// ロックオン
+		KillEnemy,	//チュートリアル敵の撃破
 		Finish		// 終了
 	};
 
@@ -265,12 +267,15 @@ private:
 	//========================================
 	std::shared_ptr<SettingUI> m_settingUI;
 
-
 	//========================================
 	// BGM
 	//========================================
 	std::shared_ptr<KdSoundInstance> m_gameBGM;
 
+	//---------------------------------------
+	// TAB設定アイコン
+	//---------------------------------------
+	std::shared_ptr<SettingIcon> m_settingIcon;
 
 	//========================================
 	// ゲーム進行
@@ -300,7 +305,7 @@ private:
 	float m_phaseTimer = 0.0f;
 
 	// チュートリアル完了からPrepareへ移行する時間
-	const float m_tutorialFinishTime = 2.0f;
+	const float m_tutorialFinishTime = 0.8f;
 
 	//========================================
 	// ゲーム終了

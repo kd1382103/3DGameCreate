@@ -10,6 +10,7 @@ class TPSCamera;
 class Player;
 class Stage;
 class Sky;
+class SettingIcon;
 
 
 class TitleScene : public BaseScene
@@ -68,6 +69,11 @@ private:
 	// 空
 	//---------------------------------------
 	std::shared_ptr<Sky> m_sky;
+
+	//---------------------------------------
+	// TAB設定アイコン
+	//---------------------------------------
+	std::shared_ptr<SettingIcon> m_settingIcon;
 
 	//演出用
 	bool m_startJump = false;

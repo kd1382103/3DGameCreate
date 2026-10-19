@@ -2,15 +2,6 @@
 #include <Application/main.h>
 void TitleImage::Init()
 {
-	////---------------------------------------
-	//// タイトル背景
-	////---------------------------------------
-	//m_titleTex = std::make_shared<KdTexture>();
-
-	//m_titleTex->Load(
-	//	"Asset/Textures/TitleScene/Title.png"
-	//);
-
 	//==========================================================
 	// NEON BLADE ロゴ
 	//==========================================================
@@ -28,6 +19,15 @@ void TitleImage::Init()
 
 	m_pressTex->Load(
 		"Asset/Textures/TitleScene/Button.png"
+	);
+
+	//---------------------------------------
+	// TAB設定アイコン
+	//---------------------------------------
+	m_settingIconTex = std::make_shared<KdTexture>();
+
+	m_settingIconTex->Load(
+		"Asset/Textures/UI/Setting/SettingIcon.png"
 	);
 
 	//---------------------------------------
@@ -140,4 +140,19 @@ void TitleImage::DrawSprite()
 			{ 0.5f, 0.5f }
 		);
 	}
+
+	//==========================================================
+	// TAB設定アイコン
+	// 画面右上に表示
+	//==========================================================
+	//if (m_settingIconTex)
+	//{
+	//	KdShaderManager::Instance().m_spriteShader.DrawTex(
+	//		m_settingIconTex.get(),
+	//		550.0f,     // X座標
+	//		310.0f,     // Y座標
+	//		64.0f,      // 幅
+	//		64.0f       // 高さ
+	//	);
+	//}
 }
