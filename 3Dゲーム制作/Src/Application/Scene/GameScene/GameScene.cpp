@@ -973,7 +973,7 @@ void GameScene::GameClear()
 	// GAME CLEAR表示
 	//=======================================
 	auto clearText = std::make_shared<FontText>();
-	clearText->InitMessage("GAME CLEAR");
+	clearText->InitMessage("ＧＡＭＥ ＣＬＥＡＲ", { 1.5f,0.0f }, 3.0f);
 	AddObject(clearText);
 
 	//=======================================
@@ -984,6 +984,7 @@ void GameScene::GameClear()
 		m_gameClearButton->SetVisible(true);
 	}
 }
+
 void GameScene::GameOver()
 {
 	m_isGameOver = true;
@@ -1035,7 +1036,7 @@ void GameScene::GameOver()
 	// GAME OVER表示
 	//=======================================
 	auto overText = std::make_shared<FontText>();
-	overText->InitMessage("GAME OVER");
+	overText->InitMessage("ＧＡＭＥ ＯＶＥＲ", { 1.5f,0.0f }, 3.0f);
 	AddObject(overText);
 
 	//=======================================
