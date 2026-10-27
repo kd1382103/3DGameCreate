@@ -1511,6 +1511,14 @@ void Player::Heal(float amount)
 	{
 		ui->SetGauge(m_nowHp, m_hpGaugeMax);
 	}
+
+	//========================================
+	// 回復エフェクト
+	//========================================
+	EffectManager::Instance().PlayHeal(
+		std::static_pointer_cast<Player>(shared_from_this()),
+		m_nowPos + Math::Vector3(0, 1.0f, 0)
+	);
 }
 
 void Player::PlayAnimationAuto(const std::string& animName, bool loop)

@@ -220,6 +220,9 @@
     <Filter Include="Src\Application\GameObject\UI\SettingIcon">
       <UniqueIdentifier>{40f7febb-d8b0-4f28-978e-5c67ceaf9bde}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Effect\HealEffect">
+      <UniqueIdentifier>{2e86d023-5cfd-4241-b52a-2f12fddd5859}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -525,6 +528,9 @@
     <ClInclude Include="Src\Application\GameObject\UI\SettingIcon\SettingIcon.h">
       <Filter>Src\Application\GameObject\UI\SettingIcon</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\HealEffect\HealEffect.h">
+      <Filter>Src\Application\GameObject\Effect\HealEffect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -793,6 +799,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\SettingIcon\SettingIcon.cpp">
       <Filter>Src\Application\GameObject\UI\SettingIcon</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Effect\HealEffect\HealEffect.cpp">
+      <Filter>Src\Application\GameObject\Effect\HealEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

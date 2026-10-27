@@ -284,6 +284,7 @@
     <ClInclude Include="Src\Application\GameObject\Effect\EffectBase\EffectBase.h" />
     <ClInclude Include="Src\Application\GameObject\Effect\EffectManager.h" />
     <ClInclude Include="Src\Application\GameObject\Effect\EffectType\EffectType.h" />
+    <ClInclude Include="Src\Application\GameObject\Effect\HealEffect\HealEffect.h" />
     <ClInclude Include="Src\Application\GameObject\Effect\HitEffect\HitEffect.h" />
     <ClInclude Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.h" />
     <ClInclude Include="Src\Application\GameObject\Effect\SwordTrail\SwordTrail.h" />
@@ -379,6 +380,7 @@
     <ClCompile Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.cpp" />
     <ClCompile Include="Src\Application\GameObject\Effect\EffectBase\EffectBase.cpp" />
     <ClCompile Include="Src\Application\GameObject\Effect\EffectManager.cpp" />
+    <ClCompile Include="Src\Application\GameObject\Effect\HealEffect\HealEffect.cpp" />
     <ClCompile Include="Src\Application\GameObject\Effect\HitEffect\HitEffect.cpp" />
     <ClCompile Include="Src\Application\GameObject\Effect\SparkEffect\SparkEffect.cpp" />
     <ClCompile Include="Src\Application\GameObject\Effect\SwordTrail\SwordTrail.cpp" />

@@ -13,6 +13,7 @@ enum class EffectType
 	Slash,			// 通常攻撃
 	Skill,			// スキル
 	Ultimate,		// 必殺技
+	Heal,
 
 	//--------------------------
 	// 移動関連

@@ -3,7 +3,7 @@
 #include <Application/GameObject/Effect/HitEffect/HitEffect.h>
 #include <Application/GameObject/Effect/SparkEffect/SparkEffect.h>
 #include <Application/GameObject/Effect/UltimateEffect/UltimateEffect.h>
-
+#include <Application/GameObject/Effect/HealEffect/HealEffect.h>
 
 #include <Application/GameObject/Camera/CameraBase.h>
 #include <Application/Scene/SceneManager.h>
@@ -141,4 +141,23 @@ void EffectManager::Play(
 	default:
 		break;
 	}
+}
+
+void EffectManager::PlayHeal(
+	const std::shared_ptr<Player>& player,
+	const Math::Vector3& pos)
+{
+	auto effect = std::make_shared<HealEffect>();
+
+	effect->Init(pos);
+	effect->SetPlayer(player);
+
+	auto camera = m_wpCamera.lock();
+
+	if (camera)
+	{
+		effect->SetCamera(camera);
+	}
+
+	SceneManager::Instance().AddObject(effect);
 }

@@ -3,6 +3,7 @@
 #include <Application/GameObject/Effect/EffectType/EffectType.h>
 
 class CameraBase;
+class Player;
 
 //==============================================================
 // エフェクト管理クラス
@@ -49,6 +50,10 @@ public:
 		float hitInterval,
 		int maxHitCount,
 		float travelDistance);
+
+	void PlayHeal(
+		const std::shared_ptr<Player>& player,
+		const Math::Vector3& pos);
 
 private:
 
