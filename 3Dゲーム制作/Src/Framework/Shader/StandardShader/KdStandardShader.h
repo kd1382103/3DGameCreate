@@ -167,8 +167,16 @@ public:
 		const Math::Color& colRate = kWhiteColor, const Math::Vector3& emissive = Math::Vector3::Zero);
 
 	// モデルワーク描画：アニメーションに対応
-	void DrawModel(KdModelWork& rModel, const Math::Matrix& mWorld = Math::Matrix::Identity,
-		const Math::Color& colRate = kWhiteColor, const Math::Vector3& emissive = Math::Vector3::Zero);
+	//void DrawModel(KdModelWork& rModel, const Math::Matrix& mWorld = Math::Matrix::Identity,
+	//	const Math::Color& colRate = kWhiteColor, const Math::Vector3& emissive = Math::Vector3::Zero);
+
+	void DrawModel(
+		KdModelWork& rModel, 
+		const Math::Matrix& mWorld = Math::Matrix::Identity,
+		const Math::Color& colRate = kWhiteColor, 
+		const Math::Vector3& emissive = Math::Vector3::Zero,
+		const std::string& emissiveNodeName = ""
+	);
 
 	// 任意の頂点群からなるポリゴン描画
 	void DrawPolygon(const KdPolygon& poly, const Math::Matrix& mWorld = Math::Matrix::Identity,

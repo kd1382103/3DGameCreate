@@ -201,7 +201,7 @@ void KdStandardShader::DrawModel(const KdModelData& rModel, const Math::Matrix& 
 // データに所属する全ての描画用メッシュをワークの3D行列に従って描画する
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void KdStandardShader::DrawModel(KdModelWork& rModel, const Math::Matrix& mWorld,
-	const Math::Color& colRate, const Math::Vector3& emissive)
+	const Math::Color& colRate, const Math::Vector3& emissive, const std::string& emissiveNodeName)
 {
 	//if (!rModel.IsEnable()) { return; }
 
@@ -306,12 +306,21 @@ void KdStandardShader::DrawModel(KdModelWork& rModel, const Math::Matrix& mWorld
 			m_cb0_Obj.Write();
 		}
 
+		// 指定されたノードだけ発光させる
+		Math::Vector3 nodeEmissive = emissive;
+
+		if (!emissiveNodeName.empty() &&
+			dataNode.m_name != emissiveNodeName)
+		{
+			nodeEmissive = Math::Vector3::Zero;
+		}
+
 		DrawMesh(
 			dataNode.m_spMesh.get(),
 			workNodes[nodeIdx].m_worldTransform * mWorld,
 			data->GetMaterials(),
 			colRate,
-			emissive
+			nodeEmissive
 		);
 
 	}
