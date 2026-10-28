@@ -36,14 +36,49 @@ void SettingIcon::DrawSprite()
 		return;
 	}
 
+	auto& shader =
+		KdShaderManager::Instance().m_spriteShader;
+
 	//---------------------------------------
-	// TAB設定アイコン
+	// 設定アイコン
 	//---------------------------------------
-	KdShaderManager::Instance().m_spriteShader.DrawTex(
+	shader.DrawTex(
 		m_iconTex.get(),
 		m_posX,
 		m_posY,
 		m_size,
 		m_size
+	);
+
+	//---------------------------------------
+	// 設定画面を開く説明
+	//---------------------------------------
+	KdSpriteShader::FontParam param;
+
+	param.pos =
+	{
+		m_posX + 8.0f,
+		m_posY - m_size * 0.5f - 8.0f
+	};
+
+	param.scale = 0.8f;
+
+	param.pivot =
+	{
+		0.5f,
+		0.5f
+	};
+
+	param.color =
+	{
+		0.0f,
+		0.85f,
+		1.0f,
+		1.0f
+	};
+
+	shader.DrawFontEx(
+		param,
+		"設定を開く"
 	);
 }
