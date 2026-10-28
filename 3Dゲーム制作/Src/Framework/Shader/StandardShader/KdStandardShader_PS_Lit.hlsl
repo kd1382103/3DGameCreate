@@ -182,7 +182,18 @@ float4 main(VSOutput In) : SV_Target0
 			float atte = 1.0 - saturate(dist / g_PointLights[i].Radius);
 			
 			// 明度の追加
-			totalBrightness += (1 - pow(1 - atte, 2)) * g_PointLights[i].IsBright;
+			float lightIntensity = max(
+				g_PointLights[i].Color.r,
+				max(
+					g_PointLights[i].Color.g,
+					g_PointLights[i].Color.b
+				)
+			);
+
+			totalBrightness +=
+				(1 - pow(1 - atte, 2))
+				* g_PointLights[i].IsBright
+				* lightIntensity;
 			
 			// 逆２乗の法則
 			atte *= atte;

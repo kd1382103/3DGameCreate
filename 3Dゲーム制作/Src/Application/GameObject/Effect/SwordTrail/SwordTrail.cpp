@@ -1,4 +1,5 @@
-﻿#include "SwordTrail.h"
+﻿
+#include "SwordTrail.h"
 
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/main.h>
@@ -38,6 +39,11 @@ void SwordTrail::Init()
 	// タイマー初期化
 	//==================================================
 	m_trailTimer = 0.0f;
+
+	//==================================================
+	// 発光強度初期化
+	//==================================================
+	m_lightIntensity = 0.0f;
 }
 
 void SwordTrail::Update()
@@ -55,9 +61,62 @@ void SwordTrail::Update()
 	float deltaTime = Application::Instance().GetDeltaTime();
 
 	//==================================================
+	// 剣軌跡の状態取得
+	//==================================================
+	const bool trailActive = player->IsSwordTrailActive();
+
+	//==================================================
+	// 発光フェードイン・アウト
+	//==================================================
+	if (trailActive)
+	{
+		// 徐々に明るくする
+		m_lightIntensity += deltaTime * LightFadeInSpeed;
+
+		if (m_lightIntensity > 1.0f)
+		{
+			m_lightIntensity = 1.0f;
+		}
+	}
+	else
+	{
+		// 徐々に暗くする
+		m_lightIntensity -= deltaTime * LightFadeOutSpeed;
+
+		if (m_lightIntensity < 0.0f)
+		{
+			m_lightIntensity = 0.0f;
+		}
+	}
+
+	//==================================================
+	// 剣の原点・剣先を取得
+	//==================================================
+	Math::Vector3 basePos =
+		player->GetSwordBasePos();
+
+	Math::Vector3 tipPos =
+		player->GetSwordTipPos();
+
+	//==================================================
+	// PointLight更新
+	//
+	// 剣を振り終えた後も、発光が残っている間は
+	// ライトを登録し続けて徐々に暗くする
+	//==================================================
+	if (m_lightIntensity > 0.0f)
+	{
+		UpdateSwordPointLights(
+			basePos,
+			tipPos,
+			m_lightIntensity
+		);
+	}
+
+	//==================================================
 	// 剣軌跡OFF
 	//==================================================
-	if (!player->IsSwordTrailActive())
+	if (!trailActive)
 	{
 		if (m_wasTrailActive)
 		{
@@ -82,26 +141,6 @@ void SwordTrail::Update()
 
 		m_trailTimer = 0.0f;
 	}
-
-	//==================================================
-	// 剣の原点・剣先を取得
-	//==================================================
-	Math::Vector3 basePos =
-		player->GetSwordBasePos();
-
-	Math::Vector3 tipPos =
-		player->GetSwordTipPos();
-
-	//==================================================
-	// PointLight更新
-	//
-	// トレイルのポイント追加タイミングとは別に
-	// 毎フレーム更新する
-	//==================================================
-	UpdateSwordPointLights(
-		basePos,
-		tipPos
-	);
 
 	//==================================================
 	// タイマー更新
@@ -169,7 +208,12 @@ void SwordTrail::DrawEffect()
 	//==================================================
 	KdShaderManager::Instance()
 		.m_StandardShader
-		.DrawPolygon(*m_tPoly,Math::Matrix::Identity,Math::Color(1,1,1,1),Math::Vector3(10.0f));
+		.DrawPolygon(
+			*m_tPoly,
+			Math::Matrix::Identity,
+			Math::Color(1, 1, 1, 1),
+			Math::Vector3(10.0f)
+		);
 
 	//==================================================
 	// UnLit終了
@@ -184,7 +228,8 @@ void SwordTrail::DrawEffect()
 //==============================================================
 void SwordTrail::UpdateSwordPointLights(
 	const Math::Vector3& basePos,
-	const Math::Vector3& tipPos)
+	const Math::Vector3& tipPos,
+	float intensity)
 {
 	auto& ambientController =
 		KdShaderManager::Instance().WorkAmbientController();
@@ -207,34 +252,37 @@ void SwordTrail::UpdateSwordPointLights(
 		basePos + swordDir * 0.75f;
 
 	//==================================================
-	// PointLight
+	// 発光色
 	//
-	// Color
-	//	白色
-	//
-	// Radius
-	//	3.0f
-	//
-	// IsBright
-	//	true
+	// intensity = 0.0 : 消灯
+	// intensity = 1.0 : 最大発光
+	//==================================================
+	const Math::Vector3 lightColor(
+		intensity,
+		intensity,
+		intensity
+	);
+
+	//==================================================
+	// PointLight登録
 	//==================================================
 	ambientController.AddPointLight(
-		Math::Vector3(1.0f, 1.0f, 1.0f),
-		0.3f,
+		lightColor,
+		1.0f,
 		lightPos1,
 		true
 	);
 
 	ambientController.AddPointLight(
-		Math::Vector3(1.0f, 1.0f, 1.0f),
-		0.3f,
+		lightColor,
+		1.0f,
 		lightPos2,
 		true
 	);
 
 	ambientController.AddPointLight(
-		Math::Vector3(1.0f, 1.0f, 1.0f),
-		0.3f,
+		lightColor,
+		1.0f,
 		lightPos3,
 		true
 	);
