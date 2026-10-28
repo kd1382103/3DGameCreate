@@ -181,6 +181,9 @@ float4 main(VSOutput In) : SV_Target0
 			// 半径をもとに、距離の比率を求める
 			float atte = 1.0 - saturate(dist / g_PointLights[i].Radius);
 			
+			//// 明度の追加
+			//totalBrightness += (1 - pow(1 - atte, 2)) * g_PointLights[i].IsBright;
+			
 			// 明度の追加
 			float lightIntensity = max(
 				g_PointLights[i].Color.r,
