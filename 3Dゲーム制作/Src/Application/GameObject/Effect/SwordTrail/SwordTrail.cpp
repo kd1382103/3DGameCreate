@@ -268,21 +268,21 @@ void SwordTrail::UpdateSwordPointLights(
 	//==================================================
 	ambientController.AddPointLight(
 		lightColor,
-		1.0f,
+		2.0f,
 		lightPos1,
 		true
 	);
 
 	ambientController.AddPointLight(
 		lightColor,
-		1.0f,
+		2.0f,
 		lightPos2,
 		true
 	);
 
 	ambientController.AddPointLight(
 		lightColor,
-		1.0f,
+		2.0f,
 		lightPos3,
 		true
 	);

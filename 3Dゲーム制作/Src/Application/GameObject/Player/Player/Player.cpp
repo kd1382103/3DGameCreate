@@ -1512,6 +1512,11 @@ void Player::Heal(float amount)
 		ui->SetGauge(m_nowHp, m_hpGaugeMax);
 	}
 
+	KdAudioManager::Instance().Play(
+		"Asset/Sounds/SE/healing.wav",
+		SoundType::SE
+	);
+
 	//========================================
 	// 回復エフェクト
 	//========================================
