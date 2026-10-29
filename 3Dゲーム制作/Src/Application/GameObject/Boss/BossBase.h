@@ -184,6 +184,11 @@ public:
 		return m_hp <= 0.0f;
 	}
 
+	bool IsDeathSequenceFinished() const
+	{
+		return m_isExpired;
+	}
+
 public:
 
 	//==============================================================
@@ -448,4 +453,15 @@ private:
 		0.8f,
 		1.0f
 	};
+
+	bool m_isDeathEffectPlayed = false;
+
+	// 爆発エフェクト再生までの待機フレーム数
+	static constexpr float m_deathEffectDelay = 18.0f;
+
+	// 爆発エフェクト再生までの経過フレーム
+	float m_deathEffectDelayTimer = 0.0f;
+
+	// 爆発待機中か
+	bool m_isDeathEffectWaiting = false;
 };

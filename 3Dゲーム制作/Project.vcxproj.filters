@@ -223,6 +223,9 @@
     <Filter Include="Src\Application\GameObject\Effect\HealEffect">
       <UniqueIdentifier>{2e86d023-5cfd-4241-b52a-2f12fddd5859}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\Effect\BossDeathEffect">
+      <UniqueIdentifier>{6d1dc467-c2d3-4060-89b0-639159df7bf3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -531,6 +534,9 @@
     <ClInclude Include="Src\Application\GameObject\Effect\HealEffect\HealEffect.h">
       <Filter>Src\Application\GameObject\Effect\HealEffect</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\Effect\BossDeathEffect\BossDeathEffect.h">
+      <Filter>Src\Application\GameObject\Effect\BossDeathEffect</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -802,6 +808,9 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Effect\HealEffect\HealEffect.cpp">
       <Filter>Src\Application\GameObject\Effect\HealEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\Effect\BossDeathEffect\BossDeathEffect.cpp">
+      <Filter>Src\Application\GameObject\Effect\BossDeathEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

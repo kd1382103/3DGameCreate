@@ -1029,12 +1029,17 @@ void BossBase::StartDeath()
 
 	// 死亡演出の待機を解除
 	m_isDeathPending = false;
+	m_isDeathEffectPlayed = false;
 
 	m_isDying = true;
 
 	m_isDeathDissolving = false;
 	m_deathTimer = 0.0f;
 	m_deathDissolve = 0.0f;
+
+	m_isDeathEffectPlayed = false;
+	m_isDeathEffectWaiting = false;
+	m_deathEffectDelayTimer = 0.0f;
 
 	// 攻撃関連を停止
 	m_preAttackActive = false;
@@ -1066,9 +1071,9 @@ void BossBase::UpdateDeath(float frameScale)
 	}
 
 	//========================================
-	// 死亡アニメーション
+	// Deathアニメーション
 	//========================================
-	if (!m_isDeathDissolving)
+	if (!m_isDeathDissolving && !m_isDeathEffectWaiting)
 	{
 		m_animator.AdvanceTime(
 			m_model->WorkNodes(),
@@ -1080,13 +1085,45 @@ void BossBase::UpdateDeath(float frameScale)
 			m_model->CalcNodeMatrices();
 		}
 
-		// アニメーションが終了したらディゾルブ開始
+		// アニメーション終了後、爆発まで待機
 		if (m_animator.IsAnimationEnd())
 		{
-			m_isDeathDissolving = true;
-			m_deathTimer = 0.0f;
-			m_deathDissolve = 0.0f;
+			m_isDeathEffectWaiting = true;
+			m_deathEffectDelayTimer = 0.0f;
 		}
+
+		return;
+	}
+
+	//========================================
+	// 爆発までの待機
+	//========================================
+	if (m_isDeathEffectWaiting)
+	{
+		m_deathEffectDelayTimer += frameScale;
+
+		if (m_deathEffectDelayTimer < m_deathEffectDelay)
+		{
+			return;
+		}
+
+		m_isDeathEffectWaiting = false;
+
+		// 爆発エフェクトを一度だけ再生
+		if (!m_isDeathEffectPlayed)
+		{
+			EffectManager::Instance().Play(
+				EffectType::Explosion,
+				GetPos()
+			);
+
+			m_isDeathEffectPlayed = true;
+		}
+
+		// 爆発に合わせてディゾルブ開始
+		m_isDeathDissolving = true;
+		m_deathTimer = 0.0f;
+		m_deathDissolve = 0.0f;
 
 		return;
 	}
@@ -1096,12 +1133,9 @@ void BossBase::UpdateDeath(float frameScale)
 	//========================================
 	m_deathTimer += frameScale;
 
-	float t =
-		m_deathTimer / m_deathDuration;
-
+	float t = m_deathTimer / m_deathDuration;
 	t = std::clamp(t, 0.0f, 1.0f);
 
-	// 0.0 → 1.0 で消える
 	m_deathDissolve = t;
 
 	//========================================
@@ -1111,11 +1145,9 @@ void BossBase::UpdateDeath(float frameScale)
 	{
 		m_deathTimer = m_deathDuration;
 		m_deathDissolve = 1.0f;
-
 		m_isExpired = true;
 	}
 }
-
 //==============================================================
 // Resolve更新
 //==============================================================

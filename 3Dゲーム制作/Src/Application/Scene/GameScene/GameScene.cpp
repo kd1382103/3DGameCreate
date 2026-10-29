@@ -1653,6 +1653,7 @@ void GameScene::StartClearSequence()
 
 	if (m_player)
 	{
+		m_player->SetClearSequence(true);
 		m_player->SetInputLock(true);
 	}
 
@@ -1703,17 +1704,15 @@ void GameScene::UpdateClearSequence()
 
 		if (cameraFinished)
 		{
-			// カメラがボスに寄り終わってから死亡演出を開始
+			// ボスの死亡演出を開始
 			if (m_boss)
 			{
 				m_boss->StartDeath();
 			}
 
-			// ボスの死亡演出待ちへ
 			m_clearSequence = ClearSequence::BossDeath;
 			m_clearSequenceTimer = 0.0f;
 		}
-
 		break;
 	}
 
@@ -1724,7 +1723,7 @@ void GameScene::UpdateClearSequence()
 	{
 		// ボスの死亡アニメーションとディゾルブが
 		// 完了するまでプレイヤー側へ移動しない
-		if (!m_boss || !m_boss->IsAlive())
+		if (!m_boss || m_boss->IsDeathSequenceFinished()) 
 		{
 			// プレイヤー側へのカメラ移動を開始
 			if (m_tpsCamera && m_player)
@@ -1810,13 +1809,6 @@ void GameScene::UpdateClearSequence()
 
 			// ジャンプ開始位置を保存
 			m_clearJumpStartPos = m_player->GetPos();
-
-			// プレイヤー周辺にエフェクトを再生
-			EffectManager::Instance().Play(
-				EffectType::Ultimate,
-				m_player->GetPos()
-				+ Math::Vector3(0.0f, 1.0f, 0.0f)
-			);
 		}
 
 		break;

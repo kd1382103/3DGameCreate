@@ -4,6 +4,8 @@
 #include <Application/GameObject/Effect/SparkEffect/SparkEffect.h>
 #include <Application/GameObject/Effect/UltimateEffect/UltimateEffect.h>
 #include <Application/GameObject/Effect/HealEffect/HealEffect.h>
+#include <Application/GameObject/Effect/BossDeathEffect/BossDeathEffect.h>
+
 
 #include <Application/GameObject/Camera/CameraBase.h>
 #include <Application/Scene/SceneManager.h>
@@ -43,6 +45,25 @@ void EffectManager::Play(
 		break;
 	}
 
+	case EffectType::Explosion:
+	{
+		auto effect =
+			std::make_shared<BossDeathEffect>();
+
+		effect->Init(pos);
+
+		auto camera =
+			m_wpCamera.lock();
+
+		if (camera)
+		{
+			effect->SetCamera(camera);
+		}
+
+		SceneManager::Instance().AddObject(effect);
+
+		break;
+	}
 	default:
 		break;
 	}
