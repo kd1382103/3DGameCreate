@@ -189,6 +189,18 @@ public:
 		return m_isExpired;
 	}
 
+	// 死亡アニメーションが終了したか
+	bool IsDeathAnimationFinished() const
+	{
+		return m_isDying && m_animator.IsAnimationEnd();
+	}
+
+	// 爆発・消滅演出の一時停止
+	void SetDeathEffectPaused(bool paused)
+	{
+		m_isDeathEffectPaused = paused;
+	}
+
 public:
 
 	//==============================================================
@@ -464,4 +476,7 @@ private:
 
 	// 爆発待機中か
 	bool m_isDeathEffectWaiting = false;
+
+	// プレイヤー退避中は爆発・消滅演出を停止する
+	bool m_isDeathEffectPaused = false;
 };

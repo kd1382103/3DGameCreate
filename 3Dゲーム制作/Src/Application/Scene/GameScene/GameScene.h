@@ -38,9 +38,11 @@ class GameScene : public BaseScene
 	{
 		None,           // 通常プレイ中
 		CameraToBoss,   // ボスを映す
+		BossDeath,      // ボスの死亡演出
+		RetreatWait,    // プレイヤー退避までの待機
+		PlayerRetreat,  // 回避アニメーションで後退
 		CameraToPlayer, // プレイヤーへカメラを戻す
 		PlayerJump,     // プレイヤーの退場ジャンプ
-		BossDeath,
 		Finished        // 演出終了
 	};
 
@@ -360,6 +362,28 @@ private:
 	Math::Vector3 m_clearJumpStartPos = Math::Vector3::Zero;
 
 	//========================================
+	// ボス撃破後のプレイヤー退避
+	//========================================
+
+	// 退避開始位置
+	Math::Vector3 m_clearRetreatStartPos = Math::Vector3::Zero;
+
+	// 退避方向
+	Math::Vector3 m_clearRetreatDirection = Math::Vector3::Zero;
+
+	// 退避演出が完了したか
+	bool m_isPlayerRetreated = false;
+
+	// 死亡アニメーション終了後、退避を開始するまでの待機時間
+	const float m_clearRetreatWaitTime = 0.1f;
+
+	// プレイヤーの後退にかける時間
+	const float m_clearRetreatDuration = 0.5f;
+
+	// 後退距離
+	const float m_clearRetreatDistance = 10.0f;
+
+	//========================================
 	// デバッグ
 	//========================================
 	
@@ -399,4 +423,3 @@ struct EnemySpawnInfo
 	Math::Vector3 offset;
 	float angleY; // 隊列全体のY軸回転角度
 };
-

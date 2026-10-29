@@ -1033,6 +1033,9 @@ void BossBase::StartDeath()
 
 	m_isDying = true;
 
+	// 死亡演出の開始時は爆発・消滅演出を停止
+	m_isDeathEffectPaused = true;
+
 	m_isDeathDissolving = false;
 	m_deathTimer = 0.0f;
 	m_deathDissolve = 0.0f;
@@ -1099,7 +1102,13 @@ void BossBase::UpdateDeath(float frameScale)
 	// 爆発までの待機
 	//========================================
 	if (m_isDeathEffectWaiting)
-	{
+	{ 
+		// プレイヤーが退避するまで爆発を待つ
+		if (m_isDeathEffectPaused)
+		{
+			return;
+		}
+
 		m_deathEffectDelayTimer += frameScale;
 
 		if (m_deathEffectDelayTimer < m_deathEffectDelay)

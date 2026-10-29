@@ -1650,6 +1650,9 @@ void GameScene::StartClearSequence()
 
 	m_clearSequence = ClearSequence::CameraToBoss;
 	m_clearSequenceTimer = 0.0f;
+	m_isPlayerRetreated = false;
+	m_clearRetreatStartPos = Math::Vector3::Zero;
+	m_clearRetreatDirection = Math::Vector3::Zero;
 
 	if (m_player)
 	{
@@ -1706,6 +1709,7 @@ void GameScene::UpdateClearSequence()
 			// ボスの死亡演出を開始
 			if (m_boss)
 			{
+				m_boss->SetDeathEffectPaused(true);
 				m_boss->StartDeath();
 			}
 
@@ -1720,65 +1724,85 @@ void GameScene::UpdateClearSequence()
 	//---------------------------------------
 	case ClearSequence::BossDeath:
 	{
-		// ボスの死亡アニメーションとディゾルブが
-		// 完了するまでプレイヤー側へ移動しない
-		if (!m_boss || m_boss->IsDeathSequenceFinished()) 
+		// ボスが存在しない場合は、後退処理を飛ばす
+		if (!m_boss)
 		{
-			// プレイヤー側へのカメラ移動を開始
-			if (m_tpsCamera && m_player)
+			m_isPlayerRetreated = true;
+		}
+
+		// プレイヤーの後退が終わるまでは、
+		// ボスの爆発・ディゾルブ完了を待たない
+		if (!m_isPlayerRetreated)
+		{
+			// ボスの死亡アニメーションが終わったら後退準備へ
+			if (m_boss && m_boss->IsDeathAnimationFinished())
 			{
-				const Math::Vector3 playerPos =
-					m_player->GetPos();
-
-				// ボスがいた方向を基準にカメラを配置する
-				Math::Vector3 cameraDirection =
-					Math::Vector3(0.0f, 0.0f, 1.0f);
-
-				if (m_boss)
-				{
-					cameraDirection =
-						playerPos - m_boss->GetPos();
-
-					cameraDirection.y = 0.0f;
-
-					if (cameraDirection.LengthSquared() > 0.0001f)
-					{
-						cameraDirection.Normalize();
-					}
-					else
-					{
-						cameraDirection =
-							Math::Vector3(0.0f, 0.0f, 1.0f);
-					}
-				}
-
-				// プレイヤーの正面側から見下ろす位置
-				const Math::Vector3 cameraPos =
-					playerPos
-					- cameraDirection * 4.0f
-					+ Math::Vector3(0.0f, 2.0f, 0.0f);
-
-				// プレイヤーの上半身付近を見る
-				const Math::Vector3 lookAtPos =
-					playerPos
-					+ Math::Vector3(0.0f, 1.5f, 0.0f);
-
-				// 1.5秒かけてカメラを移動
-				m_tpsCamera->StartClearCameraMove(
-					cameraPos,
-					lookAtPos,
-					1.5f
-				);
+				m_clearSequence = ClearSequence::RetreatWait;
+				m_clearSequenceTimer = 0.0f;
 			}
 
-			// プレイヤー側カメラの移動待ちへ
-			m_clearSequence = ClearSequence::CameraToPlayer;
-			m_clearSequenceTimer = 0.0f;
+			break;
 		}
+
+		// プレイヤーの後退後、ボスの死亡演出完了を待つ
+		if (m_boss && !m_boss->IsDeathSequenceFinished())
+		{
+			break;
+		}
+
+		// プレイヤー側へのカメラ移動を開始
+		if (m_tpsCamera && m_player)
+		{
+			const Math::Vector3 playerPos =
+				m_player->GetPos();
+
+			// ボスがいた方向を基準にカメラを配置する
+			Math::Vector3 cameraDirection =
+				Math::Vector3(0.0f, 0.0f, 1.0f);
+
+			if (m_boss)
+			{
+				cameraDirection =
+					playerPos - m_boss->GetPos();
+
+				cameraDirection.y = 0.0f;
+
+				if (cameraDirection.LengthSquared() > 0.0001f)
+				{
+					cameraDirection.Normalize();
+				}
+				else
+				{
+					cameraDirection =
+						Math::Vector3(0.0f, 0.0f, 1.0f);
+				}
+			}
+
+			// プレイヤーの正面側から見下ろす位置
+			const Math::Vector3 cameraPos =
+				playerPos
+				- cameraDirection * 4.0f
+				+ Math::Vector3(0.0f, 2.0f, 0.0f);
+
+			// プレイヤーの上半身付近を見る
+			const Math::Vector3 lookAtPos =
+				playerPos
+				+ Math::Vector3(0.0f, 1.5f, 0.0f);
+
+			// 1.5秒かけてカメラを移動
+			m_tpsCamera->StartClearCameraMove(
+				cameraPos,
+				lookAtPos,
+				1.5f
+			);
+		}
+
+		// プレイヤー側カメラの移動待ちへ
+		m_clearSequence = ClearSequence::CameraToPlayer;
+		m_clearSequenceTimer = 0.0f;
 
 		break;
 	}
-
 	//---------------------------------------
 	// プレイヤー正面へのカメラ移動完了待ち
 	//---------------------------------------
@@ -1833,6 +1857,113 @@ void GameScene::UpdateClearSequence()
 
 			// クリア演出終了
 			FinishClearSequence();
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// プレイヤー退避開始まで待機
+	//---------------------------------------
+	case ClearSequence::RetreatWait:
+	{
+		if (!m_player)
+		{
+			// プレイヤーがいない場合は退避をスキップ
+			m_isPlayerRetreated = true;
+
+			if (m_boss)
+			{
+				m_boss->SetDeathEffectPaused(false);
+			}
+
+			m_clearSequence = ClearSequence::BossDeath;
+			m_clearSequenceTimer = 0.0f;
+			break;
+		}
+
+		if (m_clearSequenceTimer >= m_clearRetreatWaitTime)
+		{
+			// 退避開始位置を保存
+			m_clearRetreatStartPos = m_player->GetPos();
+
+			// プレイヤーの後方を退避方向にする
+			m_clearRetreatDirection = -m_player->GetForward();
+			m_clearRetreatDirection.y = 0.0f;
+
+			if (m_clearRetreatDirection.LengthSquared() > 0.0001f)
+			{
+				m_clearRetreatDirection.Normalize();
+			}
+			else
+			{
+				m_clearRetreatDirection = { 0.0f, 0.0f, -1.0f };
+			}
+
+			// 回避アニメーション開始
+			m_player->PlayAnimationAuto("Dodge", false);
+
+			m_clearSequence = ClearSequence::PlayerRetreat;
+			m_clearSequenceTimer = 0.0f;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// 回避アニメーションで大きく後退
+	//---------------------------------------
+	case ClearSequence::PlayerRetreat:
+	{
+		if (!m_player)
+		{
+			m_isPlayerRetreated = true;
+
+			if (m_boss)
+			{
+				m_boss->SetDeathEffectPaused(false);
+			}
+
+			m_clearSequence = ClearSequence::BossDeath;
+			m_clearSequenceTimer = 0.0f;
+			break;
+		}
+
+		// 0.0 ～ 1.0 の移動進行度
+		float t = m_clearSequenceTimer / m_clearRetreatDuration;
+		t = std::clamp(t, 0.0f, 1.0f);
+
+		// 最初と最後を滑らかにする
+		float easeT = t * t * (3.0f - 2.0f * t);
+
+		// 後方へ移動
+		Math::Vector3 retreatPos =
+			m_clearRetreatStartPos
+			+ m_clearRetreatDirection
+			* (m_clearRetreatDistance * easeT);
+
+		m_player->SetPos(retreatPos);
+
+		if (t >= 1.0f)
+		{
+			// 最終位置を確定
+			m_player->SetPos(
+				m_clearRetreatStartPos
+				+ m_clearRetreatDirection * m_clearRetreatDistance
+			);
+
+			// 退避完了
+			m_isPlayerRetreated = true;
+
+			// ボスの爆発・消滅演出を再開
+			if (m_boss)
+			{
+				m_boss->SetDeathEffectPaused(false);
+			}
+
+			// ボスの消滅完了待ちに戻る
+			m_clearSequence = ClearSequence::BossDeath;
+			m_clearSequenceTimer = 0.0f;
 		}
 
 		break;
