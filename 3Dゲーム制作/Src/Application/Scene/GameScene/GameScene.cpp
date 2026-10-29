@@ -1653,7 +1653,6 @@ void GameScene::StartClearSequence()
 
 	if (m_player)
 	{
-		m_player->SetClearSequence(true);
 		m_player->SetInputLock(true);
 	}
 
@@ -1814,6 +1813,7 @@ void GameScene::UpdateClearSequence()
 		break;
 	}
 
+
 	//---------------------------------------
 	// プレイヤーのジャンプ演出
 	//---------------------------------------
@@ -1828,6 +1828,10 @@ void GameScene::UpdateClearSequence()
 		// ジャンプアニメーションの終了を待つ
 		if (m_player->m_animator.IsAnimationEnd())
 		{
+			// プレイヤー本体を非表示にする
+			m_player->SetHidden(true);
+
+			// クリア演出終了
 			FinishClearSequence();
 		}
 

@@ -812,11 +812,25 @@ void Player::PostUpdate()
 
 void Player::DrawLit()
 {
+	if (m_isHidden) return;
 	if (!m_model) return;
-	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 
-	// デバッグ描画
+	KdShaderManager::Instance().m_StandardShader.DrawModel(
+		*m_model,
+		m_mWorld
+	);
+
 	DrawDebug();
+}
+
+void Player::GenerateDepthMapFromLight()
+{
+	if (m_isHidden || !m_model) return;
+
+	KdShaderManager::Instance().m_StandardShader.DrawModel(
+		*m_model,
+		m_mWorld
+	);
 }
 
 void Player::DrawSprite()
@@ -830,21 +844,6 @@ void Player::DrawSprite()
 	{
 		ui->DrawSprite();
 	}
-
-	//// 必殺技ポイントUI
-	//if (m_ultimatePointVisible)
-	//{
-	//	if (auto ui = GetUI<UltimateGauge>(UIType::UltimateGauge))
-	//	{
-	//		ui->DrawSprite();
-	//	}
-	//}
-}
-
-void Player::GenerateDepthMapFromLight()
-{
-	if (!m_model) return;
-	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
 void Player::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRate)
