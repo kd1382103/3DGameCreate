@@ -407,11 +407,37 @@ void EnemyBase::PostUpdate()
 
 	m_mWorld = rotMat * transMat;
 
-	// モデルの原点（ワールド座標）
-	Math::Vector3 modelPos = m_mWorld.Translation();
+	//========================================
+	// 攻撃予知の位置（Headノード）
+	//========================================
+	if (m_model)
+	{
+		const auto* headNode = m_model->FindNode("head");
 
-	// 攻撃予知の位置（モデルの頭上）
-	m_preAttackPos = modelPos + Math::Vector3(0, 1.8f, 0);
+		if (headNode)
+		{
+			// Headノードのワールド座標を取得
+			Math::Vector3 headPos = Math::Vector3::Transform(
+				Math::Vector3::Zero,
+				headNode->m_worldTransform * m_mWorld
+			);
+
+			headPos.y += 0.2f;
+
+			m_preAttackPos = headPos;
+		}
+		else
+		{
+			// Headノードがない場合は従来の位置を使用
+			//m_preAttackPos =
+			//	m_mWorld.Translation() + Math::Vector3(0, 1.8f, 0);
+		}
+	}
+	else
+	{
+		//m_preAttackPos =
+		//	m_mWorld.Translation() + Math::Vector3(0, 1.8f, 0);
+	}
 
 	// ロックオンアイコンの位置（敵の前面）
 	m_lockOnPos = m_nowPos + Math::Vector3(0, 1.0f, 0);
