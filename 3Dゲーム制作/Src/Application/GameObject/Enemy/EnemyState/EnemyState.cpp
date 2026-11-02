@@ -308,7 +308,7 @@ void EnemyBaseStateAttack::Update(EnemyBase& owner)
 
 	//---------------------------------------
 	// 攻撃予知演出
-	// 今までのPreAttackと同じ処理
+	// フェイドイン → 維持 → フェイドアウト
 	//---------------------------------------
 	if (owner.m_preAttackActive)
 	{
@@ -319,25 +319,50 @@ void EnemyBaseStateAttack::Update(EnemyBase& owner)
 			owner.m_nowPos + Math::Vector3(0, 2.0f, 0);
 
 		//---------------------------------------
-		// 攻撃判定直前まで徐々にフェードアウト
+		// 演出時間（60FPS基準）
 		//---------------------------------------
+		const float fadeInTime = 10.0f;
+		const float holdTime = 2.0f;
+		const float fadeOutTime = 5.0f;
 
-		const float predictionEndTime = 14.0f;
+		const float totalTime =
+			fadeInTime + holdTime + fadeOutTime;
 
-		float progress = t / predictionEndTime;
+		const float timer = owner.m_preAttackTimer;
 
-		// 0.0 ～ 1.0 に制限
-		progress = std::clamp(progress, 0.0f, 1.0f);
+		if (timer < fadeInTime)
+		{
+			// フェイドイン
+			owner.m_preAttackAlpha =
+				timer / fadeInTime;
+		}
+		else if (timer < fadeInTime + holdTime)
+		{
+			// 最大発光を維持
+			owner.m_preAttackAlpha = 1.0f;
+		}
+		else if (timer < totalTime)
+		{
+			// フェイドアウト
+			float progress =
+				(timer - fadeInTime - holdTime) / fadeOutTime;
 
-		// 1 → 0
-		owner.m_preAttackAlpha = 1.0f - progress;
+			owner.m_preAttackAlpha =
+				1.0f - progress;
+		}
+		else
+		{
+			// 演出終了
+			owner.m_preAttackActive = false;
+			owner.m_preAttackAlpha = 0.0f;
+			owner.m_preAttackTimer = 0.0f;
+		}
 
 		//---------------------------------------
 		// Alphaに合わせて拡大
 		//---------------------------------------
 		owner.m_preAttackScale =
-			1.0f +
-			(1.0f - owner.m_preAttackAlpha) * 0.5f;
+			0.9f + owner.m_preAttackAlpha * 0.2f;
 	}
 
 	//---------------------------------------

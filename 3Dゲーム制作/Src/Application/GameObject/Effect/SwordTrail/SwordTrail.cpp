@@ -40,10 +40,10 @@ void SwordTrail::Init()
 	//==================================================
 	m_trailTimer = 0.0f;
 
-	//==================================================
-	// 発光強度初期化
-	//==================================================
-	m_lightIntensity = 0.0f;
+	////==================================================
+	//// 発光強度初期化
+	////==================================================
+	//m_lightIntensity = 0.0f;
 }
 
 void SwordTrail::Update()
@@ -65,29 +65,29 @@ void SwordTrail::Update()
 	//==================================================
 	const bool trailActive = player->IsSwordTrailActive();
 
-	//==================================================
-	// 発光フェードイン・アウト
-	//==================================================
-	if (trailActive)
-	{
-		// 徐々に明るくする
-		m_lightIntensity += deltaTime * LightFadeInSpeed;
+	////==================================================
+	//// 発光フェードイン・アウト
+	////==================================================
+	//if (trailActive)
+	//{
+	//	// 徐々に明るくする
+	//	m_lightIntensity += deltaTime * LightFadeInSpeed;
 
-		if (m_lightIntensity > 1.0f)
-		{
-			m_lightIntensity = 1.0f;
-		}
-	}
-	else
-	{
-		// 徐々に暗くする
-		m_lightIntensity -= deltaTime * LightFadeOutSpeed;
+	//	if (m_lightIntensity > 1.0f)
+	//	{
+	//		m_lightIntensity = 1.0f;
+	//	}
+	//}
+	//else
+	//{
+	//	// 徐々に暗くする
+	//	m_lightIntensity -= deltaTime * LightFadeOutSpeed;
 
-		if (m_lightIntensity < 0.0f)
-		{
-			m_lightIntensity = 0.0f;
-		}
-	}
+	//	if (m_lightIntensity < 0.0f)
+	//	{
+	//		m_lightIntensity = 0.0f;
+	//	}
+	//}
 
 	//==================================================
 	// 剣の原点・剣先を取得
@@ -98,20 +98,20 @@ void SwordTrail::Update()
 	Math::Vector3 tipPos =
 		player->GetSwordTipPos();
 
-	//==================================================
-	// PointLight更新
-	//
-	// 剣を振り終えた後も、発光が残っている間は
-	// ライトを登録し続けて徐々に暗くする
-	//==================================================
-	if (m_lightIntensity > 0.0f)
-	{
-		UpdateSwordPointLights(
-			basePos,
-			tipPos,
-			m_lightIntensity
-		);
-	}
+	////==================================================
+	//// PointLight更新
+	////
+	//// 剣を振り終えた後も、発光が残っている間は
+	//// ライトを登録し続けて徐々に暗くする
+	////==================================================
+	//if (m_lightIntensity > 0.0f)
+	//{
+	//	UpdateSwordPointLights(
+	//		basePos,
+	//		tipPos,
+	//		m_lightIntensity
+	//	);
+	//}
 
 	//==================================================
 	// 剣軌跡OFF
@@ -223,67 +223,67 @@ void SwordTrail::DrawEffect()
 		.EndUnLit();
 }
 
-//==============================================================
-// 剣の位置からPointLightを登録
-//==============================================================
-void SwordTrail::UpdateSwordPointLights(
-	const Math::Vector3& basePos,
-	const Math::Vector3& tipPos,
-	float intensity)
-{
-	auto& ambientController =
-		KdShaderManager::Instance().WorkAmbientController();
-
-	//==================================================
-	// 剣の方向
-	//==================================================
-	Math::Vector3 swordDir = tipPos - basePos;
-
-	//==================================================
-	// 剣の根元～剣先の途中にライトを3つ配置
-	//==================================================
-	const Math::Vector3 lightPos1 =
-		basePos + swordDir * 0.25f;
-
-	const Math::Vector3 lightPos2 =
-		basePos + swordDir * 0.50f;
-
-	const Math::Vector3 lightPos3 =
-		basePos + swordDir * 0.75f;
-
-	//==================================================
-	// 発光色
-	//
-	// intensity = 0.0 : 消灯
-	// intensity = 1.0 : 最大発光
-	//==================================================
-	const Math::Vector3 lightColor(
-		intensity,
-		intensity,
-		intensity
-	);
-
-	//==================================================
-	// PointLight登録
-	//==================================================
-	ambientController.AddPointLight(
-		lightColor,
-		2.0f,
-		lightPos1,
-		true
-	);
-
-	ambientController.AddPointLight(
-		lightColor,
-		2.0f,
-		lightPos2,
-		true
-	);
-
-	ambientController.AddPointLight(
-		lightColor,
-		2.0f,
-		lightPos3,
-		true
-	);
-}
+////==============================================================
+//// 剣の位置からPointLightを登録
+////==============================================================
+//void SwordTrail::UpdateSwordPointLights(
+//	const Math::Vector3& basePos,
+//	const Math::Vector3& tipPos,
+//	float intensity)
+//{
+//	auto& ambientController =
+//		KdShaderManager::Instance().WorkAmbientController();
+//
+//	//==================================================
+//	// 剣の方向
+//	//==================================================
+//	Math::Vector3 swordDir = tipPos - basePos;
+//
+//	//==================================================
+//	// 剣の根元～剣先の途中にライトを3つ配置
+//	//==================================================
+//	const Math::Vector3 lightPos1 =
+//		basePos + swordDir * 0.25f;
+//
+//	const Math::Vector3 lightPos2 =
+//		basePos + swordDir * 0.50f;
+//
+//	const Math::Vector3 lightPos3 =
+//		basePos + swordDir * 0.75f;
+//
+//	//==================================================
+//	// 発光色
+//	//
+//	// intensity = 0.0 : 消灯
+//	// intensity = 1.0 : 最大発光
+//	//==================================================
+//	const Math::Vector3 lightColor(
+//		intensity,
+//		intensity,
+//		intensity
+//	);
+//
+//	//==================================================
+//	// PointLight登録
+//	//==================================================
+//	ambientController.AddPointLight(
+//		lightColor,
+//		2.0f,
+//		lightPos1,
+//		true
+//	);
+//
+//	ambientController.AddPointLight(
+//		lightColor,
+//		2.0f,
+//		lightPos2,
+//		true
+//	);
+//
+//	ambientController.AddPointLight(
+//		lightColor,
+//		2.0f,
+//		lightPos3,
+//		true
+//	);
+//}

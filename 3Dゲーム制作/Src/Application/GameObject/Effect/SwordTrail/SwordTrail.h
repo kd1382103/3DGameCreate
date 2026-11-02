@@ -20,14 +20,14 @@ public:
 
 private:
 
-	//==================================================
-	// 剣の位置からPointLightを登録
-	//==================================================
-	void UpdateSwordPointLights(
-		const Math::Vector3& basePos,
-		const Math::Vector3& tipPos,
-		float intensity
-	);
+	////==================================================
+	//// 剣の位置からPointLightを登録
+	////==================================================
+	//void UpdateSwordPointLights(
+	//	const Math::Vector3& basePos,
+	//	const Math::Vector3& tipPos,
+	//	float intensity
+	//);
 
 private:
 
@@ -53,14 +53,14 @@ private:
 	//==================================================
 	static constexpr float TrailInterval = 1.0f / 60.0f;
 
-	//==================================================
-	// 剣の発光強度（0.0～1.0）
-	//==================================================
-	float m_lightIntensity = 0.0f;
+	////==================================================
+	//// 剣の発光強度（0.0～1.0）
+	////==================================================
+	//float m_lightIntensity = 0.0f;
 
-	//==================================================
-	// 発光フェード速度
-	//==================================================
-	static constexpr float LightFadeInSpeed = 3.0f;
-	static constexpr float LightFadeOutSpeed = 4.0f;
+	////==================================================
+	//// 発光フェード速度
+	////==================================================
+	//static constexpr float LightFadeInSpeed = 3.0f;
+	//static constexpr float LightFadeOutSpeed = 4.0f;
 };
