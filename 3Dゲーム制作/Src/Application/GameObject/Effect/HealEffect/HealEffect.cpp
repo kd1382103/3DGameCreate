@@ -1,6 +1,5 @@
 ﻿#include "HealEffect.h"
 
-#include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Player/Player/Player.h>
 
 //==============================================================

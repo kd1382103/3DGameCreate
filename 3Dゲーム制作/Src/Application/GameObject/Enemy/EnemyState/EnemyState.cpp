@@ -71,6 +71,14 @@ void EnemyBaseStateMove::Update(EnemyBase& owner)
 
 	Math::Vector3 avoidDir = Math::Vector3::Zero;
 
+	// 自分が出現中・死亡中・ゲーム終了状態なら回避しない
+	if (owner.IsResolving() ||
+		owner.m_isDying ||
+		owner.m_isGameEnd)
+	{
+		return;
+	}
+
 	for (auto& obj : SceneManager::Instance().GetObjList())
 	{
 		// 自分自身は除外
@@ -93,14 +101,6 @@ void EnemyBaseStateMove::Update(EnemyBase& owner)
 			other->m_isGameEnd)
 		{
 			continue;
-		}
-
-		// 自分が出現中・死亡中・ゲーム終了状態なら回避しない
-		if (owner.IsResolving() ||
-			owner.m_isDying ||
-			owner.m_isGameEnd)
-		{
-			return;
 		}
 
 		// 敵同士の水平距離と方向

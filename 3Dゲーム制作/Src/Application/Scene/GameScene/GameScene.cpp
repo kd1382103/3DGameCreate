@@ -1597,7 +1597,7 @@ void GameScene::SpawnBattleEnemies()
 			Math::Vector3 pos =
 				info.startPos + rotatedOffset;
 
-			enemy->SetPos(pos);;
+			enemy->SetPos(pos);
 
 			//---------------------------------------
 			// プレイヤー・カメラ・シーン設定

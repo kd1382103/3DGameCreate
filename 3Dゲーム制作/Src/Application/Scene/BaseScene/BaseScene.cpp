@@ -1,7 +1,7 @@
 ﻿#include "BaseScene.h"
-
-#include<Application/GameObject/Camera/CameraBase.h>
+#include <Application/GameObject/Camera/CameraBase.h>
 #include<Application/GameObject/Player/Player/Player.h>
+
 void BaseScene::PreUpdate()
 {
 	// Updateの前の更新処理

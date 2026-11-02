@@ -409,11 +409,13 @@ void Player::UpdateMovementInput()
 	if (!m_moving) return;
 	if (m_wpCamera.expired()) return;
 
-	Math::Matrix camRotMat =
-		m_wpCamera.lock()->GetRotationYMatrix();
+	auto camera = m_wpCamera.lock();
+	if (!m_moving || !camera) return;
 
-	m_dir =
-		Math::Vector3::TransformNormal(
+	Math::Matrix camRotMat =
+		camera->GetRotationYMatrix();
+
+	m_dir = Math::Vector3::TransformNormal(
 			m_dir,
 			camRotMat
 		);
@@ -1118,43 +1120,6 @@ bool Player::IsKeyPressedOnce(int vk)
 	return (now && !prev);
 }
 
-//単体判定用
-//void Player::DoAttackHitCheck(float range, int damage)
-//{
-//	if (m_attackHitOnce) return;
-//	if (m_isInvincible) return;
-//
-//	Math::Vector3 forward = GetForward();
-//	forward.y = 0;
-//	forward.Normalize();
-//
-//	for (auto& obj : SceneManager::Instance().GetObjList())
-//	{
-//		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
-//		if (!enemy) continue;
-//
-//		Math::Vector3 toEnemy = enemy->GetHitCenter() - m_nowPos;
-//		toEnemy.y = 0;
-//		
-//		float dist = toEnemy.Length();
-//		if (dist > range) continue;
-//		if (dist < 0.0001f) continue;
-//
-//		// 角度チェック
-//		toEnemy.Normalize();
-//
-//		float dot = std::clamp(forward.Dot(toEnemy), -1.0f, 1.0f);
-//		float angle = acos(dot);		
-//		if (angle > DirectX::XMConvertToRadians(90.0f)) continue;
-//
-//		// ヒット
-//		enemy->Damage(damage);
-//		m_attackHitOnce = true;
-//		m_hitStopTimer = 0.45f;   // 0.05秒停止
-//		return;
-//	}
-//}
-
 //==============================================================
 // 複数の敵に対する攻撃判定
 //==============================================================
@@ -1183,7 +1148,6 @@ void Player::DoAttackHitCheckMulti(
 		EnemyBase* enemy = dynamic_cast<EnemyBase*>(obj.get());
 		BossBase* boss = dynamic_cast<BossBase*>(obj.get());
 
-		if (!enemy && !boss) continue;
 		if (!enemy && !boss) continue;
 
 		if (enemy && !enemy->IsAlive()) continue;

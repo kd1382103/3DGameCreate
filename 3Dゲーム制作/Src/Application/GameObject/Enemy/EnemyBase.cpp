@@ -41,11 +41,6 @@ void EnemyBase::Update()
 	//==========================================================
 	if (m_isResolving)
 	{
-		const float frameScale =
-			Application::Instance()
-			.GetFPSController()
-			.GetFrameScale();
-
 		UpdateResolve(frameScale);
 
 		//========================================
@@ -771,7 +766,6 @@ void EnemyBase::DoAttackHitCheck(float range)
 	//敵の正面ベクトル
 	Math::Vector3 forward = GetForward();
 	forward.y = 0;
-	if (dist < 0.0001f)return;
 	forward.Normalize();
 
 	//正面判定
