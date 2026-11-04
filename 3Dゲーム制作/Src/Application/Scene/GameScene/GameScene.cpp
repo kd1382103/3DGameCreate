@@ -19,7 +19,6 @@
 
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
-#include <Application/GameObject/UI/PlaeyrUI/UltimateGauge/UltimateGauge.h>
 
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/GameObject/UI/BattolPin/BattlePin.h>
@@ -32,13 +31,16 @@
 
 #include <Application/GameObject/Effect/SwordTrail/SwordTrail.h>
 
-#include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
-#include<Application/GameObject/Camera/CameraBase.h>
+#include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
+#include <Application/GameObject/Camera/CameraBase.h>
 
 #include <Application/Manager/TimeManager/TimeManager.h>
 #include <Application/Manager/ScoreManager/ScoreManager.h>
 
-#include<Application/main.h>
+#include <Application/GameObject/BaseObject/ResultFade.h>
+#include <Application/GameObject/UI/ResultUI/ResultUI.h>
+
+#include <Application/main.h>
 
 void GameScene::Event()
 {
@@ -173,6 +175,22 @@ void GameScene::Init()
 	// 平行光
 	//=======================================
 	KdShaderManager::Instance().WorkAmbientController().SetDirLight({ 1, -1, 1 }, { 0.5f, 0.5f, 0.5f });
+
+	//=======================================
+	// リザルト用フェード
+	//=======================================
+	m_resultFade = std::make_shared<ResultFade>();
+	m_resultFade->Init();
+
+	AddObject(m_resultFade);
+
+	//=======================================
+	// リザルトUI
+	//=======================================
+	m_resultUI = std::make_shared<ResultUI>();
+	m_resultUI->Init();
+
+	AddObject(m_resultUI);
 }
 
 void GameScene::InitSetting()
@@ -936,6 +954,16 @@ void GameScene::UpdateGameEnd()
 	}
 
 	//---------------------------------------
+	// リザルト演出更新
+	//---------------------------------------
+	if (m_gamePhase == GamePhase::Clear &&
+		m_resultSequence != ResultSequence::None &&
+		m_resultSequence != ResultSequence::Finished)
+	{
+		UpdateResultSequence();
+	}
+
+	//---------------------------------------
 	// GAME OVER判定
 	//---------------------------------------
 	if (!m_isGameClear &&
@@ -992,14 +1020,30 @@ void GameScene::GameClear()
 	}
 
 	//=======================================
-	// ゲームUIを通常状態に戻す
+	// ゲームUIを非表示
 	//=======================================
-	SetGameUIVisible(true);
+	SetGameUIVisible(false);
 
 	if (m_player)
 	{
-		m_player->SetUltimatePointVisible(true);
+		m_player->SetUltimatePointVisible(false);
 		m_player->SetInputLock(true);
+	}
+
+	//=======================================
+	// 設定アイコン非表示
+	//=======================================
+	if (m_settingIcon)
+	{
+		m_settingIcon->SetVisible(false);
+	}
+
+	//=======================================
+	// タイトルに戻るボタンは演出終了まで隠す
+	//=======================================
+	if (m_gameClearButton)
+	{
+		m_gameClearButton->SetVisible(false);
 	}
 
 	//=======================================
@@ -1025,20 +1069,25 @@ void GameScene::GameClear()
 
 	ClipCursor(nullptr);
 
-	//=======================================
-	// GAME CLEAR表示
-	//=======================================
-	auto clearText = std::make_shared<FontText>();
-	clearText->InitMessage("ＧＡＭＥ ＣＬＥＡＲ", { 1.5f,0.0f }, 3.0f);
-	AddObject(clearText);
+	////=======================================
+	//// GAME CLEAR表示
+	////=======================================
+	//auto clearText = std::make_shared<FontText>();
+	//clearText->InitMessage("ＧＡＭＥ ＣＬＥＡＲ", { 1.5f,0.0f }, 3.0f);
+	//AddObject(clearText);
+
+	////=======================================
+	//// タイトルに戻るボタン表示
+	////=======================================
+	//if (m_gameClearButton)
+	//{
+	//	m_gameClearButton->SetVisible(true);
+	//}
 
 	//=======================================
-	// タイトルに戻るボタン表示
+	// リザルト演出開始
 	//=======================================
-	if (m_gameClearButton)
-	{
-		m_gameClearButton->SetVisible(true);
-	}
+	StartResultSequence();
 }
 
 void GameScene::GameOver()
@@ -2123,6 +2172,159 @@ void GameScene::InitBattleStartPin()
 	m_battlePin->SetVisible(false);
 
 	AddObject(m_battlePin);
+}
+
+void GameScene::StartResultSequence()
+{
+	if (m_resultSequence != ResultSequence::None)
+	{
+		return;
+	}
+
+	m_resultSequence = ResultSequence::FadeToBlack;
+	m_resultSequenceTimer = 0.0f;
+
+	// リザルトUI開始フラグをリセット
+	m_resultUIStarted = false;
+
+	// 画面を暗転させる
+	if (m_resultFade)
+	{
+		m_resultFade->StartFadeIn(2.0f);
+	}
+}
+
+//==============================================================
+// リザルト演出更新
+//==============================================================
+void GameScene::UpdateResultSequence()
+{
+	switch (m_resultSequence)
+	{
+		//---------------------------------------
+		// 暗転
+		//---------------------------------------
+	case ResultSequence::FadeToBlack:
+	{
+		if (!m_resultFade)
+		{
+			m_resultSequence = ResultSequence::ResultDisplay;
+			break;
+		}
+
+		if (m_resultFade->IsFinished() &&
+			m_resultFade->IsBlack())
+		{
+			// 暗転状態を維持する
+			m_resultCameraWaitTimer = 0.0f;
+
+			// リザルト用カメラ移動
+			if (m_tpsCamera)
+			{
+				Math::Vector3 lookAtPos = { -20.0f, 0.0f, 65.0f };
+				Math::Vector3 cameraPos = { -75.0f, 50.0f, 0.0f };
+
+				m_tpsCamera->SetResultFov(75.0f);
+				m_tpsCamera->StartClearCameraMove(cameraPos, lookAtPos, 2.0f);
+			}
+
+			m_resultSequence = ResultSequence::CameraMove;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// カメラ移動
+	//---------------------------------------
+	case ResultSequence::CameraMove:
+	{
+		// カメラ移動完了後も暗転を維持する
+		if (m_tpsCamera &&
+			m_tpsCamera->IsClearCameraMoveFinished())
+		{
+			m_resultCameraWaitTimer +=
+				Application::Instance().GetDeltaTime();
+
+			// 1秒間、暗転状態を維持
+			if (m_resultCameraWaitTimer >= 1.0f)
+			{
+				m_resultSequence = ResultSequence::FadeFromBlack;
+
+				if (m_resultFade)
+				{
+					m_resultFade->StartFadeOut(2.0f);
+				}
+				else
+				{
+					m_resultSequence = ResultSequence::ResultDisplay;
+				}
+			}
+		}
+
+		break;
+	}
+	//---------------------------------------
+	// 暗転解除
+	//---------------------------------------
+	case ResultSequence::FadeFromBlack:
+	{
+		if (!m_resultFade ||
+			(m_resultFade->IsFinished() &&
+				!m_resultFade->IsBlack()))
+		{
+			m_resultSequence = ResultSequence::ResultDisplay;
+		}
+
+		break;
+	}
+
+	//---------------------------------------
+	// リザルト表示
+	//---------------------------------------
+	case ResultSequence::ResultDisplay:
+	{
+		//=======================================
+		// リザルトUI開始
+		//=======================================
+		if (!m_resultUIStarted)
+		{
+			if (m_resultUI && m_scoreManager)
+			{
+				m_resultUI->SetScoreData(
+					m_scoreManager->GetBaseScore(),
+					m_scoreManager->GetTimePenalty(),
+					m_scoreManager->GetDamagePenalty(),
+					m_scoreManager->GetFinalScore(),
+					m_scoreManager->GetRankText()
+				);
+
+				m_resultUI->Start();
+			}
+
+			m_resultUIStarted = true;
+		}
+
+		//=======================================
+		// リザルト演出終了
+		//=======================================
+		if (m_resultUI && m_resultUI->IsFinished())
+		{
+			// タイトルに戻るボタンを表示
+			if (m_gameClearButton)
+			{
+				m_gameClearButton->SetVisible(true);
+			}
+
+			m_resultSequence = ResultSequence::Finished;
+		}
+
+		break;
+	}
+
+	default:
+		break;
+	}
 }
 
 void GameScene::DebugSkipToBattle(int nextBattleNo)

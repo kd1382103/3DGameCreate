@@ -29,6 +29,9 @@ class UIBackground;
 class SwordTrail;
 class SettingIcon;
 
+class ResultFade;
+class ResultUI;
+
 //manager
 class TimeManager;
 class ScoreManager;
@@ -48,6 +51,16 @@ class GameScene : public BaseScene
 		CameraToPlayer, // プレイヤーへカメラを戻す
 		PlayerJump,     // プレイヤーの退場ジャンプ
 		Finished        // 演出終了
+	};
+
+	enum class ResultSequence
+	{
+		None,
+		FadeToBlack,    // 暗転
+		CameraMove,     // 暗転中にカメラ移動
+		FadeFromBlack,  // 暗転解除
+		ResultDisplay,  // リザルト表示
+		Finished
 	};
 
 	ClearSequence m_clearSequence = ClearSequence::None;
@@ -401,6 +414,23 @@ private:
 	//=======================================
 	std::shared_ptr<TimeManager> m_timeManager;
 	std::shared_ptr<ScoreManager> m_scoreManager;
+
+	//=======================================
+	// リザルト演出
+	//=======================================
+	void StartResultSequence();
+	void UpdateResultSequence();
+
+	ResultSequence m_resultSequence =
+		ResultSequence::None;
+
+	float m_resultSequenceTimer = 0.0f;
+
+	std::shared_ptr<ResultFade> m_resultFade;
+	std::shared_ptr<ResultUI> m_resultUI;
+
+	bool m_resultUIStarted = false;
+	float m_resultCameraWaitTimer = 0.0f;
 
 	//========================================
 	// デバッグ

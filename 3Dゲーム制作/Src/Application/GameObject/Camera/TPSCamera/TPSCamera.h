@@ -44,7 +44,13 @@ public:
 
 	void UpdateClearCameraLookAt(const Math::Vector3& lookAtPos);
 
-
+	// リザルト用FOV設定
+	void SetResultFov(float fov)
+	{
+		m_nowFov = fov;
+		m_targetFov = fov;
+		m_spCamera->SetProjectionMatrix(fov);
+	}
 private:
 
 	float m_nowFov = 60.0f;

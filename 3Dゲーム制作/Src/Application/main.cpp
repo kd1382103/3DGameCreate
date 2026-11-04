@@ -514,6 +514,7 @@ void Application::Execute()
 
 	Release();
 }
+
 // アプリケーション終了
 void Application::Release()
 {

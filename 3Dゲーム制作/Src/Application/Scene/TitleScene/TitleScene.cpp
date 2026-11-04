@@ -14,7 +14,6 @@
 
 #include <Application/GameObject/Effect/EffectManager.h>
 #include <Application/GameObject/UI/SettingIcon/SettingIcon.h>
-#include <Application/main.h>
 
 //============================================================
 // イベント
