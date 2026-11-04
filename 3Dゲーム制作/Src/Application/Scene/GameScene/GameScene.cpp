@@ -2221,10 +2221,10 @@ void GameScene::UpdateResultSequence()
 			// リザルト用カメラ移動
 			if (m_tpsCamera)
 			{
-				Math::Vector3 lookAtPos = { -20.0f, 0.0f, 65.0f };
-				Math::Vector3 cameraPos = { -75.0f, 50.0f, 0.0f };
+				Math::Vector3 lookAtPos = { -75.0f, 3.0f, 80.0f };
+				Math::Vector3 cameraPos = { -60.0f, 2.0f, 80.0f };
 
-				m_tpsCamera->SetResultFov(75.0f);
+				//m_tpsCamera->SetResultFov(0.0f);
 				m_tpsCamera->StartClearCameraMove(cameraPos, lookAtPos, 2.0f);
 			}
 
