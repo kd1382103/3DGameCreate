@@ -226,6 +226,15 @@
     <Filter Include="Src\Application\GameObject\Effect\BossDeathEffect">
       <UniqueIdentifier>{6d1dc467-c2d3-4060-89b0-639159df7bf3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\Manager">
+      <UniqueIdentifier>{a61530e0-a516-477d-9d70-b49f4df97275}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Manager\TimeManager">
+      <UniqueIdentifier>{3cbec8e2-39ab-4e05-a57b-e4321b3453ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\Manager\ScoreManager">
+      <UniqueIdentifier>{69b9fe15-0630-4590-8ab4-2a835478bd9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -537,6 +546,12 @@
     <ClInclude Include="Src\Application\GameObject\Effect\BossDeathEffect\BossDeathEffect.h">
       <Filter>Src\Application\GameObject\Effect\BossDeathEffect</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\Manager\TimeManager\TimeManager.h">
+      <Filter>Src\Application\Manager\TimeManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\Manager\ScoreManager\ScoreManager.h">
+      <Filter>Src\Application\Manager\ScoreManager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -811,6 +826,12 @@
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Effect\BossDeathEffect\BossDeathEffect.cpp">
       <Filter>Src\Application\GameObject\Effect\BossDeathEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Manager\TimeManager\TimeManager.cpp">
+      <Filter>Src\Application\Manager\TimeManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Manager\ScoreManager\ScoreManager.cpp">
+      <Filter>Src\Application\Manager\ScoreManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

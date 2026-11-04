@@ -21,6 +21,12 @@ public:
 		float scale = 2.0f
 	);
 
+	// メッセージ文字列の更新
+	void SetMessageText(const std::string& text)
+	{
+		m_text = text;
+	}
+
 	//========================================
 	// 文字色
 	//========================================

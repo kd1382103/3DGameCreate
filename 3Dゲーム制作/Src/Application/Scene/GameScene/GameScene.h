@@ -29,6 +29,10 @@ class UIBackground;
 class SwordTrail;
 class SettingIcon;
 
+//manager
+class TimeManager;
+class ScoreManager;
+
 class GameScene : public BaseScene
 {
 	//==============================================================
@@ -170,6 +174,11 @@ private:
 	void UpdateAudioVolume();
 
 	//========================================
+	// タイマー表示
+	//========================================
+	void UpdateTimerText();
+
+	//========================================
 	// デバッグ
 	//========================================
 	void UpdateDebug();
@@ -263,7 +272,11 @@ private:
 	//========================================
 	std::shared_ptr<FontText> m_tutorialText;
 
+	// タイマー表示
+	std::shared_ptr<FontText> m_timerText;
 
+	// 前回表示した残り秒数
+	int m_prevTimerDisplaySeconds = -1;
 	//========================================
 	// 設定
 	//========================================
@@ -382,6 +395,12 @@ private:
 
 	// 後退距離
 	const float m_clearRetreatDistance = 10.0f;
+
+	//=======================================
+	// 時間・スコア管理
+	//=======================================
+	std::shared_ptr<TimeManager> m_timeManager;
+	std::shared_ptr<ScoreManager> m_scoreManager;
 
 	//========================================
 	// デバッグ

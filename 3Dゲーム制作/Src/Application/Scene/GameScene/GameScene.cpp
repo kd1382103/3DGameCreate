@@ -35,6 +35,9 @@
 #include<Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include<Application/GameObject/Camera/CameraBase.h>
 
+#include <Application/Manager/TimeManager/TimeManager.h>
+#include <Application/Manager/ScoreManager/ScoreManager.h>
+
 #include<Application/main.h>
 
 void GameScene::Event()
@@ -108,8 +111,17 @@ void GameScene::Init()
 {
 	BaseScene::Init();
 
-	//	CURSORINFO ・・・ WindowsAPIの構造体で、カーソルの情報を取得するために使用されます。
-	//	CURSORINFO構造体には、カーソルの状態や位置などの情報が含まれています。
+	//=======================================
+   // 時間・スコア管理
+   //=======================================
+	m_timeManager = std::make_shared<TimeManager>();
+	m_timeManager->Init();
+
+	m_scoreManager = std::make_shared<ScoreManager>();
+	m_scoreManager->Init();
+
+	//	CURSORINFO ・・・ WindowsAPIの構造体で、カーソルの情報を取得するために使用される。
+	//	CURSORINFO構造体には、カーソルの状態や位置などの情報が含まれてる。
 	
 	//情報を受け取る箱の作成・取得
 	CURSORINFO ci = { sizeof(CURSORINFO) };
@@ -294,6 +306,8 @@ void GameScene::InitPlayer()
 		*m_player
 	);
 	AddObject(m_player);
+
+	m_player->SetScoreManager(m_scoreManager);
 }
 
 void GameScene::InitTutorialEnemy()
@@ -376,6 +390,23 @@ void GameScene::InitUI()
 		m_hpGauge
 	);
 
+	//=======================================
+	// タイマー表示
+	//=======================================
+	m_timerText = std::make_shared<FontText>();
+
+	m_timerText->InitMessage(
+		"10:00",
+		{ -550.0f, 300.0f },
+		1.5f
+	);
+
+	// シアン系の文字色
+	m_timerText->SetColor(
+		{ 0.3f, 0.9f, 1.0f, 1.0f }
+	);
+
+	AddObject(m_timerText);
 	//m_player->RegisterUI(
 	//	Player::UIType::UltimateGauge,
 	//	m_ultimateGauge
@@ -460,6 +491,26 @@ void GameScene::InitLights()
 
 void GameScene::UpdateGameFlow()
 {
+	//=======================================
+	// 制限時間更新
+	//=======================================
+	if (m_timeManager && m_timeManager->IsRunning())
+	{
+		m_timeManager->Update(
+			Application::Instance().GetDeltaTime()
+		);
+
+		// タイマー表示更新
+		UpdateTimerText();
+
+		// 時間切れ
+		if (m_timeManager->IsTimeUp())
+		{
+			GameOver();
+			return;
+		}
+	}
+
 	switch (m_gamePhase)
 	{
 	case GamePhase::Tutorial:
@@ -723,18 +774,13 @@ void GameScene::UpdatePrepare()
 	//=======================================
 	m_battlePin->SetVisible(false);
 
-	//// 戦闘エリアを現在の戦闘位置に設定
-	//if (m_battleArea)
-	//{
-	//	m_battleArea->SetArea(
-	//		GetBattleStartPos(m_battleNo),
-	//		10,
-	//		10
-	//	);
-
-	//	// バリアを有効化
-	//	m_battleArea->SetBarrierActive(true);
-	//}
+	//=======================================
+	// ゲームタイマー開始
+	//=======================================
+	if (m_timeManager && !m_timeManager->IsRunning())
+	{
+		m_timeManager->Start();
+	}
 
 	//---------------------------------------
 	// ボス戦
@@ -926,6 +972,16 @@ void GameScene::GameClear()
 {
 	m_isGameClear = true;
 	m_gamePhase = GamePhase::Clear;
+
+	//=======================================
+	// スコア確定
+	//=======================================
+	if (m_scoreManager && m_timeManager)
+	{
+		m_scoreManager->Finalize(
+			m_timeManager->GetElapsedTime()
+		);
+	}
 
 	//=======================================
 	// 設定画面が開いていたら閉じる
@@ -1289,6 +1345,47 @@ void GameScene::UpdateAudioVolume()
 	KdAudioManager::Instance().SetSEVolume(seVolume);
 }
 
+//==================================================
+// タイマー表示更新
+//==================================================
+void GameScene::UpdateTimerText()
+{
+	if (!m_timeManager || !m_timerText)
+	{
+		return;
+	}
+
+	// 残り時間を取得
+	float remainingTime =
+		m_timeManager->GetRemainingTime();
+
+	// 切り上げて秒数に変換
+	int totalSeconds =
+		static_cast<int>(std::ceil(remainingTime));
+
+	// 表示秒数が変わっていなければ更新しない
+	if (totalSeconds == m_prevTimerDisplaySeconds)
+	{
+		return;
+	}
+
+	m_prevTimerDisplaySeconds = totalSeconds;
+
+	// 分・秒に変換
+	int minutes = totalSeconds / 60;
+	int seconds = totalSeconds % 60;
+
+	// 文字列を作成
+	std::string timeText =
+		(minutes < 10 ? "0" : "") +
+		std::to_string(minutes) +
+		":" +
+		(seconds < 10 ? "0" : "") +
+		std::to_string(seconds);
+
+	m_timerText->SetMessageText(timeText);
+}
+
 void GameScene::UpdateDebug()
 {
 	static bool prevF1 = false;
@@ -1643,6 +1740,14 @@ bool GameScene::IsBattleEnemiesDead()
 //==============================================================
 void GameScene::StartClearSequence()
 {
+	//=======================================
+	// ボス撃破時にタイマー停止
+	//=======================================
+	if (m_timeManager)
+	{
+		m_timeManager->Stop();
+	}
+
 	if (m_clearSequence != ClearSequence::None)
 	{
 		return;
@@ -2147,6 +2252,13 @@ void GameScene::SetGameUIVisible(bool visible)
 			skill->SetVisible(visible);
 		}
 
+		//---------------------------------------
+		// タイマー表示
+		//---------------------------------------
+		if (m_timerText)
+		{
+			m_timerText->SetVisible(visible);
+		}
 		//auto ultimate =
 		//	m_player->GetUI<UltimateGauge>(
 		//		Player::UIType::UltimateGauge);

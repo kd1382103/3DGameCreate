@@ -12,6 +12,7 @@
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Effect/EffectManager.h>
+#include <Application/Manager/ScoreManager/ScoreManager.h>
 
 namespace
 {
@@ -526,6 +527,15 @@ void Player::UpdatePendingDamage()
 	if (m_nowHp <= 0.0f && !m_isDead)
 	{
 		StartDeath();
+	}
+
+	// 実際に減少したHP
+	float actualDamage = before - after;
+
+	// 累計被ダメージを記録
+	if (auto scoreManager = m_wpScoreManager.lock())
+	{
+		scoreManager->AddDamage(actualDamage);
 	}
 
 	//========================================

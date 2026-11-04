@@ -318,6 +318,8 @@
     <ClInclude Include="Src\Application\GameObject\UI\SettingUI\SettingUI.h" />
     <ClInclude Include="Src\Application\GameObject\UI\TitleImage\TitleImage.h" />
     <ClInclude Include="Src\Application\main.h" />
+    <ClInclude Include="Src\Application\Manager\ScoreManager\ScoreManager.h" />
+    <ClInclude Include="Src\Application\Manager\TimeManager\TimeManager.h" />
     <ClInclude Include="Src\Application\Scene\BaseScene\BaseScene.h" />
     <ClInclude Include="Src\Application\Scene\GameScene\GameScene.h" />
     <ClInclude Include="Src\Application\Scene\SceneManager.h" />
@@ -415,6 +417,8 @@
     <ClCompile Include="Src\Application\GameObject\UI\SettingUI\SettingUI.cpp" />
     <ClCompile Include="Src\Application\GameObject\UI\TitleImage\TitleImage.cpp" />
     <ClCompile Include="Src\Application\main.cpp" />
+    <ClCompile Include="Src\Application\Manager\ScoreManager\ScoreManager.cpp" />
+    <ClCompile Include="Src\Application\Manager\TimeManager\TimeManager.cpp" />
     <ClCompile Include="Src\Application\Scene\BaseScene\BaseScene.cpp" />
     <ClCompile Include="Src\Application\Scene\GameScene\GameScene.cpp" />
     <ClCompile Include="Src\Application\Scene\SceneManager.cpp" />

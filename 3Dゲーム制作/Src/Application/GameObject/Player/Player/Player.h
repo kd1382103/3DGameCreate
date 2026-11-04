@@ -5,6 +5,7 @@ class CameraBase;
 class HPGauge;
 class BattleArea;
 class EnemyBase;
+class ScoreManager;
 
 // 前方宣言：ステートマシン
 template <class T>
@@ -244,6 +245,11 @@ public:
 		return m_isGameEnd;
 	}
 
+	void SetScoreManager(const std::shared_ptr<ScoreManager>& manager)
+	{
+		m_wpScoreManager = manager;
+	}
+
 	//========================================
 	// 戦闘エリア設定
 	//========================================
@@ -464,6 +470,7 @@ public:
 	//========================================
 	bool m_comboFinished = false;
 
+
 private:
 
 	// 攻撃範囲デバッグ
@@ -514,4 +521,7 @@ private:
 	// 剣の軌跡用変数
 	//========================================
 	bool m_isSwordTrailActive = false;
+
+	std::weak_ptr<ScoreManager> m_wpScoreManager;
+
 };
