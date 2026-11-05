@@ -34,7 +34,7 @@ private:
 
 	// ボタンの位置
 	float m_posX = -225.0f;
-	float m_posY = -230.0f;
+	float m_posY = -330.0f;
 
 	// ボタンサイズ
 	float m_width = 450.0f;

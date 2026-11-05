@@ -93,11 +93,6 @@ void GameScene::Event()
 	UpdateDebug();
 
 	//=======================================
-	// ゲーム進行
-	//=======================================
-	UpdateGameFlow();
-
-	//=======================================
 	// 音量
 	//=======================================
 	UpdateAudioVolume();
@@ -107,6 +102,10 @@ void GameScene::Event()
 	//=======================================
 	UpdateSetting();
 
+	//=======================================
+	// ゲーム進行
+	//=======================================
+	UpdateGameFlow();
 }
 
 void GameScene::Init()
@@ -511,8 +510,11 @@ void GameScene::UpdateGameFlow()
 {
 	//=======================================
 	// 制限時間更新
+	// 設定画面が開いている間は更新しない
 	//=======================================
-	if (m_timeManager && m_timeManager->IsRunning())
+	if (!IsSettingOpen() &&
+		m_timeManager &&
+		m_timeManager->IsRunning())
 	{
 		m_timeManager->Update(
 			Application::Instance().GetDeltaTime()
@@ -748,6 +750,16 @@ void GameScene::UpdateTutorialComplete()
 
 	m_phaseTimer += Application::Instance().GetDeltaTime();
 
+	//=======================================
+	// ゲームタイマー開始
+	// チュートリアル終了演出後
+	//=======================================
+	if (m_timeManager && !m_timeManager->IsRunning())
+	{
+		m_timeManager->Start();
+		UpdateTimerText();
+	}
+
 	// 2秒経過したら準備フェーズへ
 	if (m_phaseTimer >= m_tutorialFinishTime)
 	{
@@ -791,14 +803,6 @@ void GameScene::UpdatePrepare()
 	// 戦闘エリアに入ったのでピンを消す
 	//=======================================
 	m_battlePin->SetVisible(false);
-
-	//=======================================
-	// ゲームタイマー開始
-	//=======================================
-	if (m_timeManager && !m_timeManager->IsRunning())
-	{
-		m_timeManager->Start();
-	}
 
 	//---------------------------------------
 	// ボス戦
@@ -1094,6 +1098,14 @@ void GameScene::GameOver()
 {
 	m_isGameOver = true;
 	m_gamePhase = GamePhase::GameOver;
+
+	//=======================================
+	// タイマー停止
+	//=======================================
+	if (m_timeManager)
+	{
+		m_timeManager->Stop();
+	}
 
 	//=======================================
 	// 設定画面が開いていたら閉じる
@@ -2190,7 +2202,7 @@ void GameScene::StartResultSequence()
 	// 画面を暗転させる
 	if (m_resultFade)
 	{
-		m_resultFade->StartFadeIn(2.0f);
+		m_resultFade->StartFadeIn(0.8f);
 	}
 }
 
@@ -2247,13 +2259,13 @@ void GameScene::UpdateResultSequence()
 				Application::Instance().GetDeltaTime();
 
 			// 1秒間、暗転状態を維持
-			if (m_resultCameraWaitTimer >= 1.0f)
+			if (m_resultCameraWaitTimer >= 0.5f)
 			{
 				m_resultSequence = ResultSequence::FadeFromBlack;
 
 				if (m_resultFade)
 				{
-					m_resultFade->StartFadeOut(2.0f);
+					m_resultFade->StartFadeOut(0.8f);
 				}
 				else
 				{
@@ -2291,10 +2303,17 @@ void GameScene::UpdateResultSequence()
 		{
 			if (m_resultUI && m_scoreManager)
 			{
+				//m_resultUI->SetScoreData(
+				//	m_scoreManager->GetBaseScore(),
+				//	m_scoreManager->GetTimePenalty(),
+				//	m_scoreManager->GetDamagePenalty(),
+				//	m_scoreManager->GetFinalScore(),
+				//	m_scoreManager->GetRankText()
+				//);
+
 				m_resultUI->SetScoreData(
-					m_scoreManager->GetBaseScore(),
-					m_scoreManager->GetTimePenalty(),
-					m_scoreManager->GetDamagePenalty(),
+					m_scoreManager->GetTimeScore(),
+					m_scoreManager->GetDamageScore(),
 					m_scoreManager->GetFinalScore(),
 					m_scoreManager->GetRankText()
 				);
@@ -2419,6 +2438,15 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	// Battle開始前で停止
 	//========================================
 	m_gamePhase = GamePhase::Prepare;
+
+	//=======================================
+	// デバッグスキップ時のタイマー開始
+	//=======================================
+	if (m_timeManager && !m_timeManager->IsRunning())
+	{
+		m_timeManager->Start();
+		UpdateTimerText();
+	}
 }
 
 void GameScene::SetGameUIVisible(bool visible)
