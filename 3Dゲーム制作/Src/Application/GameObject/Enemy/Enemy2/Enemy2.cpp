@@ -2,11 +2,10 @@
 
 void Enemy2::Init(int battleNo)
 {
-
-	m_model = std::make_shared<KdModelWork>();
-	m_model->SetModelData("Asset/Models/Enemy/EnemyRobot/Enemy2/Enemy.gltf");
-
-	EnemyBase::Init();
+	InitModelAndCollider(
+		"Asset/Models/Enemy/EnemyRobot/Enemy2/Enemy.gltf",
+		"Enemy2"
+	);
 
 	// 個別設定
 	m_hpMax = 100;
@@ -16,13 +15,7 @@ void Enemy2::Init(int battleNo)
 	m_attackDamage = 75.0f;
 	detectRange = 6.0f;
 
-	//コライダー
-	m_pCollider = std::make_unique<KdCollider>();
-	m_pCollider->RegisterCollisionShape("Enemy2", m_model, KdCollider::TypeDamage);
-
-	//---------------------------------------
 	// 戦闘番号ごとの初期位置
-	//---------------------------------------
 	switch (battleNo)
 	{
 	case 0:

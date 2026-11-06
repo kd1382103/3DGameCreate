@@ -130,6 +130,7 @@ void ScoreManager::Init()
 	m_isFinalized = false;
 }
 
+//Playerの被ダメージ取得
 void ScoreManager::AddDamage(float damage)
 {
 	if (m_isFinalized || damage <= 0.0f)
@@ -140,6 +141,7 @@ void ScoreManager::AddDamage(float damage)
 	m_totalDamage += damage;
 }
 
+//各スコアの計算とランク判定
 void ScoreManager::Finalize(float elapsedTime)
 {
 	if (m_isFinalized)
@@ -150,6 +152,12 @@ void ScoreManager::Finalize(float elapsedTime)
 	//=======================================
 	// 時間評価点
 	//=======================================
+
+	//時間率の計算
+	
+	//		クリア時間 - 180
+	// --------------------------
+	//	　　600（10分） - 180
 
 	float timeRate =
 		std::clamp(
@@ -167,6 +175,7 @@ void ScoreManager::Finalize(float elapsedTime)
 	// ダメージ評価点
 	//=======================================
 
+	//ダメージ率
 	float damageRate =
 		std::clamp(
 			m_totalDamage / kDamageForZeroScore,
@@ -174,6 +183,7 @@ void ScoreManager::Finalize(float elapsedTime)
 			1.0f
 		);
 
+	//評価点数 ＝ 5000 *（ 1 － ダメージ率 ）
 	m_damageScore = static_cast<int>(
 		std::lround(kMaxDamageScore * (1.0f - damageRate))
 		);

@@ -372,13 +372,6 @@ void GameScene::InitUI()
 	m_hpGauge->SetGauge(100, 100);
 
 	//=======================================
-	// 必殺技ゲージ
-	//=======================================
-	//m_ultimateGauge = std::make_shared<UltimateGauge>();
-	//m_ultimateGauge->Init();
-	//m_ultimateGauge->SetGauge(0.0f, 500.0f);
-
-	//=======================================
 	// GAME CLEAR / GAME OVER ボタン
 	//=======================================
 	m_gameClearButton = std::make_shared<GameClearButton>();
@@ -725,10 +718,6 @@ void GameScene::UpdateTutorial()
 		{
 			m_tutorialBackground->SetVisible(false);
 		}
-
-		//---------------------------------------
-		// チュートリアル敵は削除しない
-		//---------------------------------------
 
 		//---------------------------------------
 		// 次のフェーズへ
@@ -1547,7 +1536,7 @@ void GameScene::SpawnBattleEnemies()
 	case 0:
 		spawnList =
 		{
-			{ 
+			{
 				EnemyType::Enemy1,
 				3,					//出現数
 				{ -3, 0, 30 },		//基準位置
@@ -1555,10 +1544,10 @@ void GameScene::SpawnBattleEnemies()
 				0.0f				//隊列の回転角度	
 			},
 
-			{ 
-				EnemyType::Enemy2, 
+			{
+				EnemyType::Enemy2,
 				2,
-				{ -1.5, 0, 35 }, 
+				{ -1.5, 0, 35 },
 				{ 3, 0, 0 },
 				0.0f
 			}
@@ -1571,18 +1560,18 @@ void GameScene::SpawnBattleEnemies()
 	case 1:
 		spawnList =
 		{
-			{ 
+			{
 				EnemyType::Enemy1,
 				2,
-				{ -10, 0, 82 }, 
+				{ -10, 0, 82 },
 				{ 4, 0, 0 },
 				90.0f
 			},
 
-			{ 
+			{
 				EnemyType::Enemy3,
 				3,
-				{ -8, 0, 83 }, 
+				{ -8, 0, 83 },
 				{ 3, 0, 0 } ,
 				90.0f
 			}
@@ -1595,7 +1584,7 @@ void GameScene::SpawnBattleEnemies()
 	case 2:
 		spawnList =
 		{
-			{ 
+			{
 				EnemyType::Enemy1,
 				1,
 				{ -75, 0, 80 },
@@ -1603,7 +1592,7 @@ void GameScene::SpawnBattleEnemies()
 				90.0f
 			},
 
-			{ 
+			{
 				EnemyType::Enemy2,
 				2,
 				{ -79, 0, 81.5 },
@@ -1611,10 +1600,10 @@ void GameScene::SpawnBattleEnemies()
 				90.0f
 			},
 
-			{ 
-				EnemyType::Enemy4, 
+			{
+				EnemyType::Enemy4,
 				3,
-				{ -83, 0, 83 }, 
+				{ -83, 0, 83 },
 				{ 3, 0, 0 } ,
 				90.0f
 			}
@@ -1627,18 +1616,18 @@ void GameScene::SpawnBattleEnemies()
 	case 3:
 		spawnList =
 		{
-			{ 
-				EnemyType::Enemy3, 
+			{
+				EnemyType::Enemy3,
 				3,
-				{ -84, 0, 130 }, 
-				{ 4, 0, 0 } 
+				{ -84, 0, 130 },
+				{ 4, 0, 0 }
 			},
 
-			{ 
-				EnemyType::Enemy5, 
+			{
+				EnemyType::Enemy5,
 				1,
-				{ -80, 0, 127 }, 
-				{ 0, 0, 0 } 
+				{ -80, 0, 127 },
+				{ 0, 0, 0 }
 			}
 		};
 		break;
@@ -1649,18 +1638,18 @@ void GameScene::SpawnBattleEnemies()
 	case 4:
 		spawnList =
 		{
-			{ 
-				EnemyType::Enemy1, 
+			{
+				EnemyType::Enemy1,
 				5,
-				{ -76, 0, 20 }, 
+				{ -76, 0, 20 },
 				{ 2, 0, 0 } ,
 				180.0f
 			},
 
-			{ 
-				EnemyType::Enemy4, 
+			{
+				EnemyType::Enemy4,
 				2,
-				{ -78, 0, 25 }, 
+				{ -78, 0, 25 },
 				{ 4, 0, 0 } ,
 				180.0f
 			}
@@ -1676,57 +1665,62 @@ void GameScene::SpawnBattleEnemies()
 	//=======================================
 	m_battleEnemies.clear();
 
+	//=======================================
+	// 敵生成処理
+	//=======================================
+	auto createEnemy = [this](EnemyType type) -> std::shared_ptr<EnemyBase>
+	{
+		std::shared_ptr<EnemyBase> enemy;
+
+		switch (type)
+		{
+		case EnemyType::Enemy1:
+			enemy = std::make_shared<Enemy1>();
+			break;
+
+		case EnemyType::Enemy2:
+			enemy = std::make_shared<Enemy2>();
+			break;
+
+		case EnemyType::Enemy3:
+			enemy = std::make_shared<Enemy3>();
+			break;
+
+		case EnemyType::Enemy4:
+			enemy = std::make_shared<Enemy4>();
+			break;
+
+		case EnemyType::Enemy5:
+			enemy = std::make_shared<Enemy5>();
+			break;
+
+		default:
+			return nullptr;
+		}
+
+		enemy->Init(m_battleNo);
+
+		return enemy;
+	};
+
 	for (const auto& info : spawnList)
 	{
+		//=======================================
+		// 隊列の回転行列を作成
+		//=======================================
+		float angleRad =
+			DirectX::XMConvertToRadians(info.angleY);
+
+		Math::Matrix rotMat =
+			Math::Matrix::CreateRotationY(angleRad);
+
 		for (int i = 0; i < info.count; ++i)
 		{
-			std::shared_ptr<EnemyBase> enemy;
-
-			//---------------------------------------
-			// 敵の種類を決める
-			//---------------------------------------
-			switch (info.type)
-			{
-			case EnemyType::Enemy1:
-			{
-				auto e = std::make_shared<Enemy1>();
-				e->Init(m_battleNo);
-				enemy = e;
-				break;
-			}
-
-			case EnemyType::Enemy2:
-			{
-				auto e = std::make_shared<Enemy2>();
-				e->Init(m_battleNo);
-				enemy = e;
-				break;
-			}
-
-			case EnemyType::Enemy3:
-			{
-				auto e = std::make_shared<Enemy3>();
-				e->Init(m_battleNo);
-				enemy = e;
-				break;
-			}
-
-			case EnemyType::Enemy4:
-			{
-				auto e = std::make_shared<Enemy4>();
-				e->Init(m_battleNo);
-				enemy = e;
-				break;
-			}
-
-			case EnemyType::Enemy5:
-			{
-				auto e = std::make_shared<Enemy5>();
-				e->Init(m_battleNo);
-				enemy = e;
-				break;
-			}
-			}
+			//=======================================
+			// 敵を生成
+			//=======================================
+			std::shared_ptr<EnemyBase> enemy =
+				createEnemy(info.type);
 
 			if (!enemy)
 			{
@@ -1739,13 +1733,6 @@ void GameScene::SpawnBattleEnemies()
 			Math::Vector3 localOffset =
 				info.offset * static_cast<float>(i);
 
-			// 度数法からラジアンに変換
-			float angleRad =
-				DirectX::XMConvertToRadians(info.angleY);
-
-			Math::Matrix rotMat =
-				Math::Matrix::CreateRotationY(angleRad);
-
 			Math::Vector3 rotatedOffset =
 				Math::Vector3::TransformNormal(
 					localOffset,
@@ -1757,22 +1744,22 @@ void GameScene::SpawnBattleEnemies()
 
 			enemy->SetPos(pos);
 
-			//---------------------------------------
+			//=======================================
 			// プレイヤー・カメラ・シーン設定
-			//---------------------------------------
+			//=======================================
 			enemy->SetTarget(m_player);
 			enemy->SetCamera(m_camera);
 			enemy->SetGameScene(this);
 			enemy->LookAtPlayer();
 
-			//---------------------------------------
+			//=======================================
 			// シーンに登録
-			//---------------------------------------
+			//=======================================
 			AddObject(enemy);
 
-			//---------------------------------------
+			//=======================================
 			// 全滅判定用リストに登録
-			//---------------------------------------
+			//=======================================
 			m_battleEnemies.push_back(enemy);
 		}
 	}

@@ -26,6 +26,11 @@ void EnemyBase::Init()
 	StartResolve();
 }
 
+void EnemyBase::Init(int battleNo)
+{
+	Init();
+}
+
 void EnemyBase::Update()
 {
 	if (m_isGameEnd) return;
@@ -39,26 +44,11 @@ void EnemyBase::Update()
 	//==========================================================
 	// Resolve中は出現演出だけを進める
 	//==========================================================
+
 	if (m_isResolving)
 	{
 		UpdateResolve(frameScale);
-
-		//========================================
-		// リゾルブ中もIdleアニメーションを再生
-		//========================================
-		if (m_model)
-		{
-			m_animator.AdvanceTime(
-				m_model->WorkNodes(),
-				frameScale
-			);
-
-			if (m_model->NeedCalcNodeMatrices())
-			{
-				m_model->CalcNodeMatrices();
-			}
-		}
-
+		UpdateAnimation(frameScale);
 		return;
 	}
 
@@ -421,17 +411,6 @@ void EnemyBase::PostUpdate()
 
 			m_preAttackPos = headPos;
 		}
-		else
-		{
-			// Headノードがない場合は従来の位置を使用
-			//m_preAttackPos =
-			//	m_mWorld.Translation() + Math::Vector3(0, 1.8f, 0);
-		}
-	}
-	else
-	{
-		//m_preAttackPos =
-		//	m_mWorld.Translation() + Math::Vector3(0, 1.8f, 0);
 	}
 
 	// ロックオンアイコンの位置（敵の前面）
@@ -455,9 +434,6 @@ void EnemyBase::DrawLit()
 		return;
 	}
 
-	//==========================================================
-	// Resolve中 または 死亡中
-	//==========================================================
 	if (m_isResolving || m_isDying)
 	{
 		KdShaderManager::Instance().m_StandardShader.SetDissolve(
@@ -475,9 +451,6 @@ void EnemyBase::DrawLit()
 		return;
 	}
 
-	//==========================================================
-	// 通常描画
-	//==========================================================
 	KdShaderManager::Instance().m_StandardShader.DrawModel(
 		*m_model,
 		m_mWorld,
@@ -866,6 +839,23 @@ void EnemyBase::StartResolve()
 	PlayAnimationAuto("Idel", true);
 }
 
+void EnemyBase::InitModelAndCollider(
+	const std::string& modelPath,
+	const std::string& colliderName)
+{
+	m_model = std::make_shared<KdModelWork>();
+	m_model->SetModelData(modelPath);
+
+	EnemyBase::Init();
+
+	m_pCollider = std::make_unique<KdCollider>();
+	m_pCollider->RegisterCollisionShape(
+		colliderName,
+		m_model,
+		KdCollider::TypeDamage
+	);
+}
+
 //==============================================================
 // 死亡開始
 //==============================================================
@@ -1106,29 +1096,12 @@ void EnemyBase::UpdateDeath(float frameScale)
 	//==========================================================
 	if (!m_isDeathAnimationEnd)
 	{
-		if (m_model)
-		{
-			m_animator.AdvanceTime(
-				m_model->WorkNodes(),
-				frameScale
-			);
+		UpdateAnimation(frameScale);
 
-			if (m_model->NeedCalcNodeMatrices())
-			{
-				m_model->CalcNodeMatrices();
-			}
-		}
-
-		//======================================================
-		// 死亡アニメーション終了
-		//======================================================
 		if (m_animator.IsAnimationEnd())
 		{
 			m_isDeathAnimationEnd = true;
 
-			//==================================================
-			// 既存Resolve用ディゾルブを最初から開始
-			//==================================================
 			m_resolveTimer = 0.0f;
 			m_resolveDissolve = 0.0f;
 		}

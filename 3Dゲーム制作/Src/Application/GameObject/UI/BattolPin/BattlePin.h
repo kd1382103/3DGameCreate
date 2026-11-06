@@ -136,7 +136,7 @@ private:
 	// ピン画像
 	//==========================================================
 	std::shared_ptr<KdSquarePolygon> m_pinPoly;
-	float m_scale = 0.6f;
+	float m_scale = 0.3f;
 
 	// この距離以内に入ると拡大する
 	float m_pinGrowDistance = 20.0f;

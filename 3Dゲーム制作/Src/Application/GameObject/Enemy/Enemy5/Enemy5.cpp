@@ -2,10 +2,10 @@
 
 void Enemy5::Init(int battleNo)
 {
-	m_model = std::make_shared<KdModelWork>();
-	m_model->SetModelData("Asset/Models/Enemy/EnemyRobot/Enemy5/Enemy.gltf");
-
-	EnemyBase::Init();
+	InitModelAndCollider(
+		"Asset/Models/Enemy/EnemyRobot/Enemy5/Enemy.gltf",
+		"Enemy5"
+	);
 
 	// 個別設定
 	m_hpMax = 350;
@@ -14,10 +14,6 @@ void Enemy5::Init(int battleNo)
 	m_attackDist = 1.2f;
 	m_attackDamage = 20.0f;
 	detectRange = 6.0f;
-
-	//コライダー
-	m_pCollider = std::make_unique<KdCollider>();
-	m_pCollider->RegisterCollisionShape("Enemy5", m_model, KdCollider::TypeDamage);
 
 	// 戦闘フェイズごとの出現位置
 	switch (battleNo)

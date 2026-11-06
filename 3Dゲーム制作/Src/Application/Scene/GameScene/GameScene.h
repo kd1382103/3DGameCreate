@@ -20,7 +20,6 @@ class BattleArea;
 //UI・テキスト・エフェクト
 class SkillGauge;
 class HPGauge;
-class UltimateGauge;
 class GameClearButton;
 class FontText;
 class SettingUI;
@@ -67,9 +66,6 @@ class GameScene : public BaseScene
 
 	// クリア演出の経過時間
 	float m_clearSequenceTimer = 0.0f;
-
-	// GAME CLEAR表示済みか
-	bool m_isClearResultShown = false;
 
 public:
 
@@ -273,7 +269,6 @@ private:
 	//========================================
 	std::shared_ptr<SkillGauge> m_skillGauge;
 	std::shared_ptr<HPGauge> m_hpGauge;
-	std::shared_ptr<UltimateGauge> m_ultimateGauge;
 
 	std::shared_ptr<GameClearButton> m_gameClearButton;
 
@@ -361,12 +356,6 @@ private:
 
 	// Bossをすでに出現させたか
 	bool m_isBossSpawned = false;
-
-	//========================================
-	// 敵生成
-	//========================================
-	template<class T>
-	void SpawnEnemy(std::shared_ptr<T>& enemy, int battleNo);
 
 	//========================================
 	// 設定画面用

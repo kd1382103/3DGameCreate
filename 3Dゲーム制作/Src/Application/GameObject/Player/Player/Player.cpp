@@ -6,7 +6,6 @@
 //#include <Application/GameObject/Stages/BattleArea/BattleArea.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
-//#include <Application/GameObject/UI/PlaeyrUI/UltimateGauge/UltimateGauge.h>
 #include <Application/GameObject/UI/FontText/FontText.h>
 #include <Application/main.h>
 #include <Application/GameObject/Player/PlayerState/PlayerState.h>
@@ -607,12 +606,12 @@ void Player::UpdateDebug()
 	//}
 
 
-	KdDebugGUI::Instance().AddLog(
-		"PlayerPos\nX : %f \nY : %f \nZ : %f",
-		m_nowPos.x,
-		m_nowPos.y,
-		m_nowPos.z
-	);
+	//KdDebugGUI::Instance().AddLog(
+	//	"PlayerPos\nX : %f \nY : %f \nZ : %f",
+	//	m_nowPos.x,
+	//	m_nowPos.y,
+	//	m_nowPos.z
+	//);
 
 	//KdDebugGUI::Instance().AddLog(
 	//	"Gravity : %f\n",

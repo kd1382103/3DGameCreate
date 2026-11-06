@@ -783,16 +783,6 @@ void PlayerStateDodge::Enter(Player& owner)
 	//========================================
 	owner.m_dir =
 		Math::Vector3::Zero;
-
-	//========================================
-	// 回避時のMP加算
-	//========================================
-	owner.m_skillGauge += 10.0f;
-
-	if (owner.m_skillGauge > owner.m_skillGaugeMax)
-	{
-		owner.m_skillGauge = owner.m_skillGaugeMax;
-	}
 }
 
 

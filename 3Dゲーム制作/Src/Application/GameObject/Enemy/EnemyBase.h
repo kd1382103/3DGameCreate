@@ -12,10 +12,11 @@ class StateMachine;
 class EnemyBase : public BaseObject
 {
 public:
-	EnemyBase() {}
-	virtual ~EnemyBase() {}
+	EnemyBase() = default;
+	virtual ~EnemyBase() = default;
 
 	void Init() override;
+	virtual void Init(int battleNo);
 	void Update() override;
 	void PostUpdate() override;
 	void DrawLit() override;
@@ -150,6 +151,12 @@ public:
 	//==============================================================
 	bool IsResolving() const { return m_isResolving; }
 	void StartResolve();
+
+	protected:
+		void InitModelAndCollider(
+			const std::string& modelPath,
+			const std::string& colliderName
+		);
 
 private:
 
