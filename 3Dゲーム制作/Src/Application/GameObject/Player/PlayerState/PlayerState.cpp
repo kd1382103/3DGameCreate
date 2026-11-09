@@ -3,9 +3,6 @@
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/Effect/EffectManager.h>
 
-#include <Application/GameObject/Enemy/EnemyBase.h>
-#include <Application/GameObject/Boss/BossBase.h>
-
 #include <Application/Scene/SceneManager.h>
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/main.h>
@@ -534,7 +531,6 @@ void PlayerStateSkill::Update(Player& owner)
 		owner.m_animator.GetAnimeCurrentTime();
 
 	//==========================================================
-	// 0～5F
 	// 構え
 	//==========================================================
 	if (t < 5.0f)
@@ -544,7 +540,6 @@ void PlayerStateSkill::Update(Player& owner)
 	}
 
 	//==========================================================
-	// 5～28F
 	// 突進
 	//==========================================================
 
@@ -561,30 +556,8 @@ void PlayerStateSkill::Update(Player& owner)
 		//========================================
 		// ロックオン対象を取得
 		//========================================
-		bool hasTarget = false;
 		Math::Vector3 targetPos = Math::Vector3::Zero;
-
-		if (owner.IsLockOn() && owner.m_lockOnTarget)
-		{
-			if (auto enemy =
-				dynamic_cast<EnemyBase*>(owner.m_lockOnTarget))
-			{
-				if (enemy->IsAlive())
-				{
-					targetPos = enemy->GetHitCenter();
-					hasTarget = true;
-				}
-			}
-			else if (auto boss =
-				dynamic_cast<BossBase*>(owner.m_lockOnTarget))
-			{
-				if (boss->IsAlive())
-				{
-					targetPos = boss->GetHitCenter();
-					hasTarget = true;
-				}
-			}
-		}
+		bool hasTarget = owner.GetLockOnTargetPosition(targetPos);
 
 		//========================================
 		// ロックオン対象へ旋回
@@ -653,11 +626,8 @@ void PlayerStateSkill::Update(Player& owner)
 		owner.m_attackContact = false;
 	}
 
-
 	//==========================================================
-	// 28～43F
 	// 薙ぎ払い攻撃
-	// 30～38Fで攻撃判定
 	//==========================================================
 	else if (t < 38.0f)
 	{
@@ -684,7 +654,6 @@ void PlayerStateSkill::Update(Player& owner)
 	}
 
 	//==========================================================
-	// 43～50F
 	// 剣を戻す
 	//==========================================================
 	else if (t < 50.0f)
@@ -878,47 +847,18 @@ void PlayerStateDodge::Update(Player& owner)
 //==============================================================
 void PlayerUltimate::Enter(Player& owner)
 {
-	if (owner.IsLockOn() && owner.m_lockOnTarget)
+	// ロックオン対象の方向へ即座に向く
+	Math::Vector3 targetPos = Math::Vector3::Zero;
+
+	if (owner.GetLockOnTargetPosition(targetPos))
 	{
-		Math::Vector3 targetPos = Math::Vector3::Zero;
-		bool hasTarget = false;
+		Math::Vector3 dir = targetPos - owner.m_nowPos;
+		dir.y = 0.0f;
 
-		// 敵へのロックオン
-		if (auto enemy = dynamic_cast<EnemyBase*>(
-			owner.m_lockOnTarget))
+		if (dir.LengthSquared() > 0.001f)
 		{
-			if (enemy->IsAlive())
-			{
-				targetPos = enemy->GetHitCenter();
-				hasTarget = true;
-			}
-		}
-
-		// ボスへのロックオン
-		if (!hasTarget)
-		{
-			if (auto boss = dynamic_cast<BossBase*>(
-				owner.m_lockOnTarget))
-			{
-				if (boss->IsAlive())
-				{
-					targetPos = boss->GetHitCenter();
-					hasTarget = true;
-				}
-			}
-		}
-
-		// 対象の方向へ即座に向く
-		if (hasTarget)
-		{
-			Math::Vector3 dir = targetPos - owner.m_nowPos;
-			dir.y = 0.0f;
-
-			if (dir.LengthSquared() > 0.001f)
-			{
-				dir.Normalize();
-				owner.m_angleY = atan2f(-dir.x, -dir.z);
-			}
+			dir.Normalize();
+			owner.m_angleY = atan2f(-dir.x, -dir.z);
 		}
 	}
 
@@ -1078,8 +1018,6 @@ void PlayerAttackStateBase::EnterAttack(Player& owner)
 {
 	owner.m_dir = Math::Vector3::Zero;
 
-	owner.m_canNextAttack = false;
-
 	owner.m_attackHitOnce = false;
 
 	owner.m_attackContact = false;
@@ -1132,30 +1070,8 @@ void PlayerAttackStateBase::UpdateAttack(Player& owner, float t)
 		//========================================
 		// ロックオン対象の取得
 		//========================================
-		bool hasTarget = false;
 		Math::Vector3 targetPos = Math::Vector3::Zero;
-
-		if (owner.IsLockOn() && owner.m_lockOnTarget)
-		{
-			if (auto enemy =
-				dynamic_cast<EnemyBase*>(owner.m_lockOnTarget))
-			{
-				if (enemy->IsAlive())
-				{
-					targetPos = enemy->GetHitCenter();
-					hasTarget = true;
-				}
-			}
-			else if (auto boss =
-				dynamic_cast<BossBase*>(owner.m_lockOnTarget))
-			{
-				if (boss->IsAlive())
-				{
-					targetPos = boss->GetHitCenter();
-					hasTarget = true;
-				}
-			}
-		}
+		bool hasTarget = owner.GetLockOnTargetPosition(targetPos);
 
 		//========================================
 		// ロックオン中だけ対象方向へ旋回

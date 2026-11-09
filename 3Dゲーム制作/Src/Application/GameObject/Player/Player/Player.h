@@ -4,7 +4,6 @@
 class CameraBase;
 class HPGauge;
 class BattleArea;
-class EnemyBase;
 class ScoreManager;
 
 // 前方宣言：ステートマシン
@@ -38,7 +37,7 @@ public:
 	void UpdateMovementInput();
 	void UpdateAnimation(float frameScale);
 	void UpdateGravity(float frameScale);
-	void UpdateUIGauge(float frameScale);
+	void UpdateUIGauge();
 	void UpdatePendingDamage();
 	void UpdateDodgeSlow(float frameScale);
 
@@ -120,17 +119,6 @@ public:
 	//========================================
 	void ResolveContact();
 	float GetCollisionRadius() const { return m_collisionRadius; }
-
-	//========================================
-	// 必殺技
-	//========================================
-	void AddUltimateEnergy(float value)
-	{
-		m_ultimateEnergy += value;
-
-		if (m_ultimateEnergy > m_ultimateEnergyMax)
-			m_ultimateEnergy = m_ultimateEnergyMax;
-	}
 
 	//========================================
 	// 回復
@@ -258,6 +246,8 @@ public:
 		m_wpBattleArea = battleArea;
 	}
 
+	bool GetLockOnTargetPosition(Math::Vector3& targetPos) const;
+
 public:
 	//========================================
 	// モデル・アニメーション
@@ -329,8 +319,6 @@ public:
 
 	float m_attackDist = 1.5f;
 
-	bool m_canNextAttack = false;
-
 	//========================================
 	// ロックオン
 	//========================================
@@ -356,11 +344,6 @@ public:
 	void FinishLockOnAfterAction();
 
 	//========================================
-	// ロックオン対象の方向へ向く
-	//========================================
-	void TurnToLockOnTarget(Player& owner);
-
-	//========================================
 	// 移動速度
 	//========================================
 	float m_walkSpeed = 0.08f;
@@ -372,7 +355,6 @@ public:
 	int m_skillGaugeMax = 500;
 
 	float m_skillGauge = 0;
-	float m_skillRegen = 0.25f;
 
 	const int m_skillCost = m_skillGaugeMax;
 
@@ -421,7 +403,6 @@ public:
 	// 遅延ダメージ
 	//========================================
 	float m_pendingBeforeHP = -1.0f;
-	float m_pendingAfterHP = -1.0f;
 
 	int m_pendingDelay = 0;
 
@@ -504,8 +485,6 @@ private:
 	//========================================
 	bool m_ultimatePointVisible = true;
 	
-private:
-
 	//========================================
 	// デバッグ用攻撃範囲
 	//========================================

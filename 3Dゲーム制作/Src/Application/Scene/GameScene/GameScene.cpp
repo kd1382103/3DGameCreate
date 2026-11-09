@@ -2156,9 +2156,9 @@ void GameScene::InitBattleStartPin()
 	//---------------------------------------
 	// プレイヤー位置
 	//---------------------------------------
-	//m_battlePin->SetPlayerPos(
-	//	m_player->GetPos()
-	//);
+	m_battlePin->SetPlayerPos(
+		m_player->GetPos()
+	);
 
 	//---------------------------------------
 	// 戦闘開始範囲

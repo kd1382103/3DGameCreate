@@ -3,7 +3,6 @@
 #include <Application/GameObject/Camera/TPSCamera/TPSCamera.h>
 #include <Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/Boss/BossBase.h>
-//#include <Application/GameObject/Stages/BattleArea/BattleArea.h>
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
 #include <Application/GameObject/UI/FontText/FontText.h>
@@ -178,7 +177,7 @@ void Player::Update()
 	//========================================
 	// UIゲージ
 	//========================================
-	UpdateUIGauge(scaledFrameScale);
+	UpdateUIGauge();
 
 	//========================================
 	// 遅延ダメージ
@@ -332,30 +331,12 @@ void Player::UpdateInput()
 		//========================================
 		if (m_lookOn && m_lockOnTarget)
 		{
-			bool targetAlive = true;
+			Math::Vector3 targetPos;
 
 			//---------------------------------------
-			// 現在の対象が生きているか確認
+			// 対象が死亡、または無効になっている
 			//---------------------------------------
-			if (auto enemy =
-				dynamic_cast<EnemyBase*>(m_lockOnTarget))
-			{
-				targetAlive = enemy->IsAlive();
-			}
-			else if (auto boss =
-				dynamic_cast<BossBase*>(m_lockOnTarget))
-			{
-				targetAlive = boss->IsAlive();
-			}
-			else
-			{
-				targetAlive = false;
-			}
-
-			//---------------------------------------
-			// ロックオン対象が死亡した
-			//---------------------------------------
-			if (!targetAlive)
+			if (!GetLockOnTargetPosition(targetPos))
 			{
 				//-----------------------------------
 				// 現在のロックオン表示をOFF
@@ -375,7 +356,7 @@ void Player::UpdateInput()
 				// ロックオン対象だけ解除
 				//-----------------------------------
 				m_lockOnTarget = nullptr;
-				m_lookOn = true;	//ロックオン状態は維持
+				m_lookOn = true;
 
 				//-----------------------------------
 				// 攻撃終了後に再ロックオンする
@@ -407,10 +388,9 @@ void Player::UpdateInput()
 void Player::UpdateMovementInput()
 {
 	if (!m_moving) return;
-	if (m_wpCamera.expired()) return;
 
 	auto camera = m_wpCamera.lock();
-	if (!m_moving || !camera) return;
+	if (!camera) return;
 
 	Math::Matrix camRotMat =
 		camera->GetRotationYMatrix();
@@ -443,7 +423,7 @@ void Player::UpdateGravity(float dt)
 	m_nowPos.y -= m_gravity * dt;
 }
 
-void Player::UpdateUIGauge(float dt)
+void Player::UpdateUIGauge()
 {
 	//========================================
 	// UI更新
@@ -467,18 +447,6 @@ void Player::UpdateUIGauge(float dt)
 
 		ui->Update();
 	}
-
-	//if (auto ui =
-	//	GetUI<UltimateGauge>(UIType::UltimateGauge))
-	//{
-	//	ui->SetGauge(
-	//		m_ultimateEnergy,
-	//		m_ultimateEnergyMax
-	//	);
-
-	//	// 満タン時の点滅を更新
-	//	ui->Update();
-	//}
 }
 
 void Player::UpdatePendingDamage()
@@ -541,7 +509,6 @@ void Player::UpdatePendingDamage()
 	// リセット
 	//========================================
 	m_pendingBeforeHP = -1.0f;
-	m_pendingAfterHP = -1.0f;
 	m_pendingDamage = 0.0f;
 }
 
@@ -889,7 +856,6 @@ void Player::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRa
 	float after = m_nowHp - dmg;
 	if (after < 0) after = 0;
 
-	m_pendingAfterHP = after;
 	m_pendingDamage = dmg;
 
 	//==========================================================
@@ -1715,49 +1681,6 @@ void Player::FinishLockOnAfterAction()
 //========================================
 // ロックオン対象の方向へ向く
 //========================================
-void TurnToLockOnTarget(Player& owner)
-{
-	if (!owner.IsLockOn() || !owner.m_lockOnTarget)
-	{
-		return;
-	}
-
-	Math::Vector3 targetPos;
-
-	bool hasTarget = false;
-
-	if (auto enemy = dynamic_cast<EnemyBase*>(owner.m_lockOnTarget))
-	{
-		if (enemy->IsAlive())
-		{
-			targetPos = enemy->GetHitCenter();
-			hasTarget = true;
-		}
-	}
-
-	if (!hasTarget)
-	{
-		if (auto boss = dynamic_cast<BossBase*>(owner.m_lockOnTarget))
-		{
-			if (boss->IsAlive())
-			{
-				targetPos = boss->GetHitCenter();
-				hasTarget = true;
-			}
-		}
-	}
-
-	if (!hasTarget) return;
-
-	Math::Vector3 dir = targetPos - owner.m_nowPos;
-	dir.y = 0.0f;
-
-	if (dir.LengthSquared() < 0.001f) return;
-
-	dir.Normalize();
-
-	owner.m_angleY = atan2f(dir.x, dir.z);
-}
 
 void Player::StartDeath()
 {
@@ -1789,4 +1712,30 @@ void Player::StartDeath()
 
 	// 死亡アニメーション
 	PlayAnimationAuto("Death", false);
+}
+
+bool Player::GetLockOnTargetPosition(Math::Vector3& targetPos) const
+{
+    if (!IsLockOn() || !m_lockOnTarget)
+    {
+        return false;
+    }
+
+    if (auto enemy = dynamic_cast<EnemyBase*>(m_lockOnTarget))
+    {
+        if (!enemy->IsAlive()) return false;
+
+        targetPos = enemy->GetHitCenter();
+        return true;
+    }
+
+    if (auto boss = dynamic_cast<BossBase*>(m_lockOnTarget))
+    {
+        if (!boss->IsAlive()) return false;
+
+        targetPos = boss->GetHitCenter();
+        return true;
+    }
+
+    return false;
 }
