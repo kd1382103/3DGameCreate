@@ -2082,7 +2082,6 @@ void GameScene::StartResultSequence()
 	}
 
 	m_resultSequence = ResultSequence::FadeToBlack;
-	m_resultSequenceTimer = 0.0f;
 
 	// リザルトUI開始フラグをリセット
 	m_resultUIStarted = false;
