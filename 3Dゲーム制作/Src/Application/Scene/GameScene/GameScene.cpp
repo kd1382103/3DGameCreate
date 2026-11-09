@@ -1050,34 +1050,6 @@ void GameScene::GameClear()
 	SceneManager::Instance().SetTimeScale(1.0f);
 
 	//=======================================
-	// カーソルを表示
-	//=======================================
-	CURSORINFO ci = { sizeof(CURSORINFO) };
-	GetCursorInfo(&ci);
-
-	if (!(ci.flags & CURSOR_SHOWING))
-	{
-		ShowCursor(TRUE);
-	}
-
-	ClipCursor(nullptr);
-
-	////=======================================
-	//// GAME CLEAR表示
-	////=======================================
-	//auto clearText = std::make_shared<FontText>();
-	//clearText->InitMessage("ＧＡＭＥ ＣＬＥＡＲ", { 1.5f,0.0f }, 3.0f);
-	//AddObject(clearText);
-
-	////=======================================
-	//// タイトルに戻るボタン表示
-	////=======================================
-	//if (m_gameClearButton)
-	//{
-	//	m_gameClearButton->SetVisible(true);
-	//}
-
-	//=======================================
 	// リザルト演出開始
 	//=======================================
 	StartResultSequence();
@@ -1124,19 +1096,6 @@ void GameScene::GameOver()
 	// 時間停止を解除
 	//=======================================
 	SceneManager::Instance().SetTimeScale(1.0f);
-
-	//=======================================
-	// カーソルを表示
-	//=======================================
-	CURSORINFO ci = { sizeof(CURSORINFO) };
-	GetCursorInfo(&ci);
-
-	if (!(ci.flags & CURSOR_SHOWING))
-	{
-		ShowCursor(TRUE);
-	}
-
-	ClipCursor(nullptr);
 
 	//=======================================
 	// GAME OVER表示
@@ -1438,87 +1397,30 @@ void GameScene::UpdateTimerText()
 
 void GameScene::UpdateDebug()
 {
-	static bool prevF1 = false;
-	static bool prevF2 = false;
-	static bool prevF3 = false;
-	static bool prevF4 = false;
-	static bool prevF5 = false;
-	static bool prevF6 = false;
+	static bool prevF[6] = {};
 
-
-	bool nowF1 =
-		(GetAsyncKeyState(VK_F1) & 0x8000) != 0;
-
-	bool nowF2 =
-		(GetAsyncKeyState(VK_F2) & 0x8000) != 0;
-
-	bool nowF3 =
-		(GetAsyncKeyState(VK_F3) & 0x8000) != 0;
-
-	bool nowF4 =
-		(GetAsyncKeyState(VK_F4) & 0x8000) != 0;
-
-	bool nowF5 =
-		(GetAsyncKeyState(VK_F5) & 0x8000) != 0;
-
-	bool nowF6 =
-		(GetAsyncKeyState(VK_F6) & 0x8000) != 0;
-
-
-	//============================================================
-	// F1 : チュートリアルスキップ → Battle1開始前
-	//============================================================
-	if (nowF1 && !prevF1)
+	const int keys[6] =
 	{
-		DebugSkipToBattle(0);
-	}
+		VK_F1,
+		VK_F2,
+		VK_F3,
+		VK_F4,
+		VK_F5,
+		VK_F6
+	};
 
-	//============================================================
-	// F2 : Battle1をスキップ → Battle2開始前
-	//============================================================
-	if (nowF2 && !prevF2)
+	for (int i = 0; i < 6; ++i)
 	{
-		DebugSkipToBattle(1);
-	}
+		bool now = (GetAsyncKeyState(keys[i]) & 0x8000) != 0;
 
-	//============================================================
-	// F3 : Battle1～2をスキップ → Battle3開始前
-	//============================================================
-	if (nowF3 && !prevF3)
-	{
-		DebugSkipToBattle(2);
-	}
+		// キーを押した瞬間だけ実行
+		if (now && !prevF[i])
+		{
+			DebugSkipToBattle(i);
+		}
 
-	//============================================================
-	// F4 : Battle1～3をスキップ → Battle4開始前
-	//============================================================
-	if (nowF4 && !prevF4)
-	{
-		DebugSkipToBattle(3);
+		prevF[i] = now;
 	}
-
-	//============================================================
-	// F5 : Battle1～4をスキップ → Battle5開始前
-	//============================================================
-	if (nowF5 && !prevF5)
-	{
-		DebugSkipToBattle(4);
-	}
-
-	//============================================================
-	// F6 : Battle1～5をスキップ → Boss開始前
-	//============================================================
-	if (nowF6 && !prevF6)
-	{
-		DebugSkipToBattle(5);
-	}
-
-	prevF1 = nowF1;
-	prevF2 = nowF2;
-	prevF3 = nowF3;
-	prevF4 = nowF4;
-	prevF5 = nowF5;
-	prevF6 = nowF6;
 }
 
 void GameScene::SpawnBattleEnemies()
@@ -1620,14 +1522,16 @@ void GameScene::SpawnBattleEnemies()
 				EnemyType::Enemy3,
 				3,
 				{ -84, 0, 130 },
-				{ 4, 0, 0 }
+				{ 4, 0, 0 },
+				0.0f
 			},
 
 			{
 				EnemyType::Enemy5,
 				1,
 				{ -80, 0, 127 },
-				{ 0, 0, 0 }
+				{ 0, 0, 0 },
+				0.0f
 			}
 		};
 		break;
@@ -1982,9 +1886,6 @@ void GameScene::UpdateClearSequence()
 
 			// ジャンプアニメーションを再生
 			m_player->PlayAnimationAuto("Jump", false);
-
-			// ジャンプ開始位置を保存
-			m_clearJumpStartPos = m_player->GetPos();
 		}
 
 		break;
@@ -2468,22 +2369,14 @@ void GameScene::SetGameUIVisible(bool visible)
 		{
 			skill->SetVisible(visible);
 		}
+	}
 
-		//---------------------------------------
-		// タイマー表示
-		//---------------------------------------
-		if (m_timerText)
-		{
-			m_timerText->SetVisible(visible);
-		}
-		//auto ultimate =
-		//	m_player->GetUI<UltimateGauge>(
-		//		Player::UIType::UltimateGauge);
-
-		//if (ultimate)
-		//{
-		//	ultimate->SetVisible(visible);
-		//}
+	//---------------------------------------
+	// タイマー表示
+	//---------------------------------------
+	if (m_timerText)
+	{
+		m_timerText->SetVisible(visible);
 	}
 
 	//---------------------------------------

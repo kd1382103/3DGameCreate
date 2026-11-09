@@ -441,10 +441,10 @@ void BattlePin::DrawSprite()
 
 		float scale = 1.0f;
 
-		if (distance <= 20.0f)
+		if (distance <= m_pinGrowDistance)
 		{
 			// 0～20m：最大2.5倍まで拡大
-			float t = (20.0f - distance) / 20.0f;
+			float t = (m_pinGrowDistance - distance) / m_pinGrowDistance;
 			t = std::clamp(t, 0.0f, 1.0f);
 
 			scale = 1.0f
@@ -452,7 +452,7 @@ void BattlePin::DrawSprite()
 		}
 		else if (distance <= 40.0f)
 		{
-			// 20～40m：基本サイズで一定
+			// 拡大距離以内：最大2.5倍まで拡大
 			scale = 1.0f;
 		}
 		else

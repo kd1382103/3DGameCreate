@@ -156,7 +156,7 @@ private:
 	void UpdateBattle();
 	void UpdateBoss();
 	void UpdateGameEnd();
-	void UpdateLight();
+
 	//========================================
 	// ゲーム終了
 	//========================================
@@ -374,7 +374,6 @@ private:
 	//=======================================
 	bool m_startLandingFinished = false;
 	
-	Math::Vector3 m_clearJumpStartPos = Math::Vector3::Zero;
 
 	//========================================
 	// ボス撃破後のプレイヤー退避
@@ -412,8 +411,6 @@ private:
 
 	ResultSequence m_resultSequence =
 		ResultSequence::None;
-
-	float m_resultSequenceTimer = 0.0f;
 
 	std::shared_ptr<ResultFade> m_resultFade;
 	std::shared_ptr<ResultUI> m_resultUI;

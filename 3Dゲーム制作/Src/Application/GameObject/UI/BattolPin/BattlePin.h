@@ -52,10 +52,10 @@ public:
 		m_battleRange = range;
 	}
 
-	float GetBattleRange() const
-	{
-		return m_battleRange;
-	}
+	//float GetBattleRange() const
+	//{
+	//	return m_battleRange;
+	//}
 
 	bool IsInsideRange(const Math::Vector3& pos) const
 	{
@@ -83,10 +83,10 @@ public:
 		m_visible = visible;
 	}
 
-	bool IsVisible() const
-	{
-		return m_visible;
-	}
+	//bool IsVisible() const
+	//{
+	//	return m_visible;
+	//}
 
 	//==========================================================
 	// プレイヤー位置
