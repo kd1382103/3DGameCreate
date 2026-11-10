@@ -141,7 +141,7 @@ void GameScene::Init()
 	InitAudio();
 	InitStage();
 	InitLights();
-	InitBattleArea();
+	//InitBattleArea();
 	InitSky();
 	InitCamera();
 	InitPlayer();
@@ -160,10 +160,10 @@ void GameScene::Init()
 	//=======================================
 	// 剣の軌跡
 	//=======================================
-	m_swordTrail = std::make_shared<SwordTrail>();
-	m_swordTrail->Init();
-	m_swordTrail->SetPlayer(m_player);
-	AddObject(m_swordTrail);
+	auto swordTrail = std::make_shared<SwordTrail>();
+	swordTrail->Init();
+	swordTrail->SetPlayer(m_player);
+	AddObject(swordTrail);
 
 	//=======================================
 	// 環境光
@@ -248,12 +248,10 @@ void GameScene::InitCamera()
 
 	AddObject(m_tpsCamera);
 
-	m_camera = m_tpsCamera;
-
 	//=======================================
 	// エフェクトマネージャーにカメラを設定
 	//=======================================
-	EffectManager::Instance().SetCamera(m_camera);
+	EffectManager::Instance().SetCamera(m_tpsCamera);
 
 	//=======================================
 	// Effekseerにカメラを設定
@@ -279,30 +277,30 @@ void GameScene::InitSky()
 	//=======================================
 	// 空
 	//=======================================
-	m_sky = std::make_shared<Sky>();
-	m_sky->Init();
-	m_sky->SetPos({ 0, 0, 0 });
-	AddObject(m_sky);
+	auto sky = std::make_shared<Sky>();
+	sky->Init();
+	sky->SetPos({ 0, 0, 0 });
+	AddObject(sky);
 }
 
-void GameScene::InitBattleArea()
-{
-	m_battleArea = std::make_shared<BattleArea>();
-
-	m_battleArea->Init();
-
-	// 最初の戦闘エリア
-	m_battleArea->SetArea(
-		GetBattleStartPos(m_battleNo),
-		5,
-		5
-	);
-
-	// 最初はバリアを出さない
-	m_battleArea->SetBarrierActive(false);
-
-	AddObject(m_battleArea);
-}
+//void GameScene::InitBattleArea()
+//{
+//	m_battleArea = std::make_shared<BattleArea>();
+//
+//	m_battleArea->Init();
+//
+//	// 最初の戦闘エリア
+//	m_battleArea->SetArea(
+//		GetBattleStartPos(m_battleNo),
+//		5,
+//		5
+//	);
+//
+//	// 最初はバリアを出さない
+//	m_battleArea->SetBarrierActive(false);
+//
+//	AddObject(m_battleArea);
+//}
 
 void GameScene::InitPlayer()
 {
@@ -311,7 +309,7 @@ void GameScene::InitPlayer()
 	//=======================================
 	m_player = std::make_shared<Player>();
 	m_player->Init();
-	m_player->SetBattleArea(m_battleArea);
+	//m_player->SetBattleArea(m_battleArea);
 	m_player->SetTutorialMode(true);
 	m_player->SetPos(Math::Vector3{ 0, 0, 0 });
 
@@ -339,7 +337,7 @@ void GameScene::InitTutorialEnemy()
 	m_tutorialEnemy->SetPos({ 0, 0, 5 });
 
 	m_tutorialEnemy->SetTarget(m_player);
-	m_tutorialEnemy->SetCamera(m_camera);
+	m_tutorialEnemy->SetCamera(m_tpsCamera);
 	m_tutorialEnemy->SetGameScene(this);
 
 	AddObject(m_tutorialEnemy);
@@ -357,19 +355,15 @@ void GameScene::InitUI()
 
 	AddObject(m_playerUIBackground);
 
-	//=======================================
 	// スキルゲージ
-	//=======================================
-	m_skillGauge = std::make_shared<SkillGauge>();
-	m_skillGauge->Init();
-	m_skillGauge->SetGauge(0, 500);
+	auto skillGauge = std::make_shared<SkillGauge>();
+	skillGauge->Init();
+	skillGauge->SetGauge(0, 500);
 
-	//=======================================
 	// HPゲージ
-	//=======================================
-	m_hpGauge = std::make_shared<HPGauge>();
-	m_hpGauge->Init();
-	m_hpGauge->SetGauge(100, 100);
+	auto hpGauge = std::make_shared<HPGauge>();
+	hpGauge->Init();
+	hpGauge->SetGauge(100, 100);
 
 	//=======================================
 	// GAME CLEAR / GAME OVER ボタン
@@ -388,16 +382,16 @@ void GameScene::InitUI()
 	//=======================================
 	// プレイヤー設定
 	//=======================================
-	m_player->SetCamera(m_camera);
+	m_player->SetCamera(m_tpsCamera);
 
 	m_player->RegisterUI(
 		Player::UIType::SkillGauge,
-		m_skillGauge
+		skillGauge
 	);
 
 	m_player->RegisterUI(
 		Player::UIType::HPGauge,
-		m_hpGauge
+		hpGauge
 	);
 
 	//=======================================
@@ -845,10 +839,10 @@ void GameScene::UpdateBattle()
 	//---------------------------------------
 	// 戦闘終了：バリア解除
 	//---------------------------------------
-	if (m_battleArea)
-	{
-		m_battleArea->SetBarrierActive(false);
-	}
+	//if (m_battleArea)
+	//{
+	//	m_battleArea->SetBarrierActive(false);
+	//}
 
 	//---------------------------------------
 	// playerのHP回復
@@ -874,16 +868,16 @@ void GameScene::UpdateBattle()
 	//---------------------------------------
 	// 次の戦闘エリアを設定
 	//---------------------------------------
-	if (m_battleArea)
-	{
-		m_battleArea->SetArea(
-			m_battleStartPos,
-			15.0f,
-			15.0f
-		);
+	//if (m_battleArea)
+	//{
+	//	m_battleArea->SetArea(
+	//		m_battleStartPos,
+	//		15.0f,
+	//		15.0f
+	//	);
 
-		m_battleArea->SetBarrierActive(false);
-	}
+	//	m_battleArea->SetBarrierActive(false);
+	//}
 
 	//---------------------------------------
 	// ピンを次の戦闘地点へ移動
@@ -915,7 +909,7 @@ void GameScene::UpdateBoss()
 	m_boss->StartResolve();
 
 	m_boss->SetTarget(m_player);
-	m_boss->SetCamera(m_camera);
+	m_boss->SetCamera(m_tpsCamera);
 	m_boss->SetGameScene(this);
 
 	AddObject(m_boss);
@@ -1150,14 +1144,6 @@ void GameScene::StopGameObjects()
 	//---------------------------------------
 	// マウス解放
 	//---------------------------------------
-	CURSORINFO ci = { sizeof(CURSORINFO) };
-	GetCursorInfo(&ci);
-
-	if (!(ci.flags & CURSOR_SHOWING))
-	{
-		ShowCursor(TRUE);
-	}
-
 	ClipCursor(nullptr);
 }
 
@@ -1259,6 +1245,13 @@ void GameScene::OpenSetting()
 		m_tpsCamera->m_mouseFree = true;
 	}
 
+	//----------------------.------------------
+	// マウスカーソル表示
+	//---------------------------------------
+	while (ShowCursor(TRUE) < 0)
+	{
+	}
+
 	ClipCursor(nullptr);
 }
 
@@ -1324,6 +1317,13 @@ void GameScene::CloseSetting()
 	if (m_tpsCamera)
 	{
 		m_tpsCamera->m_mouseFree = false;
+	}
+
+	//---------------------------------------
+	// マウスカーソル非表示
+	//---------------------------------------
+	while (ShowCursor(FALSE) >= 0)
+	{
 	}
 
 	ClipCursor(nullptr);
@@ -1652,7 +1652,7 @@ void GameScene::SpawnBattleEnemies()
 			// プレイヤー・カメラ・シーン設定
 			//=======================================
 			enemy->SetTarget(m_player);
-			enemy->SetCamera(m_camera);
+			enemy->SetCamera(m_tpsCamera);
 			enemy->SetGameScene(this);
 			enemy->LookAtPlayer();
 
@@ -2052,7 +2052,7 @@ void GameScene::InitBattleStartPin()
 	m_battlePin->Init();
 
 	m_battlePin->SetPos(m_battleStartPos);
-	m_battlePin->SetCamera(m_camera);
+	m_battlePin->SetCamera(m_tpsCamera);
 
 	//---------------------------------------
 	// プレイヤー位置
@@ -2222,6 +2222,13 @@ void GameScene::UpdateResultSequence()
 				m_gameClearButton->SetVisible(true);
 			}
 
+			// マウスカーソル表示
+			while (ShowCursor(TRUE) < 0)
+			{
+			}
+
+			ClipCursor(nullptr);
+
 			m_resultSequence = ResultSequence::Finished;
 		}
 
@@ -2280,10 +2287,11 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	m_battleStarted = false;
 
 	// デバッグ移動時はバリアを解除
-	if (m_battleArea)
-	{
-		m_battleArea->SetBarrierActive(false);
-	}
+	//if (m_battleArea)
+	//{
+	//	m_battleArea->SetBarrierActive(false);
+	//}
+	
 	//========================================
 	// BattlePinの位置
 	//========================================

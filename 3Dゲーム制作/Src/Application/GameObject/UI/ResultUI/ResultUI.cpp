@@ -437,14 +437,14 @@ void ResultUI::Init()
 	};
 
 	m_timeLabel = CreateText(
-		"タイム評価",
+		"タイムスコア",
 		{ -430.0f, 100.0f },
 		2.0f,
 		labelColor
 	);
 
 	m_damageLabel = CreateText(
-		"被弾回避評価",
+		"被弾回避スコア",
 		{ -430.0f, 0.0f },
 		2.0f,
 		labelColor

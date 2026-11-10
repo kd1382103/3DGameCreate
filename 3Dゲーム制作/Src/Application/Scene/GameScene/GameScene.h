@@ -3,7 +3,6 @@
 #include "../BaseScene/BaseScene.h"
 
 //カメラ
-class CameraBase;
 class TPSCamera;
 
 //キャラクター
@@ -14,18 +13,14 @@ class Boss;
 
 //ステージ
 class Stage;
-class Sky;
-class BattleArea;
+//class BattleArea;
 
 //UI・テキスト・エフェクト
-class SkillGauge;
-class HPGauge;
 class GameClearButton;
 class FontText;
 class SettingUI;
 class BattlePin;
 class UIBackground;
-class SwordTrail;
 class SettingIcon;
 
 class ResultFade;
@@ -135,7 +130,7 @@ private:
 	void InitCamera();
 	void InitStage();
 	void InitSky();
-	void InitBattleArea();
+	//void InitBattleArea();
 	void InitPlayer();
 	void InitTutorialEnemy();
 	void InitUI();
@@ -237,7 +232,6 @@ private:
 	//========================================
 	// カメラ
 	//========================================
-	std::shared_ptr<CameraBase> m_camera;
 	std::shared_ptr<TPSCamera> m_tpsCamera;
 
 	//========================================
@@ -256,8 +250,7 @@ private:
 	// ステージ
 	//========================================
 	std::shared_ptr<Stage> m_stage;
-	std::shared_ptr<Sky> m_sky;
-	std::shared_ptr<BattleArea> m_battleArea;
+	//std::shared_ptr<BattleArea> m_battleArea;
 
 	//========================================
 	// バトル開始位置表示ピン
@@ -267,9 +260,6 @@ private:
 	//========================================
 	// UI
 	//========================================
-	std::shared_ptr<SkillGauge> m_skillGauge;
-	std::shared_ptr<HPGauge> m_hpGauge;
-
 	std::shared_ptr<GameClearButton> m_gameClearButton;
 
 	std::shared_ptr<UIBackground> m_playerUIBackground;
@@ -363,11 +353,6 @@ private:
 
 	// TABキーの前フレーム状態
 	bool m_settingKeyPrev = false;
-
-	//========================================
-	// エフェクト
-	//========================================
-	std::shared_ptr<SwordTrail> m_swordTrail;
 
 	//=======================================
 	// ゲーム開始演出
