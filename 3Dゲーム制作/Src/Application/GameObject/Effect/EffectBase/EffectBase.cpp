@@ -38,18 +38,3 @@ void EffectBase::Update()
 		m_isExpired = true;
 	}
 }
-
-//==============================================================
-// ビルボード行列取得
-//==============================================================
-Math::Matrix EffectBase::GetBillboardMatrix() const
-{
-	auto camera = m_wpCamera.lock();
-
-	if (!camera)
-	{
-		return Math::Matrix::Identity;
-	}
-
-	return camera->GetBillboardMatrix();
-}
