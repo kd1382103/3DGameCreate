@@ -5,7 +5,7 @@
 //==============================================================
 void BossDeathEffect::Init(const Math::Vector3& pos)
 {
-	EffectBase::Init(EffectType::Explosion, pos);
+	EffectBase::Init(pos);
 
 	KdEffekseerManager::GetInstance().Play(
 		"EffekseerSample/BossDeath/Explosion.efkefc",

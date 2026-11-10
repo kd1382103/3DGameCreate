@@ -10,11 +10,10 @@ public:
 	HealEffect() = default;
 	~HealEffect() override = default;
 
-	void Init(const Math::Vector3& pos);
+	void Init(const Math::Vector3& pos) override;
 	void SetPlayer(const std::shared_ptr<Player>& player);
 
 	void Update() override;
-	void DrawEffect() override;
 
 private:
 	std::weak_ptr<Player> m_wpPlayer;

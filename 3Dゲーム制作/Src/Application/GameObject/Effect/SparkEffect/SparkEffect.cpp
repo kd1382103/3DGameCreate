@@ -10,7 +10,6 @@ void SparkEffect::Init(
 	const Math::Vector3& direction)
 {
 	EffectBase::Init(
-		EffectType::Spark,
 		pos
 	);
 

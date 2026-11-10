@@ -8,9 +8,5 @@ public:
 	HitEffect() = default;
 	~HitEffect() override = default;
 
-	void Init(const Math::Vector3& pos);
-
-	void Update() override;
-
-	void DrawEffect() override;
+	void Init(const Math::Vector3& pos)override;
 };

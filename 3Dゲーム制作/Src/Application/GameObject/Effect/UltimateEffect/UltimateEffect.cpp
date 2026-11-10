@@ -14,7 +14,6 @@ void UltimateEffect::Init(
 	float travelDistance)
 {
 	EffectBase::Init(
-		EffectType::Ultimate,
 		pos
 	);
 

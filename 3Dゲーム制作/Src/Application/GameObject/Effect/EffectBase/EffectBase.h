@@ -15,7 +15,7 @@ public:
 	EffectBase() = default;
 	virtual ~EffectBase() = default;
 
-	virtual void Init(EffectType type, const Math::Vector3& pos);
+	virtual void Init(const Math::Vector3& pos);
 	void Update() override;
 	void DrawLit() override {}
 

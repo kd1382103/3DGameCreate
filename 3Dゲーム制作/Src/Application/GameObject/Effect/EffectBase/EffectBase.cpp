@@ -7,15 +7,10 @@
 // 初期化
 //==============================================================
 void EffectBase::Init(
-	EffectType type,
 	const Math::Vector3& pos)
 {
-	m_type = type;
-
 	SetPos(pos);
-
 	m_nowTime = 0.0f;
-
 	m_isFinished = false;
 	m_isExpired = false;
 }
