@@ -1040,7 +1040,6 @@ void BossBase::StartDeath()
 	m_deathTimer = 0.0f;
 	m_deathDissolve = 0.0f;
 
-	m_isDeathEffectPlayed = false;
 	m_isDeathEffectWaiting = false;
 	m_deathEffectDelayTimer = 0.0f;
 

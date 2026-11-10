@@ -17,17 +17,16 @@ void UltimateEffect::Init(
 		pos
 	);
 
-	// 必殺技の総移動時間
-	m_effectDuration =
+	const float effectDuration =
 		(hitInterval * maxHitCount) / 60.0f;
 
-	m_lifeTime = m_effectDuration;
+	m_lifeTime = effectDuration;
 
 	// 移動速度
-	if (m_effectDuration > 0.0f)
+	if (effectDuration > 0.0f)
 	{
 		m_moveSpeed =
-			travelDistance / m_effectDuration;
+			travelDistance / effectDuration;
 	}
 	else
 	{
