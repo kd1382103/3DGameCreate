@@ -9,7 +9,4 @@ public:
 	~BossDeathEffect() override = default;
 
 	void Init(const Math::Vector3& pos);
-
-	void Update() override;
-	void DrawEffect() override;
 };
