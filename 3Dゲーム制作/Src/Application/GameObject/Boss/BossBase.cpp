@@ -423,11 +423,6 @@ void BossBase::PostUpdate()
 		{
 			m_nowPos.y = hitPos.y;
 			m_gravity = 0.0f;
-			m_isGround = true;
-		}
-		else
-		{
-			m_isGround = false;
 		}
 	}
 

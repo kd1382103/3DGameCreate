@@ -1996,15 +1996,16 @@ void GameScene::UpdateClearSequence()
 			+ m_clearRetreatDirection
 			* (m_clearRetreatDistance * easeT);
 
-		m_player->SetPos(retreatPos);
-
+		m_player->MoveWithWallSlide(
+			retreatPos - m_player->GetPos()
+		);
 		if (t >= 1.0f)
 		{
-			// 最終位置を確定
-			m_player->SetPos(
-				m_clearRetreatStartPos
-				+ m_clearRetreatDirection * m_clearRetreatDistance
-			);
+			//// 最終位置を確定
+			//m_player->SetPos(
+			//	m_clearRetreatStartPos
+			//	+ m_clearRetreatDirection * m_clearRetreatDistance
+			//);
 
 			// 退避完了
 			m_isPlayerRetreated = true;
@@ -2517,7 +2518,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Skill:
 		m_tutorialText->InitMessage(
-			"目標チュートリアルをクリア\nＥキーで強攻撃の突進斬りを使用する\nまた通常攻撃と強攻撃はＵＬＴゲージを貯ることができる",
+			"目標チュートリアルをクリア\nＥキーで強攻撃の突進斬りを使用する\nまた通常攻撃と強攻撃はＳＰゲージを貯ることができる",
 			{ 0.0f, -230.0f },
 			1.0f
 		);
@@ -2525,7 +2526,7 @@ void GameScene::UpdateTutorialText()
 
 	case TutorialStep::Dodge:
 		m_tutorialText->InitMessage(
-			"目標チュートリアルをクリア\n敵は攻撃してきたときに発光する\n発光時に右クリックすると回避を行いＵＬＴゲージを少し貯める",
+			"目標チュートリアルをクリア\n敵は攻撃してきたときに発光する\n発光時に右クリックすると回避を行いＳＰゲージを少し貯める",
 			{ 0.0f, -235.0f },
 			1.0f
 		);

@@ -771,14 +771,6 @@ void Player::PostUpdate()
 	// 敵との接触判定
 	ResolveContact();
 	
-	////========================================
-	//// 戦闘エリア外への移動を制限
-	////========================================
-	//if (auto battleArea = m_wpBattleArea.lock())
-	//{
-	//	m_nowPos = battleArea->ClampPosition(m_nowPos);
-	//}
-
 	//================================================================================
 	// ワールド行列更新
 	//================================================================================
@@ -886,6 +878,115 @@ void Player::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRa
 	(void)isUltimate;
 	(void)finalHit;
 }
+
+
+//==============================================================
+// 壁に沿った移動（クリア演出専用）
+//==============================================================
+void Player::MoveWithWallSlide(const Math::Vector3& move)
+{
+	Math::Vector3 totalMove = move;
+	totalMove.y = 0.0f;
+
+	float moveLength = totalMove.Length();
+
+	if (moveLength < 0.000001f)
+	{
+		return;
+	}
+
+	// 移動を細かく分割して壁のすり抜けを防ぐ
+	const float stepLength = 0.05f;
+
+	int stepCount = std::max(
+		1,
+		static_cast<int>(std::ceil(moveLength / stepLength))
+	);
+
+	Math::Vector3 stepMove = totalMove / static_cast<float>(stepCount);
+
+	for (int step = 0; step < stepCount; ++step)
+	{
+		Math::Vector3 currentMove = stepMove;
+
+		// 壁に当たった場合は最大3回まで方向を修正
+		for (int attempt = 0; attempt < 3; ++attempt)
+		{
+			if (currentMove.LengthSquared() < 0.000001f)
+			{
+				break;
+			}
+
+			Math::Vector3 nextPos = m_nowPos + currentMove;
+
+			KdCollider::CapsuleInfo capsule;
+			capsule.m_type = KdCollider::TypeBump;
+			capsule.m_radius = 0.3f;
+			capsule.m_start = nextPos + Math::Vector3(0, 0.5f, 0);
+			capsule.m_end = nextPos + Math::Vector3(0, 1.5f, 0);
+			capsule.m_ownerWorld = m_mWorld;
+
+			std::list<KdCollider::CollisionResult> retCapsuleList;
+
+			for (auto& obj : SceneManager::Instance().GetObjList())
+			{
+				obj->Intersects(capsule, &retCapsuleList);
+			}
+
+			float maxOverlap = 0.0f;
+			Math::Vector3 bestDir = Math::Vector3::Zero;
+			bool hit = false;
+
+			for (auto& ret : retCapsuleList)
+			{
+				if (ret.m_overlapDistance > maxOverlap)
+				{
+					maxOverlap = ret.m_overlapDistance;
+
+					Math::Vector3 dir = ret.m_hitNDir;
+					dir.y = 0.0f;
+
+					if (dir.LengthSquared() > 0.00001f)
+					{
+						dir.Normalize();
+					}
+					else
+					{
+						dir = ret.m_hitDir;
+						dir.y = 0.0f;
+
+						if (dir.LengthSquared() > 0.00001f)
+						{
+							dir.Normalize();
+						}
+					}
+
+					bestDir = dir;
+					hit = true;
+				}
+			}
+
+			// 衝突していなければ移動を確定
+			if (!hit)
+			{
+				m_nowPos = nextPos;
+				break;
+			}
+
+			// 法線方向が取得できない場合は移動を中止
+			if (bestDir.LengthSquared() < 0.00001f)
+			{
+				break;
+			}
+
+			// 壁に向かう移動成分を取り除く
+			float dot = currentMove.Dot(bestDir);
+
+			currentMove -= bestDir * dot;
+		}
+	}
+}
+
 
 void Player::DrawDebugAttackRange(float range, float width)
 {

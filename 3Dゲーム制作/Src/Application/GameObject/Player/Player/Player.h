@@ -65,7 +65,11 @@ public:
 	// 基本設定
 	//========================================
 	void SetCamera(std::shared_ptr<CameraBase> camera) { m_wpCamera = camera; }
+
 	void SetPos(Math::Vector3 pos) { m_nowPos = pos; }
+
+	// クリア演出用：壁に沿って移動
+	void MoveWithWallSlide(const Math::Vector3& move);
 
 	//ロックオンしたかどうかを取得
 	void SetInputLock(bool lock) { m_inputLock = lock; }
