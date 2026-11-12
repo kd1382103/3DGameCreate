@@ -1635,5 +1635,3 @@ static void Dump(const tinygltf::Model &model) {
 }
 
 #endif
-
-

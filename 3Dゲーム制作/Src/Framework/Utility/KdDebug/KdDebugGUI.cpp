@@ -85,7 +85,7 @@ void KdDebugGUI::AddLog(const char* fmt,...)
 	// 初期化されてないなら動作させない
 	if (!m_uqLog) return;
 
-	char tmpStr[128] = {};
+	char tmpStr[512] = {};
 	va_list args;
 	va_start(args, fmt);
 	vsprintf_s(tmpStr, fmt, args);

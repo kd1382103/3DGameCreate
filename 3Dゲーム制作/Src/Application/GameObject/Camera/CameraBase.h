@@ -101,6 +101,19 @@ public:
 
 	Math::Vector2 WorldToScreen(const Math::Vector3& worldPos) const;
 
+	//==============================================================
+	// 11/12追加
+	//　視錘台カリング
+	//==============================================================
+
+	bool IsInCameraView(
+		const Math::Vector3& center,
+		float radius
+	) const;
+
+	//テスト用
+	//void TestFrustum();
+
 protected:
 	// カメラ回転用角度
 	Math::Vector3								m_DegAng		= Math::Vector3::Zero;
@@ -119,4 +132,23 @@ protected:
 
 	bool m_active = false;
 
+	//==============================================================
+	// 視錐台
+	//==============================================================
+
+	// 視錐台の平面情報
+	struct FrustumPlane
+	{
+		Math::Vector3 normal = Math::Vector3::Zero;
+		float distance = 0.0f;
+	};
+
+	// 視錐台の情報
+	struct Frustum
+	{
+		// Left / Right / Bottom / Top / Near / Far
+		FrustumPlane planes[6];
+	};
+
+	bool CreateFrustum(Frustum& frustum) const;
 };
