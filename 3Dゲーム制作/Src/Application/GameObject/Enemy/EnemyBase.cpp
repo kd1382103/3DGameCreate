@@ -290,12 +290,6 @@ void EnemyBase::PostUpdate()
 		std::list<KdCollider::CollisionResult> retCapsuleList;
 		for (auto& obj : SceneManager::Instance().GetObjList())
 		{
-			// 壁判定用コライダーを持たないオブジェクトは除外
-			if (!obj->HasCollisionType(KdCollider::TypeBump))
-			{
-				continue;
-			}
-
 			obj->Intersects(capsule, &retCapsuleList);
 		}
 
