@@ -1,6 +1,7 @@
 ﻿#include "BaseScene.h"
 #include <Application/GameObject/Camera/CameraBase.h>
 #include<Application/GameObject/Player/Player/Player.h>
+#include<Application/GameObject/Enemy/EnemyBase.h>
 #include <Application/GameObject/BaseObject/ResultFade.h>
 
 void BaseScene::PreUpdate()
@@ -44,8 +45,6 @@ void BaseScene::Update()
 
 void BaseScene::PostUpdate()
 {
-
-
 	for (auto& obj : m_objList)
 	{
 		obj->PostUpdate();

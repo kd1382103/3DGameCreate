@@ -135,7 +135,6 @@ void EnemyBase::Update()
 //==============================================================
 void EnemyBase::PostUpdate()
 {
-
 	UpdateGroundCollision();
 
 	//==========================================================
@@ -291,6 +290,12 @@ void EnemyBase::PostUpdate()
 		std::list<KdCollider::CollisionResult> retCapsuleList;
 		for (auto& obj : SceneManager::Instance().GetObjList())
 		{
+			// 壁判定用コライダーを持たないオブジェクトは除外
+			if (!obj->HasCollisionType(KdCollider::TypeBump))
+			{
+				continue;
+			}
+
 			obj->Intersects(capsule, &retCapsuleList);
 		}
 
@@ -425,6 +430,7 @@ void EnemyBase::PostUpdate()
 	}
 }
 
+
 //==============================================================
 // Draw系
 //==============================================================
@@ -433,6 +439,25 @@ void EnemyBase::DrawLit()
 	if (!m_model)
 	{
 		return;
+	}
+
+	//==========================================================
+	// 視錐台カリング
+	//==========================================================
+	if (!m_isResolving && !m_isDying)
+	{
+		auto cam = m_wpCamera.lock();
+
+		if (cam)
+		{
+			Math::Vector3 center =
+				m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+			if (!cam->IsInCameraView(center, 2.0f))
+			{
+				return;
+			}
+		}
 	}
 
 	if (m_isResolving || m_isDying)
@@ -461,10 +486,34 @@ void EnemyBase::DrawLit()
 
 void EnemyBase::GenerateDepthMapFromLight()
 {
-	if (m_model)
+	if (!m_model)
 	{
-		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
+		return;
 	}
+
+	//==========================================================
+	// 視錐台カリング（影）
+	//==========================================================
+	if (!m_isResolving && !m_isDying)
+	{
+		auto cam = m_wpCamera.lock();
+
+		if (cam)
+		{
+			Math::Vector3 center =
+				m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+			if (!cam->IsInCameraView(center, 2.0f))
+			{
+				return;
+			}
+		}
+	}
+
+	KdShaderManager::Instance().m_StandardShader.DrawModel(
+		*m_model,
+		m_mWorld
+	);
 }
 
 void EnemyBase::DrawSprite()
@@ -794,7 +843,7 @@ void EnemyBase::StopTutorialAttack()
 	if (stateMachine)
 	{
 		stateMachine->ChangeState(
-			std::make_unique<EnemyBaseStateIdle>()
+			std::make_unique<EnemyBaseStateIdel>()
 		);
 	}
 }
@@ -930,7 +979,7 @@ void EnemyBase::InitStateMachine()
 	stateMachine = std::make_shared<StateMachine<EnemyBase>>();
 
 	stateMachine->ChangeStateImmediate(
-		std::make_unique<EnemyBaseStateIdle>(),
+		std::make_unique<EnemyBaseStateIdel>(),
 		*this
 	);
 }
@@ -1080,7 +1129,7 @@ void EnemyBase::UpdateResolve(float frameScale)
 		if (stateMachine)
 		{
 			stateMachine->ChangeStateImmediate(
-				std::make_unique<EnemyBaseStateIdle>(),
+				std::make_unique<EnemyBaseStateIdel>(),
 				*this
 			);
 		}

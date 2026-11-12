@@ -8,12 +8,12 @@
 // 待機ステート
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 
-void EnemyBaseStateIdle::Enter(EnemyBase& owner)
+void EnemyBaseStateIdel::Enter(EnemyBase& owner)
 {
-	owner.PlayAnimationAuto("Idle");
+	owner.PlayAnimationAuto("Idel");
 }
 
-void EnemyBaseStateIdle::Update(EnemyBase& owner)
+void EnemyBaseStateIdel::Update(EnemyBase& owner)
 {
 	auto player = owner.m_wpPlayer.lock();
 	if (!player) return;
@@ -429,7 +429,7 @@ void EnemyBaseStateAttack::Update(EnemyBase& owner)
 					player->m_canDodge = false;
 
 					owner.stateMachine->ChangeState(
-						std::make_unique<EnemyBaseStateIdle>()
+						std::make_unique<EnemyBaseStateIdel>()
 					);
 
 					return;
@@ -451,7 +451,7 @@ void EnemyBaseStateAttack::Update(EnemyBase& owner)
 		// 通常敵
 		//========================================
 		owner.stateMachine->ChangeState(
-			std::make_unique<EnemyBaseStateIdle>()
+			std::make_unique<EnemyBaseStateIdel>()
 		);
 	}
 };
@@ -472,11 +472,28 @@ void EnemyStateHit::Update(EnemyBase& owner)
 	}
 
 	//==========================================================
-	// チュートリアル中
+	// 回避チュートリアル中
 	//==========================================================
 	if (owner.m_isTutorialAttack)
 	{
-		// Hit後もチュートリアル攻撃を再開
+		auto player = owner.m_wpPlayer.lock();
+
+		// 回避成功済みなら待機へ
+		if (player && player->m_justDodgeSuccess)
+		{
+			owner.m_tutorialAttackFinished = true;
+			owner.m_isTutorialAttack = false;
+
+			player->m_canDodge = false;
+
+			owner.stateMachine->ChangeState(
+				std::make_unique<EnemyBaseStateIdel>()
+			);
+
+			return;
+		}
+
+		// 回避失敗なら再攻撃
 		owner.stateMachine->ChangeState(
 			std::make_unique<EnemyBaseStateAttack>()
 		);
@@ -485,9 +502,9 @@ void EnemyStateHit::Update(EnemyBase& owner)
 	}
 
 	//==========================================================
-	// 通常の敵
+	// 通常時
 	//==========================================================
 	owner.stateMachine->ChangeState(
-		std::make_unique<EnemyBaseStateIdle>()
+		std::make_unique<EnemyBaseStateIdel>()
 	);
 }

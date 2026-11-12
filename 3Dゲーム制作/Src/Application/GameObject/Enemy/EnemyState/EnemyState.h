@@ -4,7 +4,7 @@
 class EnemyBase;
 
 // 待機
-class EnemyBaseStateIdle : public StateBase<EnemyBase>
+class EnemyBaseStateIdel : public StateBase<EnemyBase>
 {
 public:
 	void Enter(EnemyBase& owner) override;
