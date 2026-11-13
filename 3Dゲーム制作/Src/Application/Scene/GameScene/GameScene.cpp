@@ -556,9 +556,6 @@ void GameScene::UpdateTutorial()
 		return;
 	}
 
-	// チュートリアル表示更新
-	UpdateTutorialText();
-
 	switch (m_tutorialStep)
 	{
 		//---------------------------------------
@@ -722,6 +719,13 @@ void GameScene::UpdateTutorial()
 		break;
 	}
 	}
+
+	// チュートリアル段階が変わったときだけ表示を更新
+	if (m_gamePhase == GamePhase::Tutorial &&
+		m_prevTutorialStep != m_tutorialStep)
+	{
+		UpdateTutorialText();
+	}
 }
 
 void GameScene::UpdateTutorialComplete()
@@ -746,6 +750,13 @@ void GameScene::UpdateTutorialComplete()
 	// 2秒経過したら準備フェーズへ
 	if (m_phaseTimer >= m_tutorialFinishTime)
 	{
+		// チュートリアル終了
+		if (m_player)
+		{
+			m_player->SetTutorialMode(false);
+			m_player->ResetLockOnTarget();
+		}
+
 		m_gamePhase = GamePhase::Prepare;
 		m_phaseTimer = 0.0f;
 
@@ -756,13 +767,6 @@ void GameScene::UpdateTutorialComplete()
 		{
 			m_battlePin->SetVisible(true);
 		}
-	}
-
-	// チュートリアル終了
-	if (m_player)
-	{
-		m_player->SetTutorialMode(false);
-		m_player->ResetLockOnTarget();
 	}
 }
 

@@ -30,15 +30,4 @@ void TutorialEnemy::Init()
 	//---------------------------------------
 
 	SetCanKnockBack(false);
-
-	//---------------------------------------
-	// コライダー
-	//---------------------------------------
-
-	m_pCollider = std::make_unique<KdCollider>();
-	m_pCollider->RegisterCollisionShape(
-		"TutorialEnemy",
-		m_model,
-		KdCollider::TypeDamage
-	);
 }
