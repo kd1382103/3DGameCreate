@@ -558,6 +558,25 @@ void BossBase::DrawLit()
 {
 	if (!m_model) return;
 
+	//==========================================================
+	// 視錐台カリング
+	//==========================================================
+	if (!m_isDying)
+	{
+		auto cam = m_wpCamera.lock();
+
+		if (cam)
+		{
+			Math::Vector3 center =
+				m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+			if (!cam->IsInCameraView(center, 2.0f))
+			{
+				return;
+			}
+		}
+	}
+
 	//========================================
 	// 死亡演出
 	//========================================
@@ -767,6 +786,26 @@ void BossBase::DrawSprite()
 void BossBase::GenerateDepthMapFromLight()
 {
 	if (!m_model) return;
+
+	//==========================================================
+	// 視錐台カリング
+	//==========================================================
+	if (!m_isDying)
+	{
+		auto cam = m_wpCamera.lock();
+
+		if (cam)
+		{
+			Math::Vector3 center =
+				m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+			if (!cam->IsInCameraView(center, 2.0f))
+			{
+				return;
+			}
+		}
+	}
+
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
 }
 
