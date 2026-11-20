@@ -26,7 +26,7 @@ void Enemy1::Init(int battleNo)
 		SetPos({ -4, 0, 85 });
 		break;
 
-	case5:
+	case 5:
 		SetPos({ -80, 0, 25 });
 		break;
 

@@ -84,7 +84,17 @@ void GameScene::Event()
 	//=======================================
 	// デバッグ
 	//=======================================
-	UpdateDebug();
+	if (
+		(GetAsyncKeyState(VK_F1) & 0x8000) ||
+		(GetAsyncKeyState(VK_F2) & 0x8000) ||
+		(GetAsyncKeyState(VK_F3) & 0x8000) ||
+		(GetAsyncKeyState(VK_F4) & 0x8000) ||
+		(GetAsyncKeyState(VK_F5) & 0x8000) ||
+		(GetAsyncKeyState(VK_F6) & 0x8000)
+		)
+	{
+		UpdateDebug();
+	}
 
 	//=======================================
 	// 音量
@@ -717,7 +727,7 @@ void GameScene::UpdateTutorialComplete()
 
 		m_gamePhase = GamePhase::Prepare;
 		m_phaseTimer = 0.0f;
-
+		m_battleNo++;
 		//---------------------------------------
 		// 戦闘準備になったらPinを表示
 		//---------------------------------------
@@ -752,7 +762,7 @@ void GameScene::UpdatePrepare()
 	//---------------------------------------
 	// ボス戦
 	//---------------------------------------
-	if (m_battleNo >= 5)
+	if (m_battleNo >= 6)
 	{
 		m_gamePhase = GamePhase::Boss;
 		m_isBossSpawned = false;
@@ -781,6 +791,7 @@ void GameScene::UpdateBattle()
 		// 出現する敵だけ生成
 		//---------------------------------------
 		SpawnBattleEnemies();
+		
 
 		return;
 	}
@@ -1337,6 +1348,8 @@ void GameScene::UpdateTimerText()
 
 void GameScene::UpdateDebug()
 {
+	m_gamePhase = GamePhase::TutorialComplete;
+	UpdateTutorialComplete();
 	static bool prevF[6] = {};
 
 	const int keys[6] =
@@ -2263,7 +2276,7 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	//{
 	//	m_battleArea->SetBarrierActive(false);
 	//}
-	
+
 	//========================================
 	// BattlePinの位置
 	//========================================
