@@ -112,12 +112,36 @@ void TPSCamera::PostUpdate()
 		UpdateRotateByMouse();
 	}
 
-	m_nowFov +=
-		(m_targetFov - m_nowFov);
+	//=============================================================
+// FOV変更
+//=============================================================
+	if (m_fovChanging)
+	{
+		m_fovTimer += Application::Instance().GetDeltaTime();
 
-	m_spCamera->SetProjectionMatrix(
-		m_nowFov
-	);
+		float t = std::clamp(
+			m_fovTimer / m_fovDuration,
+			0.0f,
+			1.0f
+		);
+
+		// 滑らかな補間
+		float smoothT = t * t * (3.0f - 2.0f * t);
+
+		m_nowFov = std::lerp(
+			m_fovStart,
+			m_targetFov,
+			smoothT
+		);
+
+		if (t >= 1.0f)
+		{
+			m_nowFov = m_targetFov;
+			m_fovChanging = false;
+		}
+
+		m_spCamera->SetProjectionMatrix(m_nowFov);
+	}
 
 	//////////////////////////////////////////////////////////////
 

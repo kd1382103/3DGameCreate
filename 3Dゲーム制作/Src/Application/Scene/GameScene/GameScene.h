@@ -132,7 +132,6 @@ private:
 	void InitSky();
 	//void InitBattleArea();
 	void InitPlayer();
-	void InitTutorialEnemy();
 	void InitUI();
 
 	void InitLights();
@@ -220,6 +219,9 @@ private:
 	//全ての敵が死んでいるかどうかの判定
 	bool IsBattleEnemiesDead();
 
+	std::shared_ptr<TutorialEnemy>GetTutorialEnemy();
+	
+
 	//==============================================================
 	// クリア演出
 	//==============================================================
@@ -241,9 +243,6 @@ private:
 
 	// 現在のフェイズで出現した敵をまとめて管理
 	std::vector<std::shared_ptr<EnemyBase>> m_battleEnemies;
-
-	std::shared_ptr<TutorialEnemy> m_tutorialEnemy;
-
 	std::shared_ptr<Boss> m_boss;
 
 	//========================================
@@ -428,6 +427,7 @@ private:
 
 enum class EnemyType
 {
+	TutorialEnemy,
 	Enemy1,
 	Enemy2,
 	Enemy3,

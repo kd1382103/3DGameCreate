@@ -12,12 +12,24 @@ public:
 
 	void StartDodgeCamera()
 	{
+		m_fovStart = m_nowFov;
 		m_targetFov = 48.0f;
+
+		m_fovTimer = 0.0f;
+		m_fovDuration = 0.12f;
+
+		m_fovChanging = true;
 	}
 
 	void EndDodgeCamera()
 	{
+		m_fovStart = m_nowFov;
 		m_targetFov = 60.0f;
+
+		m_fovTimer = 0.0f;
+		m_fovDuration = 0.25f;
+
+		m_fovChanging = true;
 	}
 
 	//=========================================================
@@ -55,6 +67,13 @@ private:
 
 	float m_nowFov = 60.0f;
 	float m_targetFov = 60.0f;
+
+	// FOV変更用
+	float m_fovStart = 60.0f;
+	float m_fovTimer = 0.0f;
+	float m_fovDuration = 0.0f;
+
+	bool m_fovChanging = false;
 
 	//=========================================================
 	// 必殺技カメラ

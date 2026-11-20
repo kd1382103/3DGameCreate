@@ -18,15 +18,15 @@ void Enemy2::Init(int battleNo)
 	// 戦闘番号ごとの初期位置
 	switch (battleNo)
 	{
-	case 0:
+	case 1:
 		SetPos({ 3, 0, 30 });
 		break;
 
-	case 1:
+	case 2:
 		SetPos({ -4, 0, 75 });
 		break;
 
-	case 2:
+	case 3:
 		SetPos({ -80, 0, 85 });
 		break;
 

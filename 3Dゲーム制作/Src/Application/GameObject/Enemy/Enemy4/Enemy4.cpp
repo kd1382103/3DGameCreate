@@ -18,15 +18,15 @@ void Enemy4::Init(int battleNo)
 	// 戦闘フェイズごとの出現位置
 	switch (battleNo)
 	{
-	case 2:
+	case 3:
 		SetPos({ -80, 0, 75 });
 		break;
 
-	case 3:
+	case 4:
 		SetPos({ -85, 0, 125 });
 		break;
 
-	case 4:
+	case 5:
 		SetPos({ -82, 0, 20 });
 		break;
 

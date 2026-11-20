@@ -14,9 +14,9 @@
 //==============================================================
 // Init
 //==============================================================
+
 void EnemyBase::Init()
 {
-	// モデルは各敵が設定する
 	m_animator = KdAnimator();
 
 	InitAttackPrediction();
@@ -26,6 +26,7 @@ void EnemyBase::Init()
 	StartResolve();
 }
 
+//各フェイズごとに出現させる敵の初期化
 void EnemyBase::Init(int battleNo)
 {
 	Init();
@@ -632,7 +633,7 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 	SceneManager::Instance().AddObject(fly);
 
 	//==========================================================
-	// 被弾エフェクト（VS人想定）
+	// 被弾エフェクト
 	//==========================================================
 
 	auto cam = m_wpCamera.lock();
@@ -655,17 +656,6 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 		EffectType::Hit,
 		hitEffectPos
 	);
-
-	//==========================================================
-	// 火花エフェクト(VS機械想定)
-	//==========================================================
-
-	//	EffectManager::Instance().Play(
-	//		EffectType::Spark,
-	//		m_nowPos + Math::Vector3(0, 1.0f, 0),
-	//		attackDir
-	//	);
-	
 
 	//==========================================================
 	// HP
@@ -1066,26 +1056,6 @@ void EnemyBase::UpdateHPGauge()
 void EnemyBase::UpdateDebug()
 {
 	//KdDebugGUI::Instance().ClearLog();
-
-	////========================================
-	//// アニメーション一覧
-	////========================================
-	//for (int i = 0; ; i++)
-	//{
-	//	auto anim = m_model->GetAnimation(i);
-
-	//	if (!anim)
-	//	{
-	//		break;
-	//	}
-
-	//	KdDebugGUI::Instance().AddLog(
-	//		"%d : %s\n",
-	//		i,
-	//		anim->m_name.c_str()
-	//	);
-	//}
-
 
 	if (GetAsyncKeyState('3') & 0x8000)
 	{

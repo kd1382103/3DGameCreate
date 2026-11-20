@@ -1563,6 +1563,9 @@ void Player::Heal(float amount)
 		std::static_pointer_cast<Player>(shared_from_this()),
 		m_nowPos + Math::Vector3(0, 1.0f, 0)
 	);
+
+	//今回はKdGameObjectからPlayerに変換しないといけないためstatic_pointer_castを使用
+	//変換するにあたって自分のポインタを渡す必要があるためshared_from_this()を使用
 }
 
 void Player::PlayAnimationAuto(const std::string& animName, bool loop)

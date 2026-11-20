@@ -1,33 +1,33 @@
 ﻿#include "TutorialEnemy.h"
 
-void TutorialEnemy::Init()
+void TutorialEnemy::Init(int battleNo)
 {
-	m_model = std::make_shared<KdModelWork>();
-	m_model->SetModelData("Asset/Models/Enemy/EnemyRobot/Enemy1/Enemy.gltf");
+	InitModelAndCollider(
+		"Asset/Models/Enemy/EnemyRobot/Enemy1/Enemy.gltf",
+		"TutorialEnemy"
+	);
 
-	EnemyBase::Init();
-
-	//---------------------------------------
 	// チュートリアル用設定
-	//---------------------------------------
-
 	m_hpMax = 999999;
 	m_hp = m_hpMax;
-
-	// 動かない
 	m_moveSpeed = 0.0f;
-
 	m_attackDist = 1.5f;
-
-	// 普段はダメージを与えない
 	m_attackDamage = 0.0f;
-
-	// 索敵しない
 	detectRange = 0.0f;
-
-	//---------------------------------------
-	// ノックバックしない
-	//---------------------------------------
-
 	SetCanKnockBack(false);
+
+	switch (battleNo)
+	{
+	case 0:
+		SetPos({ 0, 0, 5 });
+		break;
+
+	default:
+		break;
+	}
+}
+
+bool TutorialEnemy::ShouldSpawn(int battleNo)
+{
+	return battleNo == 0;
 }

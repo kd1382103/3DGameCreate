@@ -10,12 +10,11 @@
 #include<Application/GameObject/Enemy/Enemy4/Enemy4.h>
 #include<Application/GameObject/Enemy/Enemy5/Enemy5.h>
 #include <Application/GameObject/Enemy/EnemyBase.h>
-#include <Application/GameObject/Enemy/TutorialEnemy/TutorialEnemy.h>
 #include<Application/GameObject/Boss/Boss/Boss.h>
+#include<Application/GameObject/Enemy/TutorialEnemy/TutorialEnemy.h>
 
 #include<Application/GameObject/Stages/Stage/Stage.h>
 #include<Application/GameObject/Stages/Sky/Sky.h>
-#include <Application/GameObject/Stages/BattleArea/BattleArea.h>
 
 #include <Application/GameObject/UI/PlaeyrUI/SkillGauge/SkillGauge.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
@@ -55,11 +54,6 @@ void GameScene::Event()
 			if (m_player->m_animator.IsAnimationEnd())
 			{
 				m_startLandingFinished = true;
-
-				//=======================================
-				// チュートリアル敵生成
-				//=======================================
-				InitTutorialEnemy();
 			}
 		}
 
@@ -141,10 +135,10 @@ void GameScene::Init()
 	InitAudio();
 	InitStage();
 	InitLights();
-	//InitBattleArea();
 	InitSky();
 	InitCamera();
 	InitPlayer();
+	SpawnBattleEnemies();
 	InitUI();
 	InitBattleStartPin();
 
@@ -283,25 +277,6 @@ void GameScene::InitSky()
 	AddObject(sky);
 }
 
-//void GameScene::InitBattleArea()
-//{
-//	m_battleArea = std::make_shared<BattleArea>();
-//
-//	m_battleArea->Init();
-//
-//	// 最初の戦闘エリア
-//	m_battleArea->SetArea(
-//		GetBattleStartPos(m_battleNo),
-//		5,
-//		5
-//	);
-//
-//	// 最初はバリアを出さない
-//	m_battleArea->SetBarrierActive(false);
-//
-//	AddObject(m_battleArea);
-//}
-
 void GameScene::InitPlayer()
 {
 	//=======================================
@@ -323,24 +298,6 @@ void GameScene::InitPlayer()
 	AddObject(m_player);
 
 	m_player->SetScoreManager(m_scoreManager);
-}
-
-void GameScene::InitTutorialEnemy()
-{
-	//=======================================
-	// チュートリアル敵
-	//=======================================
-	m_tutorialEnemy = std::make_shared<TutorialEnemy>();
-
-	m_tutorialEnemy->Init();
-
-	m_tutorialEnemy->SetPos({ 0, 0, 5 });
-
-	m_tutorialEnemy->SetTarget(m_player);
-	m_tutorialEnemy->SetCamera(m_tpsCamera);
-	m_tutorialEnemy->SetGameScene(this);
-
-	AddObject(m_tutorialEnemy);
 }
 
 void GameScene::InitUI()
@@ -608,12 +565,11 @@ void GameScene::UpdateTutorial()
 			// 回避チュートリアルへ移行
 			m_tutorialStep = TutorialStep::Dodge;
 
-			//---------------------------------------
-			// 回避チュートリアル開始時に敵の攻撃を許可
-			//---------------------------------------
-			if (m_tutorialEnemy)
+			auto tutorialEnemy = GetTutorialEnemy();
+
+			if (tutorialEnemy)
 			{
-				m_tutorialEnemy->StartTutorialAttack();
+				tutorialEnemy->StartTutorialAttack();
 			}
 		}
 
@@ -625,8 +581,10 @@ void GameScene::UpdateTutorial()
 	//---------------------------------------
 	case TutorialStep::Dodge:
 	{
-		if (m_tutorialEnemy &&
-			m_tutorialEnemy->IsTutorialAttackFinished())
+		auto tutorialEnemy = GetTutorialEnemy();
+
+		if (tutorialEnemy &&
+			tutorialEnemy->IsTutorialAttackFinished())
 		{
 			if (m_player)
 			{
@@ -641,11 +599,8 @@ void GameScene::UpdateTutorial()
 			//---------------------------------------
 			// 必殺技チュートリアル開始時に敵のHPを変更
 			//---------------------------------------
-			if (m_tutorialEnemy)
-			{
-				m_tutorialEnemy->m_hpMax = 200.0f;
-				m_tutorialEnemy->m_hp = 200.0f;
-			}
+			tutorialEnemy->m_hpMax = 200.0f;
+			tutorialEnemy->m_hp = 200.0f;
 
 			// ULTゲージを最大にする
 			if (m_player)
@@ -681,7 +636,9 @@ void GameScene::UpdateTutorial()
 	//---------------------------------------
 	case TutorialStep::KillEnemy:
 	{
-		if (m_tutorialEnemy && !m_tutorialEnemy->IsAlive())
+		auto tutorialEnemy = GetTutorialEnemy();
+
+		if (tutorialEnemy && !tutorialEnemy->IsAlive())
 		{
 			m_tutorialStep = TutorialStep::Finish;
 		}
@@ -727,6 +684,7 @@ void GameScene::UpdateTutorial()
 		UpdateTutorialText();
 	}
 }
+
 
 void GameScene::UpdateTutorialComplete()
 {
@@ -841,14 +799,6 @@ void GameScene::UpdateBattle()
 	m_battleStarted = false;
 
 	//---------------------------------------
-	// 戦闘終了：バリア解除
-	//---------------------------------------
-	//if (m_battleArea)
-	//{
-	//	m_battleArea->SetBarrierActive(false);
-	//}
-
-	//---------------------------------------
 	// playerのHP回復
 	//---------------------------------------
 	if (m_player)
@@ -868,20 +818,6 @@ void GameScene::UpdateBattle()
 	// 次の戦闘地点を取得
 	//---------------------------------------
 	m_battleStartPos = GetBattleStartPos(m_battleNo);
-
-	//---------------------------------------
-	// 次の戦闘エリアを設定
-	//---------------------------------------
-	//if (m_battleArea)
-	//{
-	//	m_battleArea->SetArea(
-	//		m_battleStartPos,
-	//		15.0f,
-	//		15.0f
-	//	);
-
-	//	m_battleArea->SetBarrierActive(false);
-	//}
 
 	//---------------------------------------
 	// ピンを次の戦闘地点へ移動
@@ -1436,10 +1372,23 @@ void GameScene::SpawnBattleEnemies()
 
 	switch (m_battleNo)
 	{
+	case 0:
+		spawnList =
+		{
+			{
+				EnemyType::TutorialEnemy,
+				1,
+				{ 0, 0, 5 },
+				{ 0, 0, 0 },
+				0.0f
+			}
+		};
+		break;
+
 		//=======================================
 		// Battle 1
 		//=======================================
-	case 0:
+	case 1:
 		spawnList =
 		{
 			{
@@ -1463,7 +1412,7 @@ void GameScene::SpawnBattleEnemies()
 		//=======================================
 		// Battle 2
 		//=======================================
-	case 1:
+	case 2:
 		spawnList =
 		{
 			{
@@ -1487,7 +1436,7 @@ void GameScene::SpawnBattleEnemies()
 		//=======================================
 		// Battle 3
 		//=======================================
-	case 2:
+	case 3:
 		spawnList =
 		{
 			{
@@ -1519,7 +1468,7 @@ void GameScene::SpawnBattleEnemies()
 		//=======================================
 		// Battle 4
 		//=======================================
-	case 3:
+	case 4:
 		spawnList =
 		{
 			{
@@ -1543,7 +1492,7 @@ void GameScene::SpawnBattleEnemies()
 		//=======================================
 		// Battle 5
 		//=======================================
-	case 4:
+	case 5:
 		spawnList =
 		{
 			{
@@ -1582,6 +1531,10 @@ void GameScene::SpawnBattleEnemies()
 
 		switch (type)
 		{
+		case EnemyType::TutorialEnemy:
+			enemy = std::make_shared<TutorialEnemy>();
+			break;
+
 		case EnemyType::Enemy1:
 			enemy = std::make_shared<Enemy1>();
 			break;
@@ -1689,6 +1642,27 @@ bool GameScene::IsBattleEnemiesDead()
 
 	// 全員倒されていれば戦闘終了
 	return true;
+}
+
+std::shared_ptr<TutorialEnemy> GameScene::GetTutorialEnemy()
+{
+	if (m_battleNo != 0)
+	{
+		return nullptr;
+	}
+
+	for (const auto& enemy : m_battleEnemies)
+	{
+		auto tutorialEnemy =
+			std::dynamic_pointer_cast<TutorialEnemy>(enemy);
+
+		if (tutorialEnemy)
+		{
+			return tutorialEnemy;
+		}
+	}
+
+	return nullptr;
 }
 
 //==============================================================
@@ -2277,13 +2251,6 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	// チュートリアル終了
 	//========================================
 	m_tutorialStep = TutorialStep::Finish;
-
-	// チュートリアル敵を消す
-	if (m_tutorialEnemy)
-	{
-		m_tutorialEnemy->SetExpired();
-		m_tutorialEnemy = nullptr;
-	}
 
 	//========================================
 	// 戦闘番号 & バリア解除

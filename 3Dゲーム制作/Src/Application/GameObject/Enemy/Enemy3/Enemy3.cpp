@@ -18,24 +18,16 @@ void Enemy3::Init(int battleNo)
 	// 戦闘フェイズごとの出現位置
 	switch (battleNo)
 	{
-	case 0:
-		// 出現しない
-		break;
-
-	case 1:
+	case 2:
 		SetPos({ -7, 0, 80 });
 		break;
 
-	case 2:
+	case 3:
 		SetPos({ -80, 0, 80 });
 		break;
 
-	case 3:
-		SetPos({ -75, 0, 125 });
-		break;
-
 	case 4:
-		// 出現しない
+		SetPos({ -75, 0, 125 });
 		break;
 
 	default:
