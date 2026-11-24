@@ -1,4 +1,5 @@
 ﻿#include "Stage.h"
+#include <algorithm>
 
 void Stage::Init()
 {
@@ -43,31 +44,61 @@ void Stage::SetLightPositions(
 	// 発光モデルの位置・角度を保存
 	//=======================================
 	m_lightPositions = lights;
+	m_allLights = lights;
 
-	//=======================================
-	// コーンライト設定
-	// 位置・照射方向は従来どおり変更しない
-	//=======================================
-	std::vector<ConeLight> coneLights;
+	// 初回は原点付近（プレイヤー初期位置）で更新
+	UpdateConeLights(Math::Vector3::Zero);
+}
 
-	coneLights.reserve(m_lightPositions.size());
-
-	for (const auto& data : m_lightPositions)
+void Stage::UpdateConeLights(const Math::Vector3& playerPos)
+{
+	if (m_allLights.empty())
 	{
+		return;
+	}
+
+	//=======================================
+	// プレイヤーに近いライトを抽出
+	//=======================================
+	std::vector<std::pair<float, size_t>> distList;
+	distList.reserve(m_allLights.size());
+
+	//プレイヤーから何m以内のライトを有効対象にするか
+	const float cullRadius = 70.0f;
+	const float maxCullDistSq = cullRadius * cullRadius;
+
+	for (size_t i = 0; i < m_allLights.size(); ++i)
+	{
+		float distSq = (m_allLights[i].pos - playerPos).LengthSquared();
+
+		if (distSq <= maxCullDistSq)
+		{
+			distList.emplace_back(distSq, i);
+		}
+	}
+
+	// 近い順にソート
+	std::sort(distList.begin(), distList.end());
+
+	// 同時に有効にする最大ライト数（最大20個まで拡大）
+	const size_t maxActiveLights = 20;
+	const size_t count = std::min(distList.size(), maxActiveLights);
+
+	std::vector<ConeLight> coneLights;
+	coneLights.reserve(count);
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		const auto& data = m_allLights[distList[i].second];
+
 		ConeLight light{};
-
 		light.enable = 1;
-
-		// コーンライトの位置は従来の座標を使用
 		light.pos = data.pos;
-
-		// 照射方向は真下のまま
 		light.dir = { 0.0f, -1.0f, 0.0f };
+		light.angle = DirectX::XMConvertToRadians(50.0f);
 
-		light.angle =
-			DirectX::XMConvertToRadians(50.0f);
-
-		light.range = 70.0f;
+		//1本あたりの照射距離（通常25m、ボスエリアの高いライトは45m）
+		light.range = (data.pos.y > 10.0f) ? 45.0f : 25.0f;
 
 		light.color = { 1.0f, 1.0f, 1.0f };
 

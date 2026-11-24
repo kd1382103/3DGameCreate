@@ -44,6 +44,14 @@
 void GameScene::Event()
 {
 	//=======================================
+	// プレイヤー周辺のコーンライトだけを更新
+	//=======================================
+	if (m_stage && m_player)
+	{
+		m_stage->UpdateConeLights(m_player->GetPos());
+	}
+
+	//=======================================
 	// ゲーム開始演出
 	//=======================================
 	if (!m_startLandingFinished)
@@ -294,7 +302,6 @@ void GameScene::InitPlayer()
 	//=======================================
 	m_player = std::make_shared<Player>();
 	m_player->Init();
-	//m_player->SetBattleArea(m_battleArea);
 	m_player->SetTutorialMode(true);
 	m_player->SetPos(Math::Vector3{ 0, 0, 0 });
 
