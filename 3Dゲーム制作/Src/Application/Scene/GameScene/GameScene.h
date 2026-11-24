@@ -182,37 +182,44 @@ private:
 	void UpdateTimerText();
 
 	//========================================
+	// 次の戦闘フェイズへ移行
+	//========================================
+	void NextPhase();
+
+	//========================================
 	// デバッグ
 	//========================================
 	void UpdateDebug();
 
 	//戦闘開始ピンの位置設定
+//戦闘開始ピンの位置設定
 	Math::Vector3 GetBattleStartPos(int battleNo)
 	{
 		switch (battleNo)
 		{
-		case 0:
+		case 1: // フェイズ1（Battle 1）
 			return { 0, 0, 20 };
 
-		case 1:
+		case 2: // フェイズ2（Battle 2）
 			return { -2, 0, 80 };
 
-		case 2:
+		case 3: // フェイズ3（Battle 3）
 			return { -60, 0, 80 };
-		
-		case 3:
-			return { -80,0,120 };
 
-		case 4:
-			return { -80,0,30 };
+		case 4: // フェイズ4（Battle 4）
+			return { -80, 0, 120 };
 
-		case 5:
-			return { -35,0,0 };
+		case 5: // フェイズ5（Battle 5）
+			return { -80, 0, 30 };
+
+		case 6: // ボス戦（Battle 6）
+			return { -35, 0, 0 };
 
 		default:
 			return { 0, 0, 0 };
 		}
 	}
+
 	//敵の生成
 	void SpawnBattleEnemies();
 
@@ -413,12 +420,12 @@ private:
 	{
 		switch (battleNo)
 		{
-		case 0: return { 0.0f, 0.0f, 1.0f };
-		case 1: return { -1.0f, 0.0f, 0.0f };
+		case 1: return { 0.0f, 0.0f, 1.0f };
 		case 2: return { -1.0f, 0.0f, 0.0f };
-		case 3: return { 0.0f, 0.0f, 1.0f };
-		case 4: return { 0.0f, 0.0f, -1.0f };
-		case 5: return { 0.0f, 0.0f, 1.0f };
+		case 3: return { -1.0f, 0.0f, 0.0f };
+		case 4: return { 0.0f, 0.0f, 1.0f };
+		case 5: return { 0.0f, 0.0f, -1.0f };
+		case 6: return { 0.0f, 0.0f, 1.0f };
 		}
 
 		return { 0.0f, 0.0f, 1.0f };

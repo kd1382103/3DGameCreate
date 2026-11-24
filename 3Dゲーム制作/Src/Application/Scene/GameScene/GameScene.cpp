@@ -148,7 +148,7 @@ void GameScene::Init()
 	InitSky();
 	InitCamera();
 	InitPlayer();
-	SpawnBattleEnemies();
+	SpawnBattleEnemies();//チュートリアルの敵を生成するためにInitでも呼ぶ
 	InitUI();
 	InitBattleStartPin();
 
@@ -725,16 +725,8 @@ void GameScene::UpdateTutorialComplete()
 			m_player->ResetLockOnTarget();
 		}
 
-		m_gamePhase = GamePhase::Prepare;
 		m_phaseTimer = 0.0f;
-		m_battleNo++;
-		//---------------------------------------
-		// 戦闘準備になったらPinを表示
-		//---------------------------------------
-		if (m_battlePin)
-		{
-			m_battlePin->SetVisible(true);
-		}
+		NextPhase();
 	}
 }
 
@@ -820,26 +812,7 @@ void GameScene::UpdateBattle()
 		m_player->Heal(healAmount);
 	}
 
-	//---------------------------------------
-	// 次の戦闘番号へ
-	//---------------------------------------
-	m_battleNo++;
-
-	//---------------------------------------
-	// 次の戦闘地点を取得
-	//---------------------------------------
-	m_battleStartPos = GetBattleStartPos(m_battleNo);
-
-	//---------------------------------------
-	// ピンを次の戦闘地点へ移動
-	//---------------------------------------
-	if (m_battlePin)
-	{
-		m_battlePin->SetPos(m_battleStartPos);
-		m_battlePin->SetVisible(true);
-	}
-
-	m_gamePhase = GamePhase::Prepare;
+	NextPhase();
 }
 
 void GameScene::UpdateBoss()
@@ -1346,10 +1319,35 @@ void GameScene::UpdateTimerText()
 	m_timerText->SetMessageText(timeText);
 }
 
+void GameScene::NextPhase()
+{
+	//---------------------------------------
+	// 次の戦闘番号へ
+	//---------------------------------------
+	m_battleNo++;
+
+	//---------------------------------------
+	// 次の戦闘地点を取得
+	//---------------------------------------
+	m_battleStartPos = GetBattleStartPos(m_battleNo);
+
+	//---------------------------------------
+	// ピンを次の戦闘地点へ移動
+	//---------------------------------------
+	if (m_battlePin)
+	{
+		m_battlePin->SetPos(m_battleStartPos);
+		m_battlePin->SetVisible(true);
+	}
+
+	//---------------------------------------
+	// 戦闘準備へ移行
+	//---------------------------------------
+	m_gamePhase = GamePhase::Prepare;
+}
+
 void GameScene::UpdateDebug()
 {
-	m_gamePhase = GamePhase::TutorialComplete;
-	UpdateTutorialComplete();
 	static bool prevF[6] = {};
 
 	const int keys[6] =
@@ -1369,7 +1367,7 @@ void GameScene::UpdateDebug()
 		// キーを押した瞬間だけ実行
 		if (now && !prevF[i])
 		{
-			DebugSkipToBattle(i);
+			DebugSkipToBattle(i+1);
 		}
 
 		prevF[i] = now;
@@ -2232,10 +2230,16 @@ void GameScene::UpdateResultSequence()
 	}
 }
 
-void GameScene::DebugSkipToBattle(int nextBattleNo)
+void GameScene::DebugSkipToBattle(int targetBattleNo)
 {
+	// 1～6以外は対象外
+	if (targetBattleNo < 1 || targetBattleNo > 6)
+	{
+		return;
+	}
+
 	//========================================
-	// チュートリアル文字を消す
+	// 1. チュートリアル関連をすべて完了・消去状態にする
 	//========================================
 	if (m_tutorialText)
 	{
@@ -2243,47 +2247,49 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 		m_tutorialText = nullptr;
 	}
 
-	//========================================
-	// チュートリアル背景を消す
-	//========================================
 	if (m_tutorialBackground)
 	{
 		m_tutorialBackground->SetExpired();
 		m_tutorialBackground = nullptr;
 	}
 
+	m_tutorialStep = TutorialStep::Finish;
+	m_prevTutorialStep = TutorialStep::Finish;
+	m_phaseTimer = 0.0f;
+
 	//========================================
-	// ロックオン解除
+	// 2. それ以前のフェイズで残っている敵を消す
+	//========================================
+	for (auto& enemy : m_battleEnemies)
+	{
+		if (enemy)
+		{
+			enemy->SetExpired();
+		}
+	}
+	m_battleEnemies.clear();
+
+	//========================================
+	// 3. プレイヤーを通常戦闘モード（非チュートリアル）にする
 	//========================================
 	if (m_player)
 	{
+		m_player->SetTutorialMode(false);
 		m_player->ResetLockOnTarget();
+		m_player->ResetSkillGauge();
 	}
 
 	//========================================
-	// チュートリアル終了
+	// 4. 指定されたフェイズ番号をセット
 	//========================================
-	m_tutorialStep = TutorialStep::Finish;
-
-	//========================================
-	// 戦闘番号 & バリア解除
-	//========================================
-	m_battleNo = nextBattleNo;
+	m_battleNo = targetBattleNo;
 	m_battleStarted = false;
 
-	// デバッグ移動時はバリアを解除
-	//if (m_battleArea)
-	//{
-	//	m_battleArea->SetBarrierActive(false);
-	//}
-
 	//========================================
-	// BattlePinの位置
+	// 5. 指定フェイズの BattlePin を配置・表示
+	//    (m_battleNo == 6 のときはボス戦前のピンになる)
 	//========================================
-	m_battleStartPos =
-		GetBattleStartPos(
-			m_battleNo >= 5 ? 5 : m_battleNo
-		);
+	m_battleStartPos = GetBattleStartPos(m_battleNo);
 
 	if (m_battlePin)
 	{
@@ -2292,43 +2298,35 @@ void GameScene::DebugSkipToBattle(int nextBattleNo)
 	}
 
 	//========================================
-	// PlayerをBattlePin手前へ
+	// 6. プレイヤーをピンの10m手前へ移動
 	//========================================
 	if (m_player && m_battlePin)
 	{
-		Math::Vector3 direction =
-			GetBattleStartDirection(
-				m_battleNo >= 5 ? 5 : m_battleNo
-			);
-
+		Math::Vector3 direction = GetBattleStartDirection(m_battleNo);
 		direction.y = 0.0f;
 
 		if (direction.LengthSquared() > 0.00001f)
 		{
 			direction.Normalize();
-
-			Math::Vector3 playerPos =
-				m_battlePin->GetPos() - direction * 10.0f;
-
+			Math::Vector3 playerPos = m_battlePin->GetPos() - direction * 10.0f;
 			m_player->SetPos(playerPos);
 		}
 	}
 
 	//========================================
-	// Battle開始前で停止
+	// 7. 指定フェイズの「戦闘準備（ピンに入る前）」にする
 	//========================================
 	m_gamePhase = GamePhase::Prepare;
 
-	//=======================================
-	// デバッグスキップ時のタイマー開始
-	//=======================================
+	//========================================
+	// 8. タイマーが動いていなければ開始
+	//========================================
 	if (m_timeManager && !m_timeManager->IsRunning())
 	{
 		m_timeManager->Start();
 		UpdateTimerText();
 	}
 }
-
 void GameScene::SetGameUIVisible(bool visible)
 {
 	//---------------------------------------
