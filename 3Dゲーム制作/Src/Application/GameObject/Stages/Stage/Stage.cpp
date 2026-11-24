@@ -63,7 +63,7 @@ void Stage::UpdateConeLights(const Math::Vector3& playerPos)
 	std::vector<std::pair<float, size_t>> distList;
 	distList.reserve(m_allLights.size());
 
-	//プレイヤーから何m以内のライトを有効対象にするか
+	// プレイヤーから何m以内のライトを有効対象にするか
 	const float cullRadius = 70.0f;
 	const float maxCullDistSq = cullRadius * cullRadius;
 
@@ -80,7 +80,7 @@ void Stage::UpdateConeLights(const Math::Vector3& playerPos)
 	// 近い順にソート
 	std::sort(distList.begin(), distList.end());
 
-	// 同時に有効にする最大ライト数（最大20個まで拡大）
+	// 同時に有効にする最大ライト数
 	const size_t maxActiveLights = 20;
 	const size_t count = std::min(distList.size(), maxActiveLights);
 
@@ -97,7 +97,7 @@ void Stage::UpdateConeLights(const Math::Vector3& playerPos)
 		light.dir = { 0.0f, -1.0f, 0.0f };
 		light.angle = DirectX::XMConvertToRadians(50.0f);
 
-		//1本あたりの照射距離（通常25m、ボスエリアの高いライトは45m）
+		// ボスエリアの高いライト(y=20)だけ照射距離を広くする
 		light.range = (data.pos.y > 10.0f) ? 45.0f : 25.0f;
 
 		light.color = { 1.0f, 1.0f, 1.0f };
@@ -106,6 +106,35 @@ void Stage::UpdateConeLights(const Math::Vector3& playerPos)
 	}
 
 	// コーンライトの登録
+	KdShaderManager::Instance().WriteCBConeLights(
+		coneLights
+	);
+}
+
+void Stage::UpdateAllConeLights()
+{
+	if (m_allLights.empty())
+	{
+		return;
+	}
+
+	std::vector<ConeLight> coneLights;
+	coneLights.reserve(m_allLights.size());
+
+	for (const auto& data : m_allLights)
+	{
+		ConeLight light{};
+		light.enable = 1;
+		light.pos = data.pos;
+		light.dir = { 0.0f, -1.0f, 0.0f };
+		light.angle = DirectX::XMConvertToRadians(50.0f);
+		light.range = (data.pos.y > 10.0f) ? 45.0f : 25.0f;
+		light.color = { 1.0f, 1.0f, 1.0f };
+
+		coneLights.push_back(light);
+	}
+
+	// 全コーンライトをシェーダーに登録
 	KdShaderManager::Instance().WriteCBConeLights(
 		coneLights
 	);

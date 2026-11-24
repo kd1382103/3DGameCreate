@@ -32,6 +32,9 @@ public:
 	// プレイヤー周辺のコーンライトだけを更新する（動的カリング）
 	void UpdateConeLights(const Math::Vector3& playerPos);
 
+	// 動的カリングを止めて全コーンライトを更新する（リザルト用）
+	void UpdateAllConeLights();
+
 	// ボスエリア専用コーンライト
 	void SetBossConeLight(const LightData& light);
 
@@ -39,7 +42,7 @@ private:
 	std::shared_ptr<KdModelData> m_model;
 	std::shared_ptr<KdModelData> m_lightModel;
 
-	// 全ライトのマスターデータ（動的カリング用）
+	// 全ライトのマスターデータ
 	std::vector<LightData> m_allLights;
 
 	// 発光モデルごとの位置・角度

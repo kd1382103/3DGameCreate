@@ -44,13 +44,21 @@
 void GameScene::Event()
 {
 	//=======================================
-	// プレイヤー周辺のコーンライトだけを更新
+	// コーンライト更新
+	// リザルト時は動的カリングを止めて全ライトを毎フレーム更新
 	//=======================================
-	if (m_stage && m_player)
+	if (m_stage)
 	{
-		m_stage->UpdateConeLights(m_player->GetPos());
+		if (m_gamePhase == GamePhase::Clear ||
+			m_resultSequence != ResultSequence::None)
+		{
+			m_stage->UpdateAllConeLights();
+		}
+		else if (m_player)
+		{
+			m_stage->UpdateConeLights(m_player->GetPos());
+		}
 	}
-
 	//=======================================
 	// ゲーム開始演出
 	//=======================================
