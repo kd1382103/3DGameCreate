@@ -23,7 +23,7 @@ class BattlePin;
 class UIBackground;
 class SettingIcon;
 
-class ResultFade;
+class ScreenFade;
 class ResultUI;
 
 //manager
@@ -403,7 +403,7 @@ private:
 	ResultSequence m_resultSequence =
 		ResultSequence::None;
 
-	std::shared_ptr<ResultFade> m_resultFade;
+	std::shared_ptr<ScreenFade> m_screenFade;
 	std::shared_ptr<ResultUI> m_resultUI;
 
 	bool m_resultUIStarted = false;

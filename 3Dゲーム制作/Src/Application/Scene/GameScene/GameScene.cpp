@@ -36,7 +36,7 @@
 #include <Application/Manager/TimeManager/TimeManager.h>
 #include <Application/Manager/ScoreManager/ScoreManager.h>
 
-#include <Application/GameObject/BaseObject/ResultFade.h>
+#include <Application/GameObject/BaseObject/ScreenFade.h>
 #include <Application/GameObject/UI/ResultUI/ResultUI.h>
 
 #include <Application/main.h>
@@ -198,10 +198,10 @@ void GameScene::Init()
 	//=======================================
 	// リザルト用フェード
 	//=======================================
-	m_resultFade = std::make_shared<ResultFade>();
-	m_resultFade->Init();
+	m_screenFade = std::make_shared<ScreenFade>();
+	m_screenFade->Init();
 
-	AddObject(m_resultFade);
+	AddObject(m_screenFade);
 
 	//=======================================
 	// リザルトUI
@@ -2092,9 +2092,9 @@ void GameScene::StartResultSequence()
 	m_resultUIStarted = false;
 
 	// 画面を暗転させる
-	if (m_resultFade)
+	if (m_screenFade)
 	{
-		m_resultFade->StartFadeIn(0.8f);
+		m_screenFade->StartFadeIn(0.8f);
 	}
 }
 
@@ -2110,14 +2110,14 @@ void GameScene::UpdateResultSequence()
 		//---------------------------------------
 	case ResultSequence::FadeToBlack:
 	{
-		if (!m_resultFade)
+		if (!m_screenFade)
 		{
 			m_resultSequence = ResultSequence::ResultDisplay;
 			break;
 		}
 
-		if (m_resultFade->IsFinished() &&
-			m_resultFade->IsBlack())
+		if (m_screenFade->IsFinished() &&
+			m_screenFade->IsBlack())
 		{
 			// 暗転状態を維持する
 			m_resultCameraWaitTimer = 0.0f;
@@ -2155,9 +2155,9 @@ void GameScene::UpdateResultSequence()
 			{
 				m_resultSequence = ResultSequence::FadeFromBlack;
 
-				if (m_resultFade)
+				if (m_screenFade)
 				{
-					m_resultFade->StartFadeOut(0.8f);
+					m_screenFade->StartFadeOut(0.8f);
 				}
 				else
 				{
@@ -2173,9 +2173,9 @@ void GameScene::UpdateResultSequence()
 	//---------------------------------------
 	case ResultSequence::FadeFromBlack:
 	{
-		if (!m_resultFade ||
-			(m_resultFade->IsFinished() &&
-				!m_resultFade->IsBlack()))
+		if (!m_screenFade ||
+			(m_screenFade->IsFinished() &&
+				!m_screenFade->IsBlack()))
 		{
 			m_resultSequence = ResultSequence::ResultDisplay;
 		}

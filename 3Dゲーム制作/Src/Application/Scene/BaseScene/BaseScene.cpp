@@ -2,7 +2,7 @@
 #include <Application/GameObject/Camera/CameraBase.h>
 #include<Application/GameObject/Player/Player/Player.h>
 #include<Application/GameObject/Enemy/EnemyBase.h>
-#include <Application/GameObject/BaseObject/ResultFade.h>
+#include <Application/GameObject/BaseObject/ScreenFade.h>
 
 void BaseScene::PreUpdate()
 {
@@ -131,7 +131,7 @@ void BaseScene::DrawSprite()
 				continue;
 			}
 
-			if (dynamic_cast<ResultFade*>(obj.get()))
+			if (dynamic_cast<ScreenFade*>(obj.get()))
 			{
 				continue;
 			}
@@ -151,7 +151,7 @@ void BaseScene::DrawSprite()
 		// ResultFadeを最後に描画
 		for (auto& obj : m_objList)
 		{
-			if (dynamic_cast<ResultFade*>(obj.get()))
+			if (dynamic_cast<ScreenFade*>(obj.get()))
 			{
 				obj->DrawSprite();
 			}

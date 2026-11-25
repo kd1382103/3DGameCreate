@@ -1,11 +1,11 @@
-﻿#include "ResultFade.h"
+﻿#include "ScreenFade.h"
 
 #include <Application/main.h>
 
 //==================================================
 // 初期化
 //==================================================
-void ResultFade::Init()
+void ScreenFade::Init()
 {
 	m_alpha = 0.0f;
 
@@ -13,42 +13,43 @@ void ResultFade::Init()
 	m_duration = 1.0f;
 
 	m_isFadeIn = false;
-	m_isFadeOut = false;
 	m_isFinished = true;
 }
 
 //==================================================
 // 暗転開始
 //==================================================
-void ResultFade::StartFadeIn(float duration)
+void ScreenFade::StartFadeIn(float duration)
 {
-	m_timer = 0.0f;
-	m_duration = (std::max)(duration, 0.01f);
-
-	m_isFadeIn = true;
-	m_isFadeOut = false;
-	m_isFinished = false;
+	StartFade(true, duration);
 }
 
 //==================================================
 // 暗転解除
 //==================================================
-void ResultFade::StartFadeOut(float duration)
+void ScreenFade::StartFadeOut(float duration)
+{
+	StartFade(false, duration);
+}
+
+//==================================================
+// 暗転開始・解除の共通処理
+//==================================================
+void ScreenFade::StartFade(bool isFadeIn, float duration)
 {
 	m_timer = 0.0f;
 	m_duration = (std::max)(duration, 0.01f);
 
-	m_isFadeIn = false;
-	m_isFadeOut = true;
+	m_isFadeIn = isFadeIn;
 	m_isFinished = false;
 }
 
 //==================================================
 // 更新
 //==================================================
-void ResultFade::Update()
+void ScreenFade::Update()
 {
-	if (!m_isFadeIn && !m_isFadeOut)
+	if (m_isFinished)
 	{
 		return;
 	}
@@ -64,37 +65,19 @@ void ResultFade::Update()
 	// 滑らかな変化
 	float smoothT = t * t * (3.0f - 2.0f * t);
 
-	if (m_isFadeIn)
-	{
-		m_alpha = smoothT;
-	}
-	else
-	{
-		m_alpha = 1.0f - smoothT;
-	}
+	m_alpha = m_isFadeIn ? smoothT : 1.0f - smoothT;
 
 	// 演出終了
 	if (t >= 1.0f)
 	{
-		m_isFadeIn = false;
-		m_isFadeOut = false;
 		m_isFinished = true;
-
-		if (m_alpha < 0.5f)
-		{
-			m_alpha = 0.0f;
-		}
-		else
-		{
-			m_alpha = 1.0f;
-		}
 	}
 }
 
 //==================================================
 // 描画
 //==================================================
-void ResultFade::DrawSprite()
+void ScreenFade::DrawSprite()
 {
 	if (m_alpha <= 0.0f)
 	{

@@ -549,7 +549,7 @@
     <ClInclude Include="Src\Application\Manager\ScoreManager\ScoreManager.h">
       <Filter>Src\Application\Manager\ScoreManager</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\BaseObject\ResultFade.h">
+    <ClInclude Include="Src\Application\GameObject\BaseObject\ScreenFade.h">
       <Filter>Src\Application\GameObject\BaseObject</Filter>
     </ClInclude>
     <ClInclude Include="Src\Application\GameObject\UI\ResultUI\ResultUI.h">
@@ -707,9 +707,6 @@
     <ClCompile Include="Src\Application\GameObject\Camera\TPSCamera\TPSCamera.cpp">
       <Filter>Src\Application\GameObject\Camera\TPSCamera</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\BaseObject\BaseObject.cpp">
-      <Filter>Src\Application\GameObject\BaseObject</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Camera\FPSCamera\FPSCamera.cpp">
       <Filter>Src\Application\GameObject\Camera\FPSCamera</Filter>
     </ClCompile>
@@ -830,7 +827,7 @@
     <ClCompile Include="Src\Application\Manager\ScoreManager\ScoreManager.cpp">
       <Filter>Src\Application\Manager\ScoreManager</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\BaseObject\ResultFade.cpp">
+    <ClCompile Include="Src\Application\GameObject\BaseObject\ScreenFade.cpp">
       <Filter>Src\Application\GameObject\BaseObject</Filter>
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\ResultUI\ResultUI.cpp">

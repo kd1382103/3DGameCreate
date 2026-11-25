@@ -275,7 +275,7 @@
     <ClInclude Include="..\Library\tinygltf\tiny_gltf.h" />
     <ClInclude Include="Src\Application\GameData\AnimationBank.h" />
     <ClInclude Include="Src\Application\GameObject\BaseObject\BaseObject.h" />
-    <ClInclude Include="Src\Application\GameObject\BaseObject\ResultFade.h" />
+    <ClInclude Include="Src\Application\GameObject\BaseObject\ScreenFade.h" />
     <ClInclude Include="Src\Application\GameObject\Boss\BossBase.h" />
     <ClInclude Include="Src\Application\GameObject\Boss\BossState\BossState.h" />
     <ClInclude Include="Src\Application\GameObject\Boss\Boss\Boss.h" />
@@ -375,8 +375,7 @@
     <ClCompile Include="..\Library\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\Library\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Src\Application\GameData\AnimationBank.cpp" />
-    <ClCompile Include="Src\Application\GameObject\BaseObject\BaseObject.cpp" />
-    <ClCompile Include="Src\Application\GameObject\BaseObject\ResultFade.cpp" />
+    <ClCompile Include="Src\Application\GameObject\BaseObject\ScreenFade.cpp" />
     <ClCompile Include="Src\Application\GameObject\Boss\BossBase.cpp" />
     <ClCompile Include="Src\Application\GameObject\Boss\BossState\BossState.cpp" />
     <ClCompile Include="Src\Application\GameObject\Boss\Boss\Boss.cpp" />
