@@ -19,10 +19,14 @@ void EnemyBase::Init()
 {
 	m_animator = KdAnimator();
 
-	InitAttackPrediction();
+	//ワールド上で表示するUIの初期化
+	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
+	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
+	SetupWorldPolygon(*m_preAttackPoly, "Asset/Textures/Effect/PreAttack.png", 1.0f);
+	SetupWorldPolygon(*m_lockOnIcon, "Asset/Textures/Effect/LookOn.png", 0.8f);
+
 	InitHPGauge();
 	InitStateMachine();
-	InitLockOnIcon();
 	StartResolve();
 }
 
@@ -85,12 +89,16 @@ void EnemyBase::Update()
 	//========================================
 	// スロー更新
 	//========================================
-	UpdateSlow();
+	UpdateSlowTimer(
+		m_isSlow,
+		m_slowTimer,
+		Application::Instance().GetDeltaTime()
+	);
 
 	//========================================
 	// 重力
 	//========================================
-	UpdateGravity(scaledFrameScale);
+	ApplyGravity(m_gravity, m_nowPos, scaledFrameScale);
 
 	//========================================
 	// ヒットストップ
@@ -935,18 +943,6 @@ void EnemyBase::StartDeath()
 	PlayAnimationAuto("Death", false);
 }
 
-void EnemyBase::InitAttackPrediction()
-{
-	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
-
-	m_preAttackPoly->SetMaterial(
-		"Asset/Textures/Effect/PreAttack.png"
-	);
-
-	m_preAttackPoly->Set2DObject(false);
-	m_preAttackPoly->SetScale(1.0f);
-}
-
 void EnemyBase::InitHPGauge()
 {
 	m_hpGauge = std::make_shared<HPGauge>();
@@ -965,54 +961,13 @@ void EnemyBase::InitStateMachine()
 	);
 }
 
-void EnemyBase::InitLockOnIcon()
-{
-	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
-
-	m_lockOnIcon->SetMaterial(
-		"Asset/Textures/Effect/LookOn.png"
-	);
-
-	m_lockOnIcon->Set2DObject(false);
-	m_lockOnIcon->SetScale(0.8f);
-}
-
-
-//==============================================================
-// スロー更新
-//==============================================================
-void EnemyBase::UpdateSlow()
-{
-	if (!m_isSlow)
-	{
-		return;
-	}
-
-	m_slowTimer -= Application::Instance().GetDeltaTime();
-
-	if (m_slowTimer <= 0.0f)
-	{
-		m_slowTimer = 0.0f;
-		m_isSlow = false;
-	}
-}
-
-void EnemyBase::UpdateGravity(float dt)
-{
-	m_gravity += 0.005f * dt;
-	m_nowPos.y -= m_gravity * dt;
-}
-
 void EnemyBase::UpdateAnimation(float dt)
 {
-	if (!m_model) return;
-
-	m_animator.AdvanceTime(m_model->WorkNodes(), dt);
-
-	if (m_model->NeedCalcNodeMatrices())
-	{
-		m_model->CalcNodeMatrices();
-	}
+	AdvanceModelAnimation(
+		m_animator,
+		m_model,
+		dt
+	);
 }
 
 void EnemyBase::UpdateHPGauge()

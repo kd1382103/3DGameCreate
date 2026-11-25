@@ -44,17 +44,15 @@ public:
 	// アニメ再生（ステート側が呼ぶ）
 	void PlayAnimationAuto(const std::string& animName, bool loop = true);
 
-	// 方向ベクトル（プレイヤーと同じ）
+	// 方向ベクトル取得
 	Math::Vector3 GetForward() const
 	{
-		Math::Matrix rot = Math::Matrix::CreateRotationY(m_angleY);
-		return rot.Forward();
+		return GetForwardFromAngle(m_angleY);
 	}
 
 	Math::Vector3 GetRight() const
 	{
-		Math::Matrix rot = Math::Matrix::CreateRotationY(m_angleY);
-		return rot.Right();
+		return GetRightFromAngle(m_angleY);
 	}
 
 	bool IsAttackAnimationEnd() const
@@ -166,13 +164,10 @@ private:
 	void InitAttackPrediction();
 	void InitHPGauge();
 	void InitStateMachine();
-	void InitLockOnIcon();
 
 	//==============================================================
 	// 更新
 	//==============================================================
-	void UpdateSlow();
-	void UpdateGravity(float dt);
 	void UpdateAnimation(float dt);
 	void UpdateHPGauge();
 	void UpdateDebug();

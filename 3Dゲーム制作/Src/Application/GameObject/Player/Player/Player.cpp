@@ -172,7 +172,7 @@ void Player::Update()
 	//========================================
 	// 重力
 	//========================================
-	UpdateGravity(scaledFrameScale);
+	ApplyGravity(m_gravity, m_nowPos, scaledFrameScale);
 
 	//========================================
 	// UIゲージ
@@ -405,22 +405,11 @@ void Player::UpdateMovementInput()
 
 void Player::UpdateAnimation(float dt)
 {
-	m_animator.AdvanceTime(
-		m_model->WorkNodes(),
+	AdvanceModelAnimation(
+		m_animator,
+		m_model,
 		dt
 	);
-
-	if (m_model->NeedCalcNodeMatrices())
-	{
-		m_model->CalcNodeMatrices();
-	}
-}
-
-void Player::UpdateGravity(float dt)
-{
-	m_gravity += 0.005f * dt;
-
-	m_nowPos.y -= m_gravity * dt;
 }
 
 void Player::UpdateUIGauge()

@@ -65,18 +65,12 @@ public:
 	//==============================================================
 	Math::Vector3 GetForward() const
 	{
-		Math::Matrix rot =
-			Math::Matrix::CreateRotationY(m_angleY);
-
-		return rot.Forward();
+		return GetForwardFromAngle(m_angleY);
 	}
 
 	Math::Vector3 GetRight() const
 	{
-		Math::Matrix rot =
-			Math::Matrix::CreateRotationY(m_angleY);
-
-		return rot.Right();
+		return GetRightFromAngle(m_angleY);
 	}
 
 	//==============================================================

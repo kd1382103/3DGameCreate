@@ -36,7 +36,6 @@ public:
 	void UpdateInput();
 	void UpdateMovementInput();
 	void UpdateAnimation(float frameScale);
-	void UpdateGravity(float frameScale);
 	void UpdateUIGauge();
 	void UpdatePendingDamage();
 	void UpdateDodgeSlow(float frameScale);
@@ -100,14 +99,12 @@ public:
 	//========================================
 	Math::Vector3 GetForward() const
 	{
-		Math::Matrix rot = Math::Matrix::CreateRotationY(m_angleY);
-		return rot.Forward();
+		return GetForwardFromAngle(m_angleY);
 	}
 
 	Math::Vector3 GetRight() const
 	{
-		Math::Matrix rot = Math::Matrix::CreateRotationY(m_angleY);
-		return rot.Right();
+		return GetRightFromAngle(m_angleY);
 	}
 
 	//========================================

@@ -18,13 +18,11 @@ void BossBase::Init()
 	// モデルはBossが設定する
 	m_animator = KdAnimator();
 
-	// 攻撃予知ポリゴン
+	// ワールド上で表示するUIの初期化
 	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
-	m_preAttackPoly->SetMaterial(
-		"Asset/Textures/Effect/PreAttack.png"
-	);
-	m_preAttackPoly->Set2DObject(false);
-	m_preAttackPoly->SetScale(1.0f);
+	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
+	SetupWorldPolygon(*m_preAttackPoly, "Asset/Textures/Effect/PreAttack.png", 1.0f);
+	SetupWorldPolygon(*m_lockOnIcon, "Asset/Textures/Effect/LookOn.png", 0.8);
 
 	// HPゲージ
 	m_hpGauge = std::make_shared<HPGauge>();
@@ -39,15 +37,8 @@ void BossBase::Init()
 		std::make_unique<BossStateIdle>(),
 		*this
 	);
-
-	// ロックオンアイコン
-	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
-	m_lockOnIcon->SetMaterial(
-		"Asset/Textures/Effect/LookOn.png"
-	);
-	m_lockOnIcon->Set2DObject(false);
-	m_lockOnIcon->SetScale(0.8f);
 }
+
 //==============================================================
 // Update
 //==============================================================
@@ -87,15 +78,12 @@ void BossBase::Update()
 		// リゾルブ中もIdleアニメーションを再生
 		if (m_model)
 		{
-			m_animator.AdvanceTime(
-				m_model->WorkNodes(),
+			// リゾルブ中もIdleアニメーションを再生
+			AdvanceModelAnimation(
+				m_animator,
+				m_model,
 				frameScale
 			);
-
-			if (m_model->NeedCalcNodeMatrices())
-			{
-				m_model->CalcNodeMatrices();
-			}
 		}
 
 		return;
@@ -133,23 +121,16 @@ void BossBase::Update()
 	//========================================
 	// スロー更新
 	//========================================
-	if (m_isSlow)
-	{
-		m_slowTimer -=
-			Application::Instance().GetDeltaTime();
-
-		if (m_slowTimer <= 0.0f)
-		{
-			m_slowTimer = 0.0f;
-			m_isSlow = false;
-		}
-	}
+	UpdateSlowTimer(
+		m_isSlow,
+		m_slowTimer,
+		Application::Instance().GetDeltaTime()
+	);
 
 	//========================================
 	// 重力
 	//========================================
-	m_gravity += 0.005f * dt;
-	m_nowPos.y -= m_gravity * dt;
+	ApplyGravity(m_gravity, m_nowPos, dt);
 
 	//========================================
 	// ステート
@@ -179,15 +160,12 @@ void BossBase::Update()
 	//========================================
 	if (m_model)
 	{
-		m_animator.AdvanceTime(
-			m_model->WorkNodes(),
+		// アニメーション
+		AdvanceModelAnimation(
+			m_animator,
+			m_model,
 			dt
 		);
-
-		if (m_model->NeedCalcNodeMatrices())
-		{
-			m_model->CalcNodeMatrices();
-		}
 	}
 
 	//========================================
@@ -1105,15 +1083,12 @@ void BossBase::UpdateDeath(float frameScale)
 	//========================================
 	if (!m_isDeathDissolving && !m_isDeathEffectWaiting)
 	{
-		m_animator.AdvanceTime(
-			m_model->WorkNodes(),
+		// Deathアニメーション
+		AdvanceModelAnimation(
+			m_animator,
+			m_model,
 			frameScale
 		);
-
-		if (m_model->NeedCalcNodeMatrices())
-		{
-			m_model->CalcNodeMatrices();
-		}
 
 		// アニメーション終了後、爆発まで待機
 		if (m_animator.IsAnimationEnd())
@@ -1184,6 +1159,7 @@ void BossBase::UpdateDeath(float frameScale)
 		m_isExpired = true;
 	}
 }
+
 //==============================================================
 // Resolve更新
 //==============================================================
