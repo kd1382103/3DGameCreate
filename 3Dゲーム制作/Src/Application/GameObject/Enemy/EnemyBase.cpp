@@ -151,7 +151,7 @@ void EnemyBase::Update()
 //==============================================================
 void EnemyBase::PostUpdate()
 {
-	UpdateGroundCollision();
+	GroundCollisionCheck();
 
 	//==========================================================
 	// ノックバック移動（障害物に当たったら壁沿いに滑る）
@@ -408,29 +408,7 @@ void EnemyBase::PostUpdate()
 
 	m_mWorld = rotMat * transMat;
 
-	//========================================
-	// 攻撃予知の位置（Headノード）
-	//========================================
-	if (m_model)
-	{
-		const auto* headNode = m_model->FindNode("head");
-
-		if (headNode)
-		{
-			// Headノードのワールド座標を取得
-			Math::Vector3 headPos = Math::Vector3::Transform(
-				Math::Vector3::Zero,
-				headNode->m_worldTransform * m_mWorld
-			);
-
-			headPos.y += 0.2f;
-
-			m_preAttackPos = headPos;
-		}
-	}
-
-	// ロックオンアイコンの位置（敵の前面）
-	m_lockOnPos = m_nowPos + Math::Vector3(0, 1.0f, 0);
+	UpdatePreAttackPosition();
 
 	// HPゲージ位置
 	if (m_hpGauge)
@@ -1017,52 +995,6 @@ void EnemyBase::UpdateDeath(float frameScale)
 
 		// 完全に消えたら削除
 		m_isExpired = true;
-	}
-}
-
-void EnemyBase::UpdateGroundCollision()
-{
-	KdCollider::RayInfo ray;
-	ray.m_type = KdCollider::TypeGround;
-
-	ray.m_pos = m_nowPos;
-
-	static const float enableStepHigh = 0.2f;
-	ray.m_pos.y += enableStepHigh;
-
-	ray.m_dir = { 0, -1, 0 };
-	ray.m_range = enableStepHigh + m_gravity;
-
-	std::list<KdCollider::CollisionResult> retRayList;
-
-	for (auto& obj : SceneManager::Instance().GetObjList())
-	{
-		obj->Intersects(ray, &retRayList);
-	}
-
-	bool hit = false;
-	float maxOverLap = 0.0f;
-	Math::Vector3 hitPos = Math::Vector3::Zero;
-
-	for (auto& ret : retRayList)
-	{
-		if (maxOverLap < ret.m_overlapDistance)
-		{
-			maxOverLap = ret.m_overlapDistance;
-			hitPos = ret.m_hitPos;
-			hit = true;
-		}
-	}
-
-	if (hit)
-	{
-		m_nowPos.y = hitPos.y;
-		m_gravity = 0.0f;
-		m_isGround = true;
-	}
-	else
-	{
-		m_isGround = false;
 	}
 }
 

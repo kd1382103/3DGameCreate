@@ -195,6 +195,8 @@ void BossBase::Update()
 //==============================================================
 void BossBase::PostUpdate()
 {
+	GroundCollisionCheck();
+
 	//==========================================================
 	// ノックバック移動（障害物に当たったら壁沿いに滑る）
 	//==========================================================
@@ -332,52 +334,6 @@ void BossBase::PostUpdate()
 			}
 		}
 	}
-	//==========================================================
-	// 地面判定（レイ）
-	//==========================================================
-	{
-		KdCollider::RayInfo ray;
-		ray.m_type = KdCollider::TypeGround;
-
-		ray.m_pos = m_nowPos;
-
-		static const float enableStepHigh = 0.2f;
-		ray.m_pos.y += enableStepHigh;
-
-		ray.m_dir = { 0, -1, 0 };
-		ray.m_range =
-			enableStepHigh + m_gravity;
-
-		std::list<KdCollider::CollisionResult> retRayList;
-
-		for (auto& obj :
-			SceneManager::Instance().GetObjList())
-		{
-			obj->Intersects(ray, &retRayList);
-		}
-
-		bool hit = false;
-		float maxOverLap = 0.0f;
-		Math::Vector3 hitPos = {};
-
-		for (auto& ret : retRayList)
-		{
-			if (maxOverLap < ret.m_overlapDistance)
-			{
-				maxOverLap =
-					ret.m_overlapDistance;
-
-				hitPos = ret.m_hitPos;
-				hit = true;
-			}
-		}
-
-		if (hit)
-		{
-			m_nowPos.y = hitPos.y;
-			m_gravity = 0.0f;
-		}
-	}
 
 	//==========================================================
 	// 壁判定（カプセル）
@@ -478,12 +434,7 @@ void BossBase::PostUpdate()
 	Math::Vector3 modelPos =
 		m_mWorld.Translation();
 
-	//==========================================================
-	// 攻撃予知位置
-	//==========================================================
-	m_preAttackPos =
-		modelPos +
-		Math::Vector3(0, 1.8f, 0);
+	UpdatePreAttackPosition();
 
 	//==========================================================
 	// ロックオンアイコン位置
