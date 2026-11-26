@@ -110,9 +110,16 @@ public:
 	void UpdatePreAttackPosition();
 
 	//==============================================================
-	// 地面判定
+	// 地面・壁判定
 	//==============================================================
 	void GroundCollisionCheck();
+	void WallCollisionCheck();
+
+protected:
+	//==============================================================
+	// ノックバック判定
+	//==============================================================
+	void NockBackCheck();
 
 public:
 
@@ -175,4 +182,5 @@ public:
 	bool m_isSlow = false;
 	float m_slowTimer = 0.0f;
 	float m_slowRate = 0.2f;
+
 };
