@@ -79,6 +79,7 @@ void SettingDisplay::Init()
 		break;
 	}
 }
+
 //============================================================
 // 更新
 //============================================================
@@ -88,7 +89,7 @@ void SettingDisplay::Update()
 	// FPS
 	//========================================================
 
-	bool fpsLeftOver =
+	m_fpsLeftHover =
 		IsMouseOver(
 			m_fpsLeftX,
 			m_fpsY,
@@ -96,7 +97,7 @@ void SettingDisplay::Update()
 			m_buttonHeight
 		);
 
-	bool fpsRightOver =
+	m_fpsRightHover =
 		IsMouseOver(
 			m_fpsRightX,
 			m_fpsY,
@@ -107,7 +108,7 @@ void SettingDisplay::Update()
 	//---------------------------------------
 	// FPS 左
 	//---------------------------------------
-	if (fpsLeftOver &&
+	if (m_fpsLeftHover &&
 		(GetAsyncKeyState(VK_LBUTTON) & 0x8000))
 	{
 		if (!m_fpsLeftClick)
@@ -125,7 +126,7 @@ void SettingDisplay::Update()
 	//---------------------------------------
 	// FPS 右
 	//---------------------------------------
-	if (fpsRightOver &&
+	if (m_fpsRightHover &&
 		(GetAsyncKeyState(VK_LBUTTON) & 0x8000))
 	{
 		if (!m_fpsRightClick)
@@ -145,7 +146,7 @@ void SettingDisplay::Update()
 	// 表示モード
 	//========================================================
 
-	bool displayModeLeftOver =
+	m_displayModeLeftHover =
 		IsMouseOver(
 			m_displayModeLeftX,
 			m_displayModeY,
@@ -153,7 +154,7 @@ void SettingDisplay::Update()
 			m_buttonHeight
 		);
 
-	bool displayModeRightOver =
+	m_displayModeRightHover =
 		IsMouseOver(
 			m_displayModeRightX,
 			m_displayModeY,
@@ -164,7 +165,7 @@ void SettingDisplay::Update()
 	//---------------------------------------
 	// 表示モード 左
 	//---------------------------------------
-	if (displayModeLeftOver &&
+	if (m_displayModeLeftHover &&
 		(GetAsyncKeyState(VK_LBUTTON) & 0x8000))
 	{
 		if (!m_displayModeLeftClick)
@@ -182,7 +183,7 @@ void SettingDisplay::Update()
 	//---------------------------------------
 	// 表示モード 右
 	//---------------------------------------
-	if (displayModeRightOver &&
+	if (m_displayModeRightHover &&
 		(GetAsyncKeyState(VK_LBUTTON) & 0x8000))
 	{
 		if (!m_displayModeRightClick)
@@ -205,6 +206,8 @@ void SettingDisplay::DrawSprite()
 {
 	auto& shader =
 		KdShaderManager::Instance().m_spriteShader;
+
+	Math::Color frameColor = { 0.0f, 0.8f, 1.0f, 1.0f };
 
 	//========================================================
 	// タイトル
@@ -270,6 +273,24 @@ void SettingDisplay::DrawSprite()
 			param,
 			"<"
 		);
+
+		if (m_displayModeLeftHover)
+		{
+			int frameX = m_displayModeLeftX;
+			int frameY = m_displayModeY;
+
+			int frameWidth = m_buttonWidth / 2;
+			int frameHeight = m_buttonHeight / 2;
+
+			shader.DrawBox(
+				frameX,
+				frameY,
+				frameWidth,
+				frameHeight,
+				&frameColor,
+				false
+			);
+		}
 	}
 
 	//---------------------------------------
@@ -332,6 +353,24 @@ void SettingDisplay::DrawSprite()
 			param,
 			">"
 		);
+
+		if (m_displayModeRightHover)
+		{
+			int frameX = m_displayModeRightX;
+			int frameY = m_displayModeY;
+
+			int frameWidth = m_buttonWidth / 2;
+			int frameHeight = m_buttonHeight / 2;
+
+			shader.DrawBox(
+				frameX,
+				frameY,
+				frameWidth,
+				frameHeight,
+				&frameColor,
+				false
+			);
+		}
 	}
 
 	//========================================================
@@ -376,6 +415,27 @@ void SettingDisplay::DrawSprite()
 			param,
 			"<"
 		);
+
+		//---------------------------------------
+		// マウスが乗っている場合は枠を表示
+		//---------------------------------------
+		if (m_fpsLeftHover)
+		{
+			int frameX = m_fpsLeftX;
+			int frameY = m_fpsY;
+
+			int frameWidth = m_buttonWidth / 2;
+			int frameHeight = m_buttonHeight / 2;
+
+			shader.DrawBox(
+				frameX,
+				frameY,
+				frameWidth,
+				frameHeight,
+				&frameColor,
+				false
+			);
+		}
 	}
 
 	//---------------------------------------
@@ -435,6 +495,24 @@ void SettingDisplay::DrawSprite()
 			param,
 			">"
 		);
+
+		if (m_fpsRightHover)
+		{
+			int frameX = m_fpsRightX;
+			int frameY = m_fpsY;
+
+			int frameWidth = m_buttonWidth / 2;
+			int frameHeight = m_buttonHeight / 2;
+
+			shader.DrawBox(
+				frameX,
+				frameY,
+				frameWidth,
+				frameHeight,
+				&frameColor,
+				false
+			);
+		}
 	}
 }
 

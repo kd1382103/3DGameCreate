@@ -105,4 +105,13 @@ private:
 
 	bool m_displayModeLeftClick = false;
 	bool m_displayModeRightClick = false;
+
+	//---------------------------------------
+	// マウスが乗っている状態
+	//---------------------------------------
+	bool m_fpsLeftHover = false;
+	bool m_fpsRightHover = false;
+
+	bool m_displayModeLeftHover = false;
+	bool m_displayModeRightHover = false;
 };

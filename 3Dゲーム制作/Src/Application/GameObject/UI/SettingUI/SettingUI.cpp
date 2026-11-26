@@ -129,6 +129,11 @@ void SettingUI::UpdateMenu()
 		static_cast<int>(SettingTab::Count);
 
 	//---------------------------------------
+	// マウスが乗っている項目を初期化
+	//---------------------------------------
+	m_hoveredMenu = -1;
+
+	//---------------------------------------
 	// 各項目をチェック
 	//---------------------------------------
 	for (int i = 0; i < menuCount; i++)
@@ -143,6 +148,14 @@ void SettingUI::UpdateMenu()
 			m_menuWidth,
 			m_menuHeight))
 		{
+			//---------------------------------------
+			// マウスが乗っている項目
+			//---------------------------------------
+			m_hoveredMenu = i;
+
+			//---------------------------------------
+			// クリック判定
+			//---------------------------------------
 			if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
 			{
 				if (!m_menuClick)
@@ -206,6 +219,35 @@ void SettingUI::DrawMenu()
 			0.5f,
 			0.5f
 		};
+
+		//---------------------------------------
+		// マウスが乗っている項目に枠を表示
+		//---------------------------------------
+		if (m_hoveredMenu == i)
+		{
+			int frameX = -430;
+			int frameY = 100 - i * 100;
+
+			int frameWidth = 150;
+			int frameHeight = 32;
+
+			Math::Color frameColor =
+			{
+				0.0f,
+				0.8f,
+				1.0f,
+				1.0f
+			};
+
+			shader.DrawBox(
+				frameX,
+				frameY,
+				frameWidth,
+				frameHeight,
+				&frameColor,
+				false
+			);
+		}
 
 		if (selected)
 		{
@@ -364,6 +406,12 @@ void SettingUI::Open()
 	m_visible = true;
 
 	m_currentTab = SettingTab::Audio;
+
+	//---------------------------------------
+	// マウス選択状態を初期化
+	//---------------------------------------
+	m_hoveredMenu = -1;
+	m_menuClick = false;
 
 	//---------------------------------------
 	// カーソルを表示
