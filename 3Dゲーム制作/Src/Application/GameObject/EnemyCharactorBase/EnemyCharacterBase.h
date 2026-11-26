@@ -49,7 +49,8 @@ public:
 	//==============================================================
 	// アニメーション
 	//==============================================================
-
+	void PlayAnimationAuto(const std::string& animName, bool loop = true);
+	void SetHPGaugeVisible(bool visible);
 	bool IsAttackAnimationEnd() const
 	{
 		return m_animator.IsAnimationEnd();
@@ -98,7 +99,13 @@ public:
 		return m_nowPos;
 	}
 	
-protected:
+	//==============================================================
+	// 深度マップ描画
+	//==============================================================
+	void GenerateDepthMapFromLightCommon(bool isDying);
+
+public:
+
 	// モデル・アニメーション
 	std::shared_ptr<KdModelWork> m_model;
 	KdAnimator m_animator;
@@ -125,9 +132,6 @@ protected:
 
 	// 重力
 	float m_gravity = 0.0f;
-
-	// ワールド行列
-	Math::Matrix m_mWorld;
 
 	// 攻撃予知
 	std::shared_ptr<KdSquarePolygon> m_preAttackPoly;

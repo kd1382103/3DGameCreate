@@ -738,30 +738,8 @@ void BossBase::DrawSprite()
 
 void BossBase::GenerateDepthMapFromLight()
 {
-	if (!m_model) return;
-
-	//==========================================================
-	// 視錐台カリング
-	//==========================================================
-	if (!m_isDying)
-	{
-		auto cam = m_wpCamera.lock();
-
-		if (cam)
-		{
-			Math::Vector3 center =
-				m_nowPos + Math::Vector3(0, 1.0f, 0);
-
-			if (!cam->IsInCameraView(center, 2.0f))
-			{
-				return;
-			}
-		}
-	}
-
-	KdShaderManager::Instance().m_StandardShader.DrawModel(*m_model, m_mWorld);
+	GenerateDepthMapFromLightCommon(m_isDying);
 }
-
 
 //==============================================================
 // ボスへのダメージ処理
@@ -950,30 +928,6 @@ void BossBase::DoAttackHitCheck(float range)
 	player->Damage(m_attackDamage, false, false, 1.0f);
 
 	m_attackHitOnce = true;
-}
-
-//==============================================================
-// アニメ再生
-//==============================================================
-
-void BossBase::PlayAnimationAuto(const std::string& animName, bool loop)
-{
-	if (!m_model) return;
-
-	auto anim = m_model->GetAnimation(animName);
-
-	if (anim)
-	{
-		m_animator.SetAnimation(anim, loop);
-	}
-}
-
-void BossBase::SetHPGaugeVisible(bool visible)
-{
-	if (m_hpGauge)
-	{
-		m_hpGauge->SetVisible(visible);
-	}
 }
 
 //==============================================================

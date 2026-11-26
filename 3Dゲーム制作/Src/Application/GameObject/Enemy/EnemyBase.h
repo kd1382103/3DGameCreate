@@ -47,11 +47,6 @@ public:
 	void DoAttackHitCheck(float range);
 
 	//==============================================================
-	// アニメ再生（ステート側が呼ぶ）
-	//==============================================================
-	void PlayAnimationAuto(const std::string& animName, bool loop = true);
-
-	//==============================================================
 	// 生存
 	//==============================================================
 	bool IsAlive() const
@@ -79,8 +74,6 @@ public:
 	{
 		m_nowPos = pos;
 	}
-
-	void SetHPGaugeVisible(bool visible);
 
 	//==============================================================
 	// チュートリアルの敵専用関数
@@ -149,7 +142,9 @@ protected:
 	void InitModelAndCollider(
 		const std::string& modelPath,
 		const std::string& colliderName
-);private:
+);
+
+private:
 
 	//==============================================================
 	// 初期化
