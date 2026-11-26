@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <Application/GameObject/BaseObject/BaseObject.h>
+#include <Application/GameObject/EnemyCharactorBase/EnemyCharacterBase.h>
 
 class Player;
 class CameraBase;
@@ -9,8 +9,9 @@ class GameScene;
 template <class T>
 class StateMachine;
 
-class BossBase : public BaseObject
+class BossBase : public EnemyCharacterBase
 {
+public:
 public:
 	BossBase() {}
 	virtual ~BossBase() {}
@@ -27,16 +28,9 @@ public:
 		return m_nowPos + Math::Vector3(0, 1.0f, 0);
 	}
 
-	void SetTarget(const std::shared_ptr<Player>& target)
-	{
-		m_wpPlayer = target;
-	}
-
-	void SetCamera(std::shared_ptr<CameraBase> cam)
-	{
-		m_wpCamera = cam;
-	}
-
+	//==============================================================
+	// Boss専用ダメージ
+	//==============================================================
 	void DamageBoss(
 		float dmg,
 		bool isUltimate,
@@ -55,62 +49,12 @@ public:
 	//==============================================================
 	void PlayAnimationAuto(const std::string& animName, bool loop = true);
 
-	bool IsAttackAnimationEnd() const
-	{
-		return m_animator.IsAnimationEnd();
-	}
-
-	//==============================================================
-	// 方向
-	//==============================================================
-	Math::Vector3 GetForward() const
-	{
-		return GetForwardFromAngle(m_angleY);
-	}
-
-	Math::Vector3 GetRight() const
-	{
-		return GetRightFromAngle(m_angleY);
-	}
-
 	//==============================================================
 	// 生存
 	//==============================================================
 	bool IsAlive() const
 	{
 		return !m_isExpired;
-	}
-
-	//==============================================================
-	// スロー
-	//==============================================================
-	void StartSlow(float time)
-	{
-		m_isSlow = true;
-		m_slowTimer = time;
-	}
-
-	float GetTimeScale() const
-	{
-		if (m_isSlow)
-		{
-			return m_slowRate;
-		}
-
-		return 1.0f;
-	}
-
-	//==============================================================
-	// GameScene
-	//==============================================================
-	void SetGameScene(GameScene* scene)
-	{
-		m_pGameScene = scene;
-	}
-
-	void SetGameEnd(bool end)
-	{
-		m_isGameEnd = end;
 	}
 
 	//==============================================================
@@ -132,11 +76,6 @@ public:
 	void SetPos(const Math::Vector3& pos) override
 	{
 		m_nowPos = pos;
-	}
-
-	Math::Vector3 GetPos() const override
-	{
-		return m_nowPos;
 	}
 
 	void SetHPGaugeVisible(bool visible);
@@ -198,58 +137,11 @@ public:
 public:
 
 	//==============================================================
-	// モデル・アニメーション
-	//==============================================================
-
-	std::shared_ptr<KdModelWork> m_model;
-	KdAnimator m_animator;
-
-
-	//==============================================================
-	// 位置・方向
-	//==============================================================
-
-	Math::Vector3 m_nowPos = Math::Vector3::Zero;
-	Math::Vector3 m_moveDir = Math::Vector3::Zero;
-
-
-	//==============================================================
-	// カメラ
-	//==============================================================
-
-	std::weak_ptr<CameraBase> m_wpCamera;
-
-
-	//==============================================================
-	// GameScene
-	//==============================================================
-
-	GameScene* m_pGameScene = nullptr;
-
-
-	//==============================================================
-	// Player
-	//==============================================================
-
-	std::weak_ptr<Player> m_wpPlayer;
-
-
-	//==============================================================
 	// HP
 	//==============================================================
 
-	std::shared_ptr<HPGauge> m_hpGauge = nullptr;
-
 	float m_hp = 1000.0f;
 	int m_hpMax = 1000;
-
-
-	//==============================================================
-	// 回転
-	//==============================================================
-
-	float m_angleY = 0.0f;
-	float m_rotationSpeedDeg = 5.0f;
 
 
 	//==============================================================
@@ -295,20 +187,6 @@ public:
 
 
 	//==============================================================
-	// 重力・地面
-	//==============================================================
-
-	float m_gravity = 0.0f;
-
-
-	//==============================================================
-	// ワールド行列
-	//==============================================================
-
-	Math::Matrix m_mWorld;
-
-
-	//==============================================================
 	// アニメーション番号
 	//==============================================================
 
@@ -331,69 +209,10 @@ public:
 
 
 	//==============================================================
-	// 攻撃予知
-	//==============================================================
-
-	std::shared_ptr<KdSquarePolygon> m_preAttackPoly;
-
-	float m_preAttackAlpha = 0.0f;
-	bool m_preAttackActive = false;
-
-	Math::Vector3 m_preAttackPos = Math::Vector3::Zero;
-
-	float m_preAttackTimer = 0.0f;
-	float m_preAttackScale = 1.0f;
-
-
-	//==============================================================
-	// ヒットストップ
-	//==============================================================
-
-	float m_hitStopTimer = 0.0f;
-
-
-	//==============================================================
-	// ロックオン
-	//==============================================================
-
-	std::shared_ptr<KdSquarePolygon> m_lockOnIcon;
-
-	bool m_lockOnActive = false;
-
-	Math::Vector3 m_lockOnPos = Math::Vector3::Zero;
-
-	float m_lockOnScale = 1.0f;
-
-
-	//==============================================================
-	// 回避成功後スロー
-	//==============================================================
-
-	bool m_isSlow = false;
-
-	float m_slowTimer = 0.0f;
-
-	float m_slowRate = 0.2f;
-
-
-	//==============================================================
 	// ノックバック
 	//==============================================================
 
 	float m_knockBackPower = 0.75f;
-
-	// ノックバック移動の保留
-	Math::Vector3 m_knockBackMove = Math::Vector3::Zero;
-	bool m_hasPendingKnockBack = false;
-
-	//==============================================================
-	// 攻撃ヒット済み
-	//==============================================================
-
-	bool m_attackHitOnce = false;
-	bool m_attackSEPlayed = false;
-
-	bool m_isGameEnd = false;
 
 
 	//==============================================================
@@ -431,6 +250,7 @@ private:
 	//==============================================================
 	// Death（死亡演出）
 	//==============================================================
+
 	bool m_isDying = false;
 
 	// Deathアニメーション終了後のディゾルブ中か

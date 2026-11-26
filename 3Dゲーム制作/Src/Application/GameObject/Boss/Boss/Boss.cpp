@@ -1,5 +1,4 @@
 ﻿#include "Boss.h"
-
 void Boss::Init()
 {
 	BossBase::Init();
@@ -13,7 +12,4 @@ void Boss::Init()
 	animAttack1Index = 39;
 	animAttack2Index = 40;
 	animAttack3Index = 41;
-
-	m_hpMax = 1000;
-	m_hp = m_hpMax;
 }

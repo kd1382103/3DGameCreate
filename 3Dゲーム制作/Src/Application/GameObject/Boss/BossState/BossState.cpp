@@ -4,6 +4,52 @@
 #include <Application/Scene/SceneManager.h>
 #include <Application/main.h>
 
+namespace
+{
+	// 攻撃予知が終わり、回避受付も終わるアニメ時間
+	constexpr float kPredictionEndTime = 14.0f;
+
+	// 攻撃判定が出ているアニメ時間
+	constexpr float kHitStartTime = 15.0f;
+	constexpr float kHitEndTime = 25.0f;
+
+	using AttackType = BossBase::BossAttackType;
+
+	// 攻撃パターン(コンボの攻撃順)
+	const std::vector<AttackType> kAttackPatterns[] =
+	{
+		{ AttackType::Attack1, AttackType::Attack2, AttackType::Attack3 },
+		{ AttackType::Attack1, AttackType::Attack1, AttackType::Attack2 },
+		{ AttackType::Attack2, AttackType::Attack1, AttackType::Attack3 },
+		{ AttackType::Attack1, AttackType::Attack3 }
+	};
+
+	// 現在の攻撃パターンの、現在の番号の攻撃ステートへ遷移する
+	void ChangeToCurrentAttack(BossBase& owner)
+	{
+		switch (owner.m_attackPattern[owner.m_attackPatternIndex])
+		{
+		case AttackType::Attack1:
+			owner.stateMachine->ChangeState(
+				std::make_unique<BossStateAttack1>()
+			);
+			break;
+
+		case AttackType::Attack2:
+			owner.stateMachine->ChangeState(
+				std::make_unique<BossStateAttack2>()
+			);
+			break;
+
+		case AttackType::Attack3:
+			owner.stateMachine->ChangeState(
+				std::make_unique<BossStateAttack3>()
+			);
+			break;
+		}
+	}
+}
+
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // 待機ステート
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -24,7 +70,6 @@ void BossStateIdle::Update(BossBase& owner)
 	if (dist < owner.detectRange)
 	{
 		owner.stateMachine->ChangeState(std::make_unique<BossStateWalk>());
-		return;
 	}
 }
 
@@ -144,45 +189,10 @@ void BossStateWalk::Update(BossBase& owner)
 		//---------------------------------------
 		if (!owner.m_isComboStarted)
 		{
-			int pattern = rand() % 4;
+			int pattern =
+				rand() % static_cast<int>(std::size(kAttackPatterns));
 
-			switch (pattern)
-			{
-			case 0:
-				owner.m_attackPattern =
-				{
-					BossBase::BossAttackType::Attack1,
-					BossBase::BossAttackType::Attack2,
-					BossBase::BossAttackType::Attack3
-				};
-				break;
-
-			case 1:
-				owner.m_attackPattern =
-				{
-					BossBase::BossAttackType::Attack1,
-					BossBase::BossAttackType::Attack1,
-					BossBase::BossAttackType::Attack2
-				};
-				break;
-
-			case 2:
-				owner.m_attackPattern =
-				{
-					BossBase::BossAttackType::Attack2,
-					BossBase::BossAttackType::Attack1,
-					BossBase::BossAttackType::Attack3
-				};
-				break;
-
-			case 3:
-				owner.m_attackPattern =
-				{
-					BossBase::BossAttackType::Attack1,
-					BossBase::BossAttackType::Attack3
-				};
-				break;
-			}
+			owner.m_attackPattern = kAttackPatterns[pattern];
 
 			owner.m_attackPatternIndex = 0;
 			owner.m_isComboStarted = true;
@@ -191,31 +201,7 @@ void BossStateWalk::Update(BossBase& owner)
 		//---------------------------------------
 		// 最初の攻撃へ
 		//---------------------------------------
-		switch (
-			owner.m_attackPattern[
-				owner.m_attackPatternIndex
-			]
-			)
-		{
-		case BossBase::BossAttackType::Attack1:
-			owner.stateMachine->ChangeState(
-				std::make_unique<BossStateAttack1>()
-			);
-			break;
-
-		case BossBase::BossAttackType::Attack2:
-			owner.stateMachine->ChangeState(
-				std::make_unique<BossStateAttack2>()
-			);
-			break;
-
-		case BossBase::BossAttackType::Attack3:
-			owner.stateMachine->ChangeState(
-				std::make_unique<BossStateAttack3>()
-			);
-			break;
-		}
-		return;
+		ChangeToCurrentAttack(owner);
 	}
 }
 
@@ -228,22 +214,16 @@ void BossStateDash::Enter(BossBase& owner)
 	owner.PlayAnimationAuto("Run");
 }
 
-void BossStateDash::Update(BossBase& owner)
-{
-	BossStateMove::Update(owner);
-}
-
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-// 攻撃1ステート
+// 攻撃ステート(攻撃1〜3共通)
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 
-void BossStateAttack1::Enter(BossBase& owner)
+void BossStateAttackBase::Enter(BossBase& owner)
 {
 	//---------------------------------------
 	// 攻撃アニメーション開始
 	//---------------------------------------
-
-	owner.PlayAnimationAuto("Attack1", false);
+	owner.PlayAnimationAuto(m_animName, false);
 	owner.m_attackHitOnce = false;
 	owner.m_attackSEPlayed = false;
 
@@ -270,7 +250,7 @@ void BossStateAttack1::Enter(BossBase& owner)
 	}
 }
 
-void BossStateAttack1::Update(BossBase& owner)
+void BossStateAttackBase::Update(BossBase& owner)
 {
 	const float frameScale =
 		Application::Instance()
@@ -285,9 +265,9 @@ void BossStateAttack1::Update(BossBase& owner)
 	float t =
 		owner.m_animator.GetAnimeCurrentTime();
 
-	//========================================
+	//---------------------------------------
 	// 攻撃予知
-	//========================================
+	//---------------------------------------
 	if (owner.m_preAttackActive)
 	{
 		owner.m_preAttackTimer += dt;
@@ -296,14 +276,9 @@ void BossStateAttack1::Update(BossBase& owner)
 			owner.m_nowPos +
 			Math::Vector3(0, 2.0f, 0);
 
-		const float predictionEndTime = 14.0f;
-
 		float progress =
-			t / predictionEndTime;
-
-		progress =
 			std::clamp(
-				progress,
+				t / kPredictionEndTime,
 				0.0f,
 				1.0f
 			);
@@ -316,11 +291,10 @@ void BossStateAttack1::Update(BossBase& owner)
 			(1.0f - owner.m_preAttackAlpha) * 0.5f;
 	}
 
-	//========================================
+	//---------------------------------------
 	// 攻撃予知終了
-	//========================================
-	if (t >= 14.0f &&
-		owner.m_preAttackActive)
+	//---------------------------------------
+	if (t >= kPredictionEndTime && owner.m_preAttackActive)
 	{
 		owner.m_preAttackActive = false;
 
@@ -334,337 +308,41 @@ void BossStateAttack1::Update(BossBase& owner)
 			{
 				owner.StartSlow(2.0f);
 
+				// 成功フラグをリセット
 				player->m_justDodgeSuccess = false;
 			}
 
+			// 回避受付終了
 			player->m_canDodge = false;
 		}
 	}
 
-	//========================================
+	//---------------------------------------
 	// 攻撃判定
-	//========================================
-	if (t > 15.0f && t < 25.0f)
+	//---------------------------------------
+	if (t > kHitStartTime && t < kHitEndTime)
 	{
-		if (!owner.m_attackSEPlayed)
+		// 攻撃SE
+		if (!owner.m_attackSEPlayed &&
+			owner.GetTimeScale() >= 0.99f)
 		{
-			if (owner.GetTimeScale() >= 0.99f)
-			{
-				KdAudioManager::Instance().Play(
-					"Asset/Sounds/SE/Attack.wav",
-					SoundType::SE
-				);
+			KdAudioManager::Instance().Play(
+				"Asset/Sounds/SE/Attack.wav",
+				SoundType::SE
+			);
 
-				owner.m_attackSEPlayed = true;
-			}
+			owner.m_attackSEPlayed = true;
 		}
 
-		owner.DoAttackHitCheck(
-			owner.m_attackDist
-		);
+		owner.DoAttackHitCheck(owner.m_attackDist);
 	}
 
-	//========================================
+	//---------------------------------------
 	// 攻撃終了
-	//========================================
+	//---------------------------------------
 	if (owner.m_animator.IsAnimationEnd())
 	{
 		GoNextAttack(owner);
-		return;
-	}
-}
-// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-// 攻撃2ステート
-// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-
-void BossStateAttack2::Enter(BossBase& owner)
-{
-	//---------------------------------------
-	// 攻撃アニメーション開始
-	//---------------------------------------
-	owner.PlayAnimationAuto("Attack2", false);
-	owner.m_attackHitOnce = false;
-	owner.m_attackSEPlayed = false;
-
-	//---------------------------------------
-	// 攻撃予知開始
-	//---------------------------------------
-	owner.m_preAttackActive = true;
-	owner.m_preAttackAlpha = 1.0f;
-	owner.m_preAttackTimer = 0.0f;
-	owner.m_preAttackScale = 1.0f;
-
-
-	owner.m_preAttackPos =
-		owner.m_nowPos +
-		Math::Vector3(0, 2.0f, 0);
-
-	//---------------------------------------
-	// 回避可能
-	//---------------------------------------
-	auto player = owner.m_wpPlayer.lock();
-
-	if (player)
-	{
-		player->m_canDodge = true;
-	}
-}
-
-void BossStateAttack2::Update(BossBase& owner)
-{
-	const float frameScale =
-		Application::Instance()
-		.GetFPSController()
-		.GetFrameScale();
-
-	const float dt =
-		frameScale *
-		SceneManager::Instance().GetTimeScale() *
-		owner.GetTimeScale();
-
-	float t =
-		owner.m_animator.GetAnimeCurrentTime();
-
-	//---------------------------------------
-	// 攻撃予知
-	//---------------------------------------
-	if (owner.m_preAttackActive)
-	{
-		owner.m_preAttackTimer += dt;
-
-		owner.m_preAttackPos =
-			owner.m_nowPos +
-			Math::Vector3(0, 2.0f, 0);
-
-		const float predictionEndTime = 14.0f;
-
-		float progress =
-			t / predictionEndTime;
-
-		progress =
-			std::clamp(
-				progress,
-				0.0f,
-				1.0f
-			);
-
-		owner.m_preAttackAlpha =
-			1.0f - progress;
-
-		owner.m_preAttackScale =
-			1.0f +
-			(1.0f - owner.m_preAttackAlpha)
-			* 0.5f;
-	}
-
-	if (t >= 14.0f && owner.m_preAttackActive)
-	{
-		//---------------------------------------
-		// 予知終了
-		//---------------------------------------
-		owner.m_preAttackActive = false;
-
-		auto player =
-			owner.m_wpPlayer.lock();
-
-		if (player)
-		{
-			//---------------------------------------
-			// ジャスト回避成功
-			//---------------------------------------
-			if (player->m_justDodgeSuccess)
-			{
-				owner.StartSlow(2.0f);
-
-				// 成功フラグをリセット
-				player->m_justDodgeSuccess = false;
-			}
-
-			//---------------------------------------
-			// 回避受付終了
-			//---------------------------------------
-			player->m_canDodge = false;
-		}
-	}
-
-	//---------------------------------------
-	// 攻撃判定
-	//---------------------------------------
-	if (t > 15.0f && t < 25.0f)
-	{
-		//-----------------------------------
-		// 攻撃SE
-		//-----------------------------------
-		if (!owner.m_attackSEPlayed)
-		{
-			if (owner.GetTimeScale() >= 0.99f)
-			{
-				KdAudioManager::Instance().Play(
-					"Asset/Sounds/SE/Attack.wav",
-					SoundType::SE
-				);
-				owner.m_attackSEPlayed = true;
-			}
-		}
-		owner.DoAttackHitCheck(owner.m_attackDist);
-	}
-
-	//---------------------------------------
-	// 攻撃終了
-	//---------------------------------------
-	if (
-		owner.m_animator.IsAnimationEnd()
-		)
-	{
-		GoNextAttack(owner);
-		return;
-	}
-}
-
-// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-// 攻撃3ステート
-// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
-
-void BossStateAttack3::Enter(BossBase& owner)
-{
-	//---------------------------------------
-	// 攻撃アニメーション開始
-	//---------------------------------------
-	owner.PlayAnimationAuto("Attack3", false);
-	owner.m_attackHitOnce = false;
-	owner.m_attackSEPlayed = false;
-
-	//---------------------------------------
-	// 攻撃予知開始
-	//---------------------------------------
-	owner.m_preAttackActive = true;
-	owner.m_preAttackAlpha = 1.0f;
-	owner.m_preAttackTimer = 0.0f;
-	owner.m_preAttackScale = 1.0f;
-
-
-	owner.m_preAttackPos =
-		owner.m_nowPos +
-		Math::Vector3(0, 2.0f, 0);
-
-	//---------------------------------------
-	// 回避可能
-	//---------------------------------------
-	auto player = owner.m_wpPlayer.lock();
-
-	if (player)
-	{
-		player->m_canDodge = true;
-	}
-}
-
-void BossStateAttack3::Update(BossBase& owner)
-{
-	const float frameScale =
-		Application::Instance()
-		.GetFPSController()
-		.GetFrameScale();
-
-	const float dt =
-		frameScale *
-		SceneManager::Instance().GetTimeScale() *
-		owner.GetTimeScale();
-
-	float t =
-		owner.m_animator.GetAnimeCurrentTime();
-
-	//---------------------------------------
-	// 攻撃予知
-	//---------------------------------------
-	if (owner.m_preAttackActive)
-	{
-		owner.m_preAttackTimer += dt;
-
-		owner.m_preAttackPos =
-			owner.m_nowPos +
-			Math::Vector3(0, 2.0f, 0);
-
-		const float predictionEndTime = 14.0f;
-
-		float progress =
-			t / predictionEndTime;
-
-		progress =
-			std::clamp(
-				progress,
-				0.0f,
-				1.0f
-			);
-
-		owner.m_preAttackAlpha =
-			1.0f - progress;
-
-		owner.m_preAttackScale =
-			1.0f +
-			(1.0f - owner.m_preAttackAlpha)
-			* 0.5f;
-	}
-
-	if (t >= 14.0f && owner.m_preAttackActive)
-	{
-		//---------------------------------------
-		// 予知終了
-		//---------------------------------------
-		owner.m_preAttackActive = false;
-
-		auto player =
-			owner.m_wpPlayer.lock();
-
-		if (player)
-		{
-			//---------------------------------------
-			// ジャスト回避成功
-			//---------------------------------------
-			if (player->m_justDodgeSuccess)
-			{
-				owner.StartSlow(2.0f);
-
-				// 成功フラグをリセット
-				player->m_justDodgeSuccess = false;
-			}
-
-			//---------------------------------------
-			// 回避受付終了
-			//---------------------------------------
-			player->m_canDodge = false;
-		}
-	}
-	//---------------------------------------
-	// 攻撃判定
-	//---------------------------------------
-	if (t > 15.0f && t < 25.0f)
-	{
-		//-----------------------------------
-		// 攻撃SE
-		//-----------------------------------
-		if (!owner.m_attackSEPlayed)
-		{
-			if (owner.GetTimeScale() >= 0.99f)
-			{
-				KdAudioManager::Instance().Play(
-					"Asset/Sounds/SE/Attack.wav",
-					SoundType::SE
-				);
-				owner.m_attackSEPlayed = true;
-			}
-		}
-		owner.DoAttackHitCheck(owner.m_attackDist);
-	}
-
-	//---------------------------------------
-	// 攻撃終了
-	//---------------------------------------
-	if (
-		owner.m_animator.IsAnimationEnd()
-		)
-	{
-		GoNextAttack(owner);
-		return;
 	}
 }
 
@@ -699,33 +377,7 @@ void BossStateAttackBase::GoNextAttack(
 	//---------------------------------------
 	// 次の攻撃へ直接移動
 	//---------------------------------------
-	switch (
-		owner.m_attackPattern[
-			owner.m_attackPatternIndex
-		]
-		)
-	{
-	case BossBase::BossAttackType::Attack1:
-
-		owner.stateMachine->ChangeState(
-			std::make_unique<BossStateAttack1>()
-		);
-		break;
-
-	case BossBase::BossAttackType::Attack2:
-
-		owner.stateMachine->ChangeState(
-			std::make_unique<BossStateAttack2>()
-		);
-		break;
-
-	case BossBase::BossAttackType::Attack3:
-
-		owner.stateMachine->ChangeState(
-			std::make_unique<BossStateAttack3>()
-		);
-		break;
-	}
+	ChangeToCurrentAttack(owner);
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -737,7 +389,6 @@ void BossStateHit::Enter(BossBase& owner)
 	// 被弾アニメーション再生
 	owner.PlayAnimationAuto("Hit", false);
 }
-
 
 void BossStateHit::Update(BossBase& owner)
 {
@@ -756,4 +407,3 @@ void BossStateHit::Update(BossBase& owner)
 		std::make_unique<BossStateIdle>()
 	);
 }
-

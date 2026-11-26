@@ -131,8 +131,15 @@ void EnemyBase::Update()
 	//========================================
 	// HPゲージ
 	//========================================
-	UpdateHPGauge();
-
+	UpdateWorldHPGauge(
+			m_hpGauge,
+			m_wpCamera,
+			m_wpPlayer,
+			m_nowPos,
+			m_hp,
+			m_hpMax
+		);
+	
 	//========================================
 	// デバッグ
 	//========================================
@@ -968,44 +975,6 @@ void EnemyBase::UpdateAnimation(float dt)
 		m_model,
 		dt
 	);
-}
-
-void EnemyBase::UpdateHPGauge()
-{
-	if (!m_hpGauge) return;
-
-	//---------------------------------------
-	// カメラ
-	//---------------------------------------
-	if (auto cam = m_wpCamera.lock())
-	{
-		m_hpGauge->SetCamera(cam);
-	}
-
-	//---------------------------------------
-	// 距離によるスケール
-	//---------------------------------------
-	float scale = 1.0f;
-
-	if (auto player = m_wpPlayer.lock())
-	{
-		float dist =
-			(player->GetPos() - m_nowPos).Length();
-
-		const float minDist = 3.0f;
-		const float maxDist = 15.0f;
-
-		float t =
-			(dist - minDist) /
-			(maxDist - minDist);
-
-		t = std::clamp(t, 0.0f, 1.0f);
-
-		scale = 1.0f - t * 0.6f;
-	}
-
-	m_hpGauge->SetScale(scale);
-	m_hpGauge->SetGauge(m_hp, m_hpMax);
 }
 
 void EnemyBase::UpdateDebug()

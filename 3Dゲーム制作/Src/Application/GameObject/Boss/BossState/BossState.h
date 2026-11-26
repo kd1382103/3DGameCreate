@@ -18,11 +18,23 @@ public:
 	void Update(BossBase& owner) override;
 };
 
-//攻撃
+//攻撃(攻撃1〜3の共通処理)
 class BossStateAttackBase : public StateBase<BossBase>
 {
+public:
+	void Enter(BossBase& owner) override;
+	void Update(BossBase& owner) override;
+
 protected:
+	// animName : 再生する攻撃アニメーション名
+	explicit BossStateAttackBase(const char* animName)
+		: m_animName(animName)
+	{}
+
 	void GoNextAttack(BossBase& owner);
+
+private:
+	std::string m_animName;
 };
 
 // 歩き
@@ -38,31 +50,27 @@ class BossStateDash : public BossStateMove
 {
 public:
 	void Enter(BossBase& owner) override;
-	void Update(BossBase& owner) override;
 };
 
 // 攻撃1
 class BossStateAttack1 : public BossStateAttackBase
 {
 public:
-	void Enter(BossBase& owner) override;
-	void Update(BossBase& owner) override;
+	BossStateAttack1() : BossStateAttackBase("Attack1") {}
 };
 
 // 攻撃2
 class BossStateAttack2 : public BossStateAttackBase
 {
 public:
-	void Enter(BossBase& owner) override;
-	void Update(BossBase& owner) override;
+	BossStateAttack2() : BossStateAttackBase("Attack2") {}
 };
 
 // 攻撃3
 class BossStateAttack3 : public BossStateAttackBase
 {
 public:
-	void Enter(BossBase& owner) override;
-	void Update(BossBase& owner) override;
+	BossStateAttack3() : BossStateAttackBase("Attack3") {}
 };
 
 //==============================================================

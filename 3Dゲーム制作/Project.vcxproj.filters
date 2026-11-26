@@ -235,6 +235,12 @@
     <Filter Include="Src\Application\GameObject\UI\ResultUI">
       <UniqueIdentifier>{c24eb283-86e0-422e-8e5d-267fcc39face}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\GameObject\ScreenFade">
+      <UniqueIdentifier>{63c3c372-9ecd-44ae-a8db-1f0a77dab050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Src\Application\GameObject\EnemyCharactorBase">
+      <UniqueIdentifier>{70281047-6697-4045-80fd-53e072f0cfc0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -549,11 +555,14 @@
     <ClInclude Include="Src\Application\Manager\ScoreManager\ScoreManager.h">
       <Filter>Src\Application\Manager\ScoreManager</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Application\GameObject\BaseObject\ScreenFade.h">
-      <Filter>Src\Application\GameObject\BaseObject</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Application\GameObject\UI\ResultUI\ResultUI.h">
       <Filter>Src\Application\GameObject\UI\ResultUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\ScreenFade\ScreenFade.h">
+      <Filter>Src\Application\GameObject\ScreenFade</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Application\GameObject\EnemyCharactorBase\EnemyCharacterBase.h">
+      <Filter>Src\Application\GameObject\EnemyCharactorBase</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -827,14 +836,17 @@
     <ClCompile Include="Src\Application\Manager\ScoreManager\ScoreManager.cpp">
       <Filter>Src\Application\Manager\ScoreManager</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Application\GameObject\BaseObject\ScreenFade.cpp">
-      <Filter>Src\Application\GameObject\BaseObject</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Application\GameObject\UI\ResultUI\ResultUI.cpp">
       <Filter>Src\Application\GameObject\UI\ResultUI</Filter>
     </ClCompile>
     <ClCompile Include="Src\Application\GameObject\Effect\EffectManager.cpp">
       <Filter>Src\Application\GameObject\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\ScreenFade\ScreenFade.cpp">
+      <Filter>Src\Application\GameObject\ScreenFade</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\GameObject\EnemyCharactorBase\EnemyCharacterBase.cpp">
+      <Filter>Src\Application\GameObject\EnemyCharactorBase</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

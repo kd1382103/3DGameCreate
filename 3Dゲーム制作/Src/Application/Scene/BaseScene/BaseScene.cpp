@@ -2,7 +2,7 @@
 #include <Application/GameObject/Camera/CameraBase.h>
 #include<Application/GameObject/Player/Player/Player.h>
 #include<Application/GameObject/Enemy/EnemyBase.h>
-#include <Application/GameObject/BaseObject/ScreenFade.h>
+#include <Application/GameObject/ScreenFade/ScreenFade.h>
 
 void BaseScene::PreUpdate()
 {

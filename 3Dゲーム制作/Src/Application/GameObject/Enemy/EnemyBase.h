@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <Application/GameObject/BaseObject/BaseObject.h>
+#include <Application/GameObject/EnemyCharactorBase/EnemyCharacterBase.h>
 
 class Player;
 class CameraBase;
@@ -9,7 +9,7 @@ class GameScene;
 template <class T>
 class StateMachine;
 
-class EnemyBase : public BaseObject
+class EnemyBase : public EnemyCharacterBase
 {
 public:
 	EnemyBase() = default;
@@ -20,17 +20,20 @@ public:
 	void Update() override;
 	void PostUpdate() override;
 	void DrawLit() override;
-	void DrawSprite()override;
+	void DrawSprite() override;
 	void GenerateDepthMapFromLight() override;
 
+	//==============================================================
+	// Hit Center
+	//==============================================================
 	virtual Math::Vector3 GetHitCenter() const
 	{
 		return m_nowPos + Math::Vector3(0, 1.0f, 0); // 敵ごとに調整可能
 	}
 
-	void SetTarget(const std::shared_ptr<Player>& target) { m_wpPlayer = target; }
-	void SetCamera(std::shared_ptr<CameraBase> cam) { m_wpCamera = cam; }
-
+	//==============================================================
+	// ダメージ
+	//==============================================================
 	void Damage(
 		float dmg,
 		bool isUltimate,
@@ -38,61 +41,27 @@ public:
 		float knockBackRate
 	) override;
 
+	//==============================================================
 	// 攻撃判定（ステート側が呼ぶ）
+	//==============================================================
 	void DoAttackHitCheck(float range);
 
+	//==============================================================
 	// アニメ再生（ステート側が呼ぶ）
+	//==============================================================
 	void PlayAnimationAuto(const std::string& animName, bool loop = true);
 
-	// 方向ベクトル取得
-	Math::Vector3 GetForward() const
+	//==============================================================
+	// 生存
+	//==============================================================
+	bool IsAlive() const
 	{
-		return GetForwardFromAngle(m_angleY);
+		return !m_isExpired && !m_isDying;
 	}
-
-	Math::Vector3 GetRight() const
-	{
-		return GetRightFromAngle(m_angleY);
-	}
-
-	bool IsAttackAnimationEnd() const
-	{
-		return m_animator.IsAnimationEnd();
-	}
-
-	bool IsAlive() const { return !m_isExpired && !m_isDying; }
 
 	//==============================================================
-	// スロー
-	//==============================================================
-	void StartSlow(float time)
-	{
-		m_isSlow = true;
-		m_slowTimer = time;
-	}
-
-	float GetTimeScale() const
-	{
-		if (m_isSlow)
-		{
-			return m_slowRate;
-		}
-
-		return 1.0f;
-	}
-
-
-	void SetGameScene(GameScene* scene)
-	{
-		m_pGameScene = scene;
-	}
-
-	void SetGameEnd(bool end)
-	{
-		m_isGameEnd = end;
-	}
-
 	// Playerとの接触判定用
+	//==============================================================
 	float GetCollisionRadius() const
 	{
 		return m_collisionRadius;
@@ -103,65 +72,88 @@ public:
 		return m_collisionHeight;
 	}
 
+	//==============================================================
+	// Position
+	//==============================================================
 	void SetPos(const Math::Vector3& pos)
 	{
 		m_nowPos = pos;
 	}
 
-	Math::Vector3 GetPos() const override
-	{
-		return m_nowPos;
-	}
-
 	void SetHPGaugeVisible(bool visible);
 
-	//------------------------------------
-	//チュートリアルの敵専用関数
-	//------------------------------------
-	
+	//==============================================================
+	// チュートリアルの敵専用関数
+	//==============================================================
+
 	// 強制的に削除状態にする
-	void SetExpired() { m_isExpired = true; }
+	void SetExpired()
+	{
+		m_isExpired = true;
+	}
 
 	// チュートリアル用攻撃
-	void SetCanAttack(bool enable) { m_canAttack = enable; }
-	bool GetCanAttack() const { return m_canAttack; }
+	void SetCanAttack(bool enable)
+	{
+		m_canAttack = enable;
+	}
+
+	bool GetCanAttack() const
+	{
+		return m_canAttack;
+	}
 
 	void StartTutorialAttack();
 	void StopTutorialAttack();
-	bool IsTutorialAttackFinished() const { return m_tutorialAttackFinished; }
 
-	void ResetTutorialAttackFinished() { m_tutorialAttackFinished = false; }
+	bool IsTutorialAttackFinished() const
+	{
+		return m_tutorialAttackFinished;
+	}
 
-	//------------------------------------
+	void ResetTutorialAttackFinished()
+	{
+		m_tutorialAttackFinished = false;
+	}
 
-	// ノックバックするか
+	//==============================================================
+	// ノックバック
+	//==============================================================
 	void SetCanKnockBack(bool enable)
 	{
 		m_canKnockBack = enable;
 	}
 
+	//==============================================================
+	// 攻撃関連
+	//==============================================================
 	void StopAttackSound();
 	void LookAtPlayer();
-	bool IsAttacking() const { return m_isAttacking; }
+
+	bool IsAttacking() const
+	{
+		return m_isAttacking;
+	}
 
 	//==============================================================
 	// Resolve（出現演出）
 	//==============================================================
-	bool IsResolving() const { return m_isResolving; }
+	bool IsResolving() const
+	{
+		return m_isResolving;
+	}
+
 	void StartResolve();
 
-	protected:
-		void InitModelAndCollider(
-			const std::string& modelPath,
-			const std::string& colliderName
-		);
-
-private:
+protected:
+	void InitModelAndCollider(
+		const std::string& modelPath,
+		const std::string& colliderName
+);private:
 
 	//==============================================================
 	// 初期化
 	//==============================================================
-	void InitAttackPrediction();
 	void InitHPGauge();
 	void InitStateMachine();
 
@@ -169,7 +161,6 @@ private:
 	// 更新
 	//==============================================================
 	void UpdateAnimation(float dt);
-	void UpdateHPGauge();
 	void UpdateDebug();
 	void UpdateResolve(float frameScale);
 
@@ -188,88 +179,72 @@ private:
    
 public:
 
-	// モデル・アニメーション
-	std::shared_ptr<KdModelWork> m_model;
-	KdAnimator m_animator;
-
-	// 位置・方向
-	Math::Vector3 m_nowPos = Math::Vector3::Zero;
-	Math::Vector3 m_moveDir = Math::Vector3::Zero;
-
-	// カメラ
-	std::weak_ptr<CameraBase> m_wpCamera;
-
-	//ゲームシーン
-	GameScene* m_pGameScene = nullptr;
-
-	// プレイヤー
-	std::weak_ptr<Player> m_wpPlayer;
-
-	//HP
-	std::shared_ptr<HPGauge> m_hpGauge = nullptr;
-
-	std::shared_ptr<KdSoundInstance> m_attackSound;
-
-	// 回転
-	float m_angleY = 0.0f;
-	float m_rotationSpeedDeg = 5.0f;  
-	
+	//==============================================================
 	// 移動
-	float m_moveSpeed ;         
+	//==============================================================
 
+	float m_moveSpeed;
+
+	//==============================================================
 	// 攻撃
-	float m_attackDist ;      
-	float m_attackDamage;   
+	//==============================================================
 
-	//　索敵距離
-	float detectRange ;
+	float m_attackDist;
+	float m_attackDamage;
 
+	//==============================================================
+	// 索敵距離
+	//==============================================================
+
+	float detectRange;
+
+	//==============================================================
 	// HP
-	float m_hp ;
-	int   m_hpMax ;
+	//==============================================================
 
+	float m_hp;
+	int m_hpMax;
+
+	//==============================================================
 	// ステートマシン
+	//==============================================================
+
 	std::shared_ptr<StateMachine<EnemyBase>> stateMachine;
 
-	// 重力・地面判定・壁判定
-	float m_gravity = 0.0f;
-	bool  m_isGround = false;
+	//==============================================================
+	// 地面判定
+	//==============================================================
 
-	// ワールド行列
-	Math::Matrix m_mWorld;
+	bool m_isGround = false;
+
+	//==============================================================
+	// アニメーション名
+	//==============================================================
 
 	// アニメ名・番号は Base に持たない
-	//   → 各敵が Init() で設定する
+	// 各敵が Init() で設定する
+
 	std::string animIdleName;
 	std::string animWalkName;
 	std::string animDashName;
 	std::string animAttackName;
 
-	// 攻撃予知（ビルボード）
-	std::shared_ptr<KdSquarePolygon> m_preAttackPoly;
-	float m_preAttackAlpha = 0.0f;
-	bool  m_preAttackActive = false;
+	//==============================================================
+	// 攻撃サウンド
+	//==============================================================
 
-	Math::Vector3 m_preAttackPos = Math::Vector3::Zero;
-	float m_preAttackTimer = 0.0f;
-	float m_preAttackScale = 1.0f;
-	
-	float m_hitStopTimer = 0.0f;
+	std::shared_ptr<KdSoundInstance> m_attackSound;
 
-	// ロックオンアイコン
-	std::shared_ptr<KdSquarePolygon> m_lockOnIcon;
-	bool m_lockOnActive = false;
-	Math::Vector3 m_lockOnPos = Math::Vector3::Zero;
-	float m_lockOnScale = 1.0f;
+	//==============================================================
+	// ノックバック可能か
+	//==============================================================
 
-	// ノックバックするか
 	bool m_canKnockBack = true;
 
-	// ノックバック移動の保留
-	Math::Vector3 m_knockBackMove = Math::Vector3::Zero;
-	bool m_hasPendingKnockBack = false;
+	//==============================================================
+	// チュートリアル専用
+	//==============================================================
 
-	//チュートリアル専用
 	bool m_canAttack = false;
 
 	// チュートリアル攻撃中か
@@ -278,34 +253,32 @@ public:
 	// チュートリアル攻撃を回避成功で終了したか
 	bool m_tutorialAttackFinished = false;
 
-	bool m_attackHitOnce = false;
-	bool m_attackSEPlayed = false;
+	//==============================================================
+	// 攻撃中
+	//==============================================================
 
-	bool m_isGameEnd = false;
-
-	// 攻撃中か
 	bool m_isAttacking = false;
+
+	//==============================================================
+	// 死亡
+	//==============================================================
 
 	bool m_isDying = false;
 
-
 private:
 
+	//==============================================================
 	// Playerとの接触判定用
+	//==============================================================
+
 	float m_collisionRadius = 0.5f;
 	float m_collisionHeight = 1.0f;
 
 	//==============================================================
-	// スロー
-	//==============================================================
-	bool m_isSlow = false;
-	float m_slowTimer = 0.0f;
-	float m_slowRate = 0.2f;
-
-	//==============================================================
 	// Resolve（敵出現演出）
 	//==============================================================
-	bool  m_isResolving = false;
+
+	bool m_isResolving = false;
 	float m_resolveTimer = 0.0f;
 
 	// 60FPS基準で45フレーム = 0.75秒
@@ -313,7 +286,7 @@ private:
 
 	// ディゾルブ値
 	float m_resolveDissolve = 1.0f;
-	
+
 	// ディゾルブ境界の幅
 	float m_resolveEdgeRange = 0.08f;
 

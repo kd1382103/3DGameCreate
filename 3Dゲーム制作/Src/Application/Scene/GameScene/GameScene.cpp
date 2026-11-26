@@ -36,7 +36,7 @@
 #include <Application/Manager/TimeManager/TimeManager.h>
 #include <Application/Manager/ScoreManager/ScoreManager.h>
 
-#include <Application/GameObject/BaseObject/ScreenFade.h>
+#include <Application/GameObject/ScreenFade/ScreenFade.h>
 #include <Application/GameObject/UI/ResultUI/ResultUI.h>
 
 #include <Application/main.h>
