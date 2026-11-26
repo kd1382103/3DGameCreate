@@ -15,9 +15,10 @@ public:
 	virtual ~EnemyCharacterBase() {}
 
 	//==============================================================
-	// HPゲージ初期化
+	// 共通UI初期化
 	//==============================================================
 	void InitHPGauge();
+	void InitWorldUI();
 
 	//==============================================================
 	// 深度マップ描画
@@ -90,6 +91,32 @@ public:
 	//==============================================================
 	Math::Vector3 GetPos() const override { return m_nowPos; }
 	
+	//==============================================================
+	// Collision
+	//==============================================================
+	float GetCollisionRadius() const
+	{
+		return m_collisionRadius;
+	}
+
+	float GetCollisionHeight() const
+	{
+		return m_collisionHeight;
+	}
+
+	//==============================================================
+	// Position
+	//==============================================================
+	void SetPos(const Math::Vector3& pos) override
+	{
+		m_nowPos = pos;
+	}
+
+	//==============================================================
+	// 攻撃判定
+	//==============================================================
+	void DoAttackHitCheck(float range, bool checkHitStop);
+
 protected:
 	//==============================================================
 	// ノックバック判定
@@ -100,6 +127,11 @@ protected:
 	// 視野角カリング
 	//==============================================================
 	bool IsInCameraView() const;
+
+	//==============================================================
+	// スロー・重力の共通更新
+	//==============================================================
+	void UpdateSlowAndGravity(float dt);
 
 public:
 
@@ -163,4 +195,21 @@ public:
 	float m_slowTimer = 0.0f;
 	float m_slowRate = 0.2f;
 
+	// HP
+	float m_hp;
+	int m_hpMax;
+
+	// 移動
+	float m_moveSpeed;
+
+	// 攻撃
+	float m_attackDist;
+	float m_attackDamage;
+
+	// 索敵
+	float detectRange;
+
+	// Playerとの接触判定
+	float m_collisionRadius = 0.5f;
+	float m_collisionHeight = 1.0f;
 };

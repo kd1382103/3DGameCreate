@@ -1,8 +1,10 @@
 ﻿#include "EnemyCharacterBase.h"
 
 #include <Application/GameObject/Camera/CameraBase.h>
+#include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
 #include <Application/Scene/SceneManager.h>
+#include <Application/main.h>
 //==============================================================
 // アニメーション
 //==============================================================
@@ -22,8 +24,9 @@ void EnemyCharacterBase::PlayAnimationAuto(
 }
 
 //==============================================================
-// HPゲージ初期化・表示
+// UI初期化・表示
 //==============================================================
+//HPゲージ初期化
 void EnemyCharacterBase::InitHPGauge()
 {
 	m_hpGauge = std::make_shared<HPGauge>();
@@ -31,6 +34,26 @@ void EnemyCharacterBase::InitHPGauge()
 	m_hpGauge->SetMode(HPGauge::GaugeMode::World);
 }
 
+// ワールドUI初期化
+void EnemyCharacterBase::InitWorldUI()
+{
+	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
+	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
+
+	SetupWorldPolygon(
+		*m_preAttackPoly,
+		"Asset/Textures/Effect/PreAttack.png",
+		1.0f
+	);
+
+	SetupWorldPolygon(
+		*m_lockOnIcon,
+		"Asset/Textures/Effect/LookOn.png",
+		0.8f
+	);
+}
+
+// HPゲージ表示
 void EnemyCharacterBase::SetHPGaugeVisible(bool visible)
 {
 	if (m_hpGauge)
@@ -385,3 +408,87 @@ bool EnemyCharacterBase::IsInCameraView() const
 
 	return cam->IsInCameraView(center, 2.0f);
 }
+
+//==============================================================
+// スロー・重力の共通更新
+//==============================================================
+void EnemyCharacterBase::UpdateSlowAndGravity(float dt)
+{
+	//========================================
+	// スロー更新
+	//========================================
+	UpdateSlowTimer(
+		m_isSlow,
+		m_slowTimer,
+		Application::Instance().GetDeltaTime()
+	);
+
+	//========================================
+	// 重力
+	//========================================
+	ApplyGravity(
+		m_gravity,
+		m_nowPos,
+		dt
+	);
+}
+
+//==============================================================
+// 攻撃判定
+//==============================================================
+void EnemyCharacterBase::DoAttackHitCheck(float range, bool checkHitStop)
+{
+	// ヒットストップ中は攻撃判定を行わない
+	if (checkHitStop && m_hitStopTimer > 0.0f)
+	{
+		return;
+	}
+
+	if (m_attackHitOnce) return;
+
+	auto player = m_wpPlayer.lock();
+	if (!player) return;
+
+	if (player->m_isInvincible) return;
+
+	// Playerへの方向
+	Math::Vector3 toPlayer =
+		player->GetPos() - m_nowPos;
+
+	toPlayer.y = 0.0f;
+
+	float dist = toPlayer.Length();
+
+	if (dist > range) return;
+	if (dist < 0.0001f) return;
+
+	toPlayer.Normalize();
+
+	// 正面ベクトル
+	Math::Vector3 forward = GetForward();
+	forward.y = 0.0f;
+
+	if (forward.LengthSquared() < 0.0001f) return;
+
+	forward.Normalize();
+
+	// 正面判定
+	float dot = std::clamp(
+		forward.Dot(toPlayer),
+		-1.0f,
+		1.0f
+	);
+
+	float angle = std::acos(dot);
+
+	// 正面90度以内なら攻撃ヒット
+	if (angle > DirectX::XMConvertToRadians(90.0f))
+	{
+		return;
+	}
+
+	player->Damage(m_attackDamage, false, false, 1.0f);
+
+	m_attackHitOnce = true;
+}
+

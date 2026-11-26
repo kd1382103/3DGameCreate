@@ -18,14 +18,11 @@ void BossBase::Init()
 	// モデルはBossが設定する
 	m_animator = KdAnimator();
 
-	// ワールド上で表示するUIの初期化
-	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
-	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
-	SetupWorldPolygon(*m_preAttackPoly, "Asset/Textures/Effect/PreAttack.png", 1.0f);
-	SetupWorldPolygon(*m_lockOnIcon, "Asset/Textures/Effect/LookOn.png", 0.8);
-
 	// HPゲージ
 	InitHPGauge();
+
+	// 3D空間上に出すUI
+	InitWorldUI();
 
 	// Boss専用ステートマシン
 	stateMachine =
@@ -117,18 +114,9 @@ void BossBase::Update()
 		bossTimeScale;
 
 	//========================================
-	// スロー更新
+	// スロー・重力
 	//========================================
-	UpdateSlowTimer(
-		m_isSlow,
-		m_slowTimer,
-		Application::Instance().GetDeltaTime()
-	);
-
-	//========================================
-	// 重力
-	//========================================
-	ApplyGravity(m_gravity, m_nowPos, dt);
+	UpdateSlowAndGravity(dt);
 
 	//========================================
 	// ステート
@@ -563,63 +551,6 @@ void BossBase::DamageBoss(
 	m_preAttackActive = false;
 	m_preAttackAlpha = 0.0f;
 	m_preAttackTimer = 0.0f;
-}
-//==============================================================
-// 攻撃判定
-//==============================================================
-void BossBase::DoAttackHitCheck(float range)
-{
-	if (m_attackHitOnce) return;
-
-	auto player = m_wpPlayer.lock();
-	if (!player) return;
-
-	if (player->m_isInvincible) return;
-
-	Math::Vector3 toPlayer =
-		player->GetPos() -
-		m_nowPos;
-
-	toPlayer.y = 0;
-
-	float dist =
-		toPlayer.Length();
-
-	if (dist > range) return;
-	if (dist < 0.0001f) return;
-
-	toPlayer.Normalize();
-
-	// Bossの正面
-	Math::Vector3 forward =
-		GetForward();
-
-	forward.y = 0;
-
-	if (dist < 0.0001f) return;
-
-	forward.Normalize();
-
-	// 正面判定
-	float dot =
-		std::clamp(
-			forward.Dot(toPlayer),
-			-1.0f,
-			1.0f
-		);
-
-	float angle =
-		acos(dot);
-
-	if (angle >
-		DirectX::XMConvertToRadians(90.0f))
-	{
-		return;
-	}
-
-	player->Damage(m_attackDamage, false, false, 1.0f);
-
-	m_attackHitOnce = true;
 }
 
 //==============================================================

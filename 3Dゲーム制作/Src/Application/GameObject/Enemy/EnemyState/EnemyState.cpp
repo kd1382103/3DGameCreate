@@ -399,7 +399,7 @@ void EnemyBaseStateAttack::Update(EnemyBase& owner)
 				owner.m_attackSEPlayed = true;
 			}
 		}		
-		owner.DoAttackHitCheck(owner.m_attackDist);
+		owner.DoAttackHitCheck(owner.m_attackDist,true);
 	}
 
 	//==============================

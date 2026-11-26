@@ -334,7 +334,7 @@ void BossStateAttackBase::Update(BossBase& owner)
 			owner.m_attackSEPlayed = true;
 		}
 
-		owner.DoAttackHitCheck(owner.m_attackDist);
+		owner.DoAttackHitCheck(owner.m_attackDist,false);
 	}
 
 	//---------------------------------------

@@ -19,13 +19,12 @@ void EnemyBase::Init()
 {
 	m_animator = KdAnimator();
 
-	//ワールド上で表示するUIの初期化
-	m_preAttackPoly = std::make_shared<KdSquarePolygon>();
-	m_lockOnIcon = std::make_shared<KdSquarePolygon>();
-	SetupWorldPolygon(*m_preAttackPoly, "Asset/Textures/Effect/PreAttack.png", 1.0f);
-	SetupWorldPolygon(*m_lockOnIcon, "Asset/Textures/Effect/LookOn.png", 0.8f);
-
+	// HPゲージ
 	InitHPGauge();
+
+	// 3D空間上に出すUI
+	InitWorldUI();
+
 	InitStateMachine();
 	StartResolve();
 }
@@ -87,18 +86,9 @@ void EnemyBase::Update()
 		enemyTimeScale;
 
 	//========================================
-	// スロー更新
+	// スロー・重力
 	//========================================
-	UpdateSlowTimer(
-		m_isSlow,
-		m_slowTimer,
-		Application::Instance().GetDeltaTime()
-	);
-
-	//========================================
-	// 重力
-	//========================================
-	ApplyGravity(m_gravity, m_nowPos, scaledFrameScale);
+	UpdateSlowAndGravity(scaledFrameScale);
 
 	//========================================
 	// ヒットストップ
@@ -501,45 +491,6 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 	}
 }
 
-//==============================================================
-// 攻撃判定
-//==============================================================
-void EnemyBase::DoAttackHitCheck(float range)
-{
-	// ヒットストップ中は攻撃判定を行わない
-	if (m_hitStopTimer > 0.0f)
-	{
-		return;
-	}
-
-	if (m_attackHitOnce) return;
-
-	auto player = m_wpPlayer.lock();
-	if (!player) return;
-	if (player->m_isInvincible) return;
-
-	Math::Vector3 toPlayer = player->GetPos() - m_nowPos;
-	toPlayer.y = 0;
-
-	float dist = toPlayer.Length();
-	if (dist > range) return;
-	if (dist < 0.0001f) return;
-	toPlayer.Normalize();
-
-	//敵の正面ベクトル
-	Math::Vector3 forward = GetForward();
-	forward.y = 0;
-	forward.Normalize();
-
-	//正面判定
-	float dot = std::clamp(forward.Dot(toPlayer), -1.0f, 1.0f);
-	float angle =acos(dot);
-
-	//正面からの攻撃ならヒット
-	if (angle > DirectX::XMConvertToRadians(90.0f))return;
-	player->Damage(m_attackDamage, false, false, 1.0f);
-	m_attackHitOnce = true;
-}
 
 void EnemyBase::StartTutorialAttack()
 {
