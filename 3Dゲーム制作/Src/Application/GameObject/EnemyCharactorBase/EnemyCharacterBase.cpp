@@ -22,8 +22,14 @@ void EnemyCharacterBase::PlayAnimationAuto(
 }
 
 //==============================================================
-// HPゲージ表示
+// HPゲージ初期化・表示
 //==============================================================
+void EnemyCharacterBase::InitHPGauge()
+{
+	m_hpGauge = std::make_shared<HPGauge>();
+	m_hpGauge->Init();
+	m_hpGauge->SetMode(HPGauge::GaugeMode::World);
+}
 
 void EnemyCharacterBase::SetHPGaugeVisible(bool visible)
 {
@@ -36,7 +42,6 @@ void EnemyCharacterBase::SetHPGaugeVisible(bool visible)
 //==============================================================
 // 深度マップ描画
 //==============================================================
-
 void EnemyCharacterBase::GenerateDepthMapFromLightCommon(bool isDying)
 {
 	if (!m_model) return;
@@ -44,20 +49,9 @@ void EnemyCharacterBase::GenerateDepthMapFromLightCommon(bool isDying)
 	//==========================================================
 	// 視錐台カリング（影）
 	//==========================================================
-	if (!isDying)
+	if (!isDying && !IsInCameraView())
 	{
-		auto cam = m_wpCamera.lock();
-
-		if (cam)
-		{
-			Math::Vector3 center =
-				m_nowPos + Math::Vector3(0, 1.0f, 0);
-
-			if (!cam->IsInCameraView(center, 2.0f))
-			{
-				return;
-			}
-		}
+		return;
 	}
 
 	KdShaderManager::Instance()
@@ -94,6 +88,38 @@ void EnemyCharacterBase::UpdatePreAttackPosition()
 			m_mWorld.Translation() +
 			Math::Vector3(0, 1.8f, 0);
 	}
+}
+
+//==============================================================
+// ワールド行列・UI位置更新
+//==============================================================
+void EnemyCharacterBase::UpdateWorldMatrixAndUI()
+{
+	// ワールド行列更新
+	Math::Matrix rotMat =
+		Math::Matrix::CreateRotationY(m_angleY);
+
+	Math::Matrix transMat =
+		Math::Matrix::CreateTranslation(m_nowPos);
+
+	m_mWorld = rotMat * transMat;
+
+	// 攻撃予知アイコン位置更新
+	UpdatePreAttackPosition();
+
+	// HPゲージ位置更新
+	if (m_hpGauge)
+	{
+		Math::Vector3 worldPos = m_mWorld.Translation();
+
+		m_hpGauge->SetWorldPos(
+			worldPos + Math::Vector3(0, 2.0f, 0)
+		);
+	}
+
+	// ロックオン位置更新
+	m_lockOnPos =
+		m_nowPos + Math::Vector3(0, 1.0f, 0);
 }
 
 //==========================================================
@@ -339,4 +365,23 @@ void EnemyCharacterBase::NockBackCheck()
 			}
 		}
 	}
+}
+
+
+//==============================================================
+// 視野角カリング
+//==============================================================
+bool EnemyCharacterBase::IsInCameraView() const
+{
+	auto cam = m_wpCamera.lock();
+
+	if (!cam)
+	{
+		return true;
+	}
+
+	Math::Vector3 center =
+		m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+	return cam->IsInCameraView(center, 2.0f);
 }

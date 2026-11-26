@@ -15,51 +15,57 @@ public:
 	virtual ~EnemyCharacterBase() {}
 
 	//==============================================================
+	// HPゲージ初期化
+	//==============================================================
+	void InitHPGauge();
+
+	//==============================================================
+	// 深度マップ描画
+	//==============================================================
+	void GenerateDepthMapFromLightCommon(bool isDying);
+
+	//==============================================================
+	// 攻撃予知アイコン位置
+	//==============================================================
+	void UpdatePreAttackPosition();
+
+	//==============================================================
+	// ワールド行列・UI位置更新
+	//==============================================================
+	void UpdateWorldMatrixAndUI();
+
+	//==============================================================
+	// 地面・壁判定
+	//==============================================================
+	void GroundCollisionCheck();
+	void WallCollisionCheck();
+
+	//==============================================================
 	// Player
 	//==============================================================
-
-	void SetTarget(const std::shared_ptr<Player>& target)
-	{
-		m_wpPlayer = target;
-	}
+	void SetTarget(const std::shared_ptr<Player>& target) { m_wpPlayer = target; }
 
 	//==============================================================
 	// Camera
 	//==============================================================
-
-	void SetCamera(std::shared_ptr<CameraBase> cam)
-	{
-		m_wpCamera = cam;
-	}
+	void SetCamera(std::shared_ptr<CameraBase> cam) { m_wpCamera = cam; }
 
 	//==============================================================
 	// 方向
 	//==============================================================
-
-	Math::Vector3 GetForward() const
-	{
-		return GetForwardFromAngle(m_angleY);
-	}
-
-	Math::Vector3 GetRight() const
-	{
-		return GetRightFromAngle(m_angleY);
-	}
+	Math::Vector3 GetForward() const { return GetForwardFromAngle(m_angleY); }
+	Math::Vector3 GetRight() const { return GetRightFromAngle(m_angleY); }
 
 	//==============================================================
 	// アニメーション
 	//==============================================================
 	void PlayAnimationAuto(const std::string& animName, bool loop = true);
 	void SetHPGaugeVisible(bool visible);
-	bool IsAttackAnimationEnd() const
-	{
-		return m_animator.IsAnimationEnd();
-	}
+	bool IsAttackAnimationEnd() const { return m_animator.IsAnimationEnd(); }
 
 	//==============================================================
 	// スロー
 	//==============================================================
-
 	void StartSlow(float time)
 	{
 		m_isSlow = true;
@@ -76,50 +82,24 @@ public:
 		return 1.0f;
 	}
 
-	//==============================================================
-	// GameScene
-	//==============================================================
-
-	void SetGameScene(GameScene* scene)
-	{
-		m_pGameScene = scene;
-	}
-
-	void SetGameEnd(bool end)
-	{
-		m_isGameEnd = end;
-	}
+	void SetGameScene(GameScene* scene) { m_pGameScene = scene; }
+	void SetGameEnd(bool end) { m_isGameEnd = end; }
 
 	//==============================================================
-	// Position
+	// 現在座標
 	//==============================================================
-
-	Math::Vector3 GetPos() const override
-	{
-		return m_nowPos;
-	}
+	Math::Vector3 GetPos() const override { return m_nowPos; }
 	
-	//==============================================================
-	// 深度マップ描画
-	//==============================================================
-	void GenerateDepthMapFromLightCommon(bool isDying);
-
-	//==============================================================
-	// 攻撃予知アイコン位置
-	//==============================================================
-	void UpdatePreAttackPosition();
-
-	//==============================================================
-	// 地面・壁判定
-	//==============================================================
-	void GroundCollisionCheck();
-	void WallCollisionCheck();
-
 protected:
 	//==============================================================
 	// ノックバック判定
 	//==============================================================
 	void NockBackCheck();
+
+	//==============================================================
+	// 視野角カリング
+	//==============================================================
+	bool IsInCameraView() const;
 
 public:
 

@@ -151,6 +151,9 @@ void EnemyBase::Update()
 //==============================================================
 void EnemyBase::PostUpdate()
 {
+	//========================================
+	// 地面・壁判定
+	//========================================
 	GroundCollisionCheck();
 	WallCollisionCheck();
 
@@ -217,25 +220,8 @@ void EnemyBase::PostUpdate()
 		}
 	}
 
-
-	//========================
-	// ワールド行列更新
-	//========================
-	Math::Matrix rotMat = Math::Matrix::CreateRotationY(m_angleY);
-	Math::Matrix transMat = Math::Matrix::CreateTranslation(m_nowPos);
-
-	m_mWorld = rotMat * transMat;
-
-	UpdatePreAttackPosition();
-
-	// HPゲージ位置
-	if (m_hpGauge)
-	{
-		Math::Vector3 worldPos = m_mWorld.Translation();
-		m_hpGauge->SetWorldPos(worldPos + Math::Vector3(0, 2.0f, 0));
-	}
+	UpdateWorldMatrixAndUI();
 }
-
 
 //==============================================================
 // Draw系
@@ -247,23 +233,12 @@ void EnemyBase::DrawLit()
 		return;
 	}
 
-	//==========================================================
+	//========================================
 	// 視錐台カリング
-	//==========================================================
-	if (!m_isDying)
+	//========================================
+	if (!m_isDying && !IsInCameraView())
 	{
-		auto cam = m_wpCamera.lock();
-
-		if (cam)
-		{
-			Math::Vector3 center =
-				m_nowPos + Math::Vector3(0, 1.0f, 0);
-
-			if (!cam->IsInCameraView(center, 2.0f))
-			{
-				return;
-			}
-		}
+		return;
 	}
 
 	if (m_isResolving || m_isDying)
@@ -694,14 +669,6 @@ void EnemyBase::StartDeath()
 	// 死亡アニメーション
 	//==========================================================
 	PlayAnimationAuto("Death", false);
-}
-
-void EnemyBase::InitHPGauge()
-{
-	m_hpGauge = std::make_shared<HPGauge>();
-
-	m_hpGauge->Init();
-	m_hpGauge->SetMode(HPGauge::GaugeMode::World);
 }
 
 void EnemyBase::InitStateMachine()
