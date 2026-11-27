@@ -128,7 +128,6 @@ private:
 	//==============================================================
 	// 更新
 	//==============================================================
-	void UpdateAnimation(float dt);
 	void UpdateDebug();
 	void UpdateResolve(float frameScale);
 

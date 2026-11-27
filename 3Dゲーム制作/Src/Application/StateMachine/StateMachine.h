@@ -1,5 +1,4 @@
-﻿
-#pragma once
+﻿#pragma once
 
 // State の基底クラス
 template<class TOwner>
@@ -22,7 +21,7 @@ public:
 class StateMachineParameter
 {
 public:
-	static constexpr float KnockBackPower = 0.5f;
+	static constexpr float KnockBackPower = 1.0f;
 	//constexpr指定子：コンパイル時に値を確定できる定数や関数を指定するためのキーワード指定子
 
 	//const指定子も定数を表すキーワードでどちらも値を変更はできない

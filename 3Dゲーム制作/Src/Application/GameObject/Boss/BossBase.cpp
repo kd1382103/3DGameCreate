@@ -1,15 +1,10 @@
 ﻿#include "BossBase.h"
 
 #include <Application/GameObject/Player/Player/Player.h>
-#include <Application/GameObject/Camera/CameraBase.h>
-#include <Application/GameObject/UI/HPGauge/HPGauge.h>
-#include <Application/GameObject/UI/FontText/FontText.h>
-
 #include <Application/Scene/SceneManager.h>
 #include <Application/main.h>
 
 #include <Application/GameObject/Boss/BossState/BossState.h>
-#include <Application/Scene/GameScene/GameScene.h>
 #include <Application/GameObject/Effect/EffectManager.h>
 
 
@@ -45,15 +40,18 @@ void BossBase::Update()
 	}
 
 	//========================================
+	// 60FPS基準のフレーム倍率
+	//========================================
+	const float frameScale =
+		Application::Instance()
+		.GetFPSController()
+		.GetFrameScale();
+
+	//========================================
 	// Death（死亡演出）
 	//========================================
 	if (m_isDying)
 	{
-		const float frameScale =
-			Application::Instance()
-			.GetFPSController()
-			.GetFrameScale();
-
 		UpdateDeath(frameScale);
 		return;
 	}
@@ -63,34 +61,17 @@ void BossBase::Update()
 	//========================================
 	if (m_isResolving)
 	{
-		const float frameScale =
-			Application::Instance()
-			.GetFPSController()
-			.GetFrameScale();
-
 		UpdateResolve(frameScale);
 
 		// リゾルブ中もIdleアニメーションを再生
-		if (m_model)
-		{
-			// リゾルブ中もIdleアニメーションを再生
-			AdvanceModelAnimation(
-				m_animator,
-				m_model,
-				frameScale
-			);
-		}
+		AdvanceModelAnimation(
+			m_animator,
+			m_model,
+			frameScale
+		);
 
 		return;
 	}
-
-	//========================================
-	// 60FPS基準のフレーム倍率
-	//========================================
-	const float frameScale =
-		Application::Instance()
-		.GetFPSController()
-		.GetFrameScale();
 
 	//========================================
 	// ゲーム全体の時間倍率
@@ -144,27 +125,16 @@ void BossBase::Update()
 	//========================================
 	// アニメーション
 	//========================================
-	if (m_model)
-	{
-		// アニメーション
-		AdvanceModelAnimation(
-			m_animator,
-			m_model,
-			dt
-		);
-	}
+	AdvanceModelAnimation(
+		m_animator,
+		m_model,
+		dt
+	);
 
 	//========================================
 	// HPゲージ
 	//========================================
-	UpdateWorldHPGauge(
-		m_hpGauge,
-		m_wpCamera,
-		m_wpPlayer,
-		m_nowPos,
-		m_hp,
-		m_hpMax
-	);
+	UpdateHPGauge();
 
 	//========================================
 	// デバッグ
@@ -182,14 +152,14 @@ void BossBase::Update()
 void BossBase::PostUpdate()
 {
 	//==========================================================
-	// 地面判定
-	//==========================================================
-	GroundCollisionCheck();
-
-	//==========================================================
 	// ノックバック移動（障害物に当たったら壁沿いに滑る）
 	//==========================================================
 	NockBackCheck();
+
+	//==========================================================
+	// 地面判定
+	//==========================================================
+	GroundCollisionCheck();
 
 	//==========================================================
 	// 壁判定
@@ -200,6 +170,14 @@ void BossBase::PostUpdate()
 	// ワールド行列・UI位置更新
 	//==========================================================
 	UpdateWorldMatrixAndUI();
+
+	//==========================================================
+	// 攻撃予知位置
+	// ※親が頭ノードの位置に設定しても、ボスは固定位置にする
+	//==========================================================
+	m_preAttackPos =
+		m_mWorld.Translation() +
+		Math::Vector3(0, 1.8f, 0);
 }
 
 void BossBase::DrawLit()
@@ -270,154 +248,13 @@ void BossBase::DrawLit()
 }
 
 //==============================================================
-// DrawSprite
+// 描画
 //==============================================================
 void BossBase::DrawSprite()
 {
-	if (m_isDying || m_isResolving)
-	{
-		return;
-	}
+	if (m_isDying || m_isResolving) return;
 
-	if (m_hpGauge)
-	{
-		m_hpGauge->DrawSprite();
-	}
-
-	auto cam = m_wpCamera.lock();
-	if (!cam) return;
-
-	//==========================================================
-	// 攻撃予知
-	//==========================================================
-	if (m_preAttackActive &&
-		m_preAttackPoly)
-	{
-		Math::Vector3 camForward =
-			cam->GetCameraDir();
-
-		Math::Vector3 toBoss =
-			m_preAttackPos -
-			cam->GetCameraPos();
-
-		toBoss.Normalize();
-
-		float dot =
-			camForward.Dot(toBoss);
-
-		if (dot < 0.0f)
-		{
-			return;
-		}
-
-		Math::Vector2 screen =
-			cam->WorldToScreen(
-				m_preAttackPos
-			);
-
-		float scale =
-			m_preAttackScale;
-
-		float w = 128.0f * scale;
-		float h = 128.0f * scale;
-
-		float x =
-			screen.x - w * 0.5f;
-
-		float y =
-			screen.y - h * 0.5f;
-
-		auto& sprite =
-			KdShaderManager::Instance()
-			.m_spriteShader;
-
-		Math::Color color =
-		{
-			1, 1, 1,
-			m_preAttackAlpha
-		};
-
-		sprite.DrawTex(
-			m_preAttackPoly
-			->GetMaterial()
-			->m_baseColorTex.get(),
-			x,
-			y,
-			w,
-			h,
-			nullptr,
-			&color,
-			{ 0, 0 }
-		);
-	}
-
-	//==========================================================
-	// ロックオン
-	//==========================================================
-	if (m_lockOnActive &&
-		m_lockOnIcon)
-	{
-		Math::Vector3 camForward =
-			cam->GetCameraDir();
-
-		Math::Vector3 toBoss =
-			m_lockOnPos -
-			cam->GetCameraPos();
-
-		toBoss.Normalize();
-
-		float dot =
-			camForward.Dot(toBoss);
-
-		if (dot < 0.0f)
-		{
-			return;
-		}
-
-		Math::Vector2 screen =
-			cam->WorldToScreen(
-				m_lockOnPos
-			);
-
-		float scale =
-			m_lockOnScale;
-
-		float iconWidth =
-			64.0f * scale;
-
-		float iconHeight =
-			64.0f * scale;
-
-		float x =
-			screen.x -
-			iconWidth * 0.5f;
-
-		float y =
-			screen.y -
-			iconHeight * 0.5f;
-
-		auto& sprite =
-			KdShaderManager::Instance()
-			.m_spriteShader;
-
-		Math::Color color =
-		{
-			1, 1, 1, 1
-		};
-
-		sprite.DrawTex(
-			m_lockOnIcon
-			->GetMaterial()
-			->m_baseColorTex.get(),
-			x,
-			y,
-			iconWidth,
-			iconHeight,
-			nullptr,
-			&color,
-			{ 0, 0 }
-		);
-	}
+	DrawWorldUI();
 }
 
 void BossBase::GenerateDepthMapFromLight()
@@ -443,44 +280,9 @@ void BossBase::DamageBoss(
 	}
 
 	//==========================================================
-	// ダメージ表示
+	// ダメージ関係（HP更新、フライテキスト、Hitエフェクト描画）
 	//==========================================================
-	auto fly = std::make_shared<FontText>();
-
-	fly->Init(
-		m_nowPos + Math::Vector3(0, 2.0f, 0),
-		(int)dmg
-	);
-
-	fly->SetCamera(m_wpCamera.lock());
-
-	SceneManager::Instance().AddObject(fly);
-
-	//==========================================================
-	// 被弾エフェクト
-	//==========================================================
-	EffectManager::Instance().Play(
-		EffectType::Hit,
-		m_nowPos + Math::Vector3(0, 1.0f, 0)
-	);
-
-	//==========================================================
-	// HP更新
-	//==========================================================
-	float before = m_hp;
-
-	float after = std::max(
-		0.0f,
-		before - dmg
-	);
-
-	if (m_hpGauge)
-	{
-		m_hpGauge->OnDamage(before, after);
-		m_hpGauge->SetGauge(after, m_hpMax);
-	}
-
-	m_hp = after;
+	CommonDamage(dmg);
 
 	//==========================================================
 	// 死亡演出開始
@@ -498,7 +300,7 @@ void BossBase::DamageBoss(
 
 	//==========================================================
 	// ノックバック
-	// 通常攻撃・スキル・必殺技で実行
+	// 通常攻撃・強攻撃・スキルで実行
 	//==========================================================
 	if (auto player = m_wpPlayer.lock())
 	{
@@ -511,28 +313,34 @@ void BossBase::DamageBoss(
 		{
 			knockDir.Normalize();
 
-			// 既存のノックバック強度を維持
-			m_knockBackMove +=
-				knockDir *
-				(m_knockBackPower * knockBackRate);
+			float knockPower =
+				StateMachineParameter::KnockBackPower * knockBackRate;
 
+			// スキルの途中ヒットは弱くする
+			if (isUltimate && !finalHit)
+			{
+				knockPower *= 0.2f;
+			}
+
+			// ノックバックの移動量を記録
+			// 実際の移動はPostUpdateで障害物を確認してから行う
+			m_knockBackMove += knockDir * knockPower;
 			m_hasPendingKnockBack = true;
-		}
-
-		// 必殺技の攻撃時は回避受付を終了
-		if (isUltimate)
-		{
-			player->m_canDodge = false;
 		}
 	}
 
 	//==========================================================
-	// 強攻撃・必殺技でボスの攻撃を中断
+	// 強攻撃・スキルでボスの攻撃を中断
 	//==========================================================
 	if (!interruptAttack && !isUltimate)
 	{
 		return;
 	}
+
+	//==========================================================
+	// 攻撃を中断するので、ジャスト回避の受付を終了
+	//==========================================================
+	ReleaseDodge();
 
 	//==========================================================
 	// 被弾ステートへ移行
@@ -552,9 +360,28 @@ void BossBase::DamageBoss(
 	//==========================================================
 	// 攻撃予知解除
 	//==========================================================
+	ClearPreAttack();
+}
+
+//==============================================================
+// 攻撃予知の解除
+//==============================================================
+void BossBase::ClearPreAttack()
+{
 	m_preAttackActive = false;
 	m_preAttackAlpha = 0.0f;
 	m_preAttackTimer = 0.0f;
+}
+
+//==============================================================
+// プレイヤーのジャスト回避受付を終了する
+//==============================================================
+void BossBase::ReleaseDodge()
+{
+	if (auto player = m_wpPlayer.lock())
+	{
+		player->m_canDodge = false;
+	}
 }
 
 //==============================================================
@@ -591,7 +418,6 @@ void BossBase::StartDeath()
 
 	// 死亡演出の待機を解除
 	m_isDeathPending = false;
-	m_isDeathEffectPlayed = false;
 
 	m_isDying = true;
 
@@ -606,9 +432,10 @@ void BossBase::StartDeath()
 	m_deathEffectDelayTimer = 0.0f;
 
 	// 攻撃関連を停止
-	m_preAttackActive = false;
-	m_preAttackAlpha = 0.0f;
-	m_preAttackTimer = 0.0f;
+	ClearPreAttack();
+
+	// プレイヤーのジャスト回避受付を終了
+	ReleaseDodge();
 
 	m_attackHitOnce = true;
 	m_attackSEPlayed = false;
@@ -639,7 +466,6 @@ void BossBase::UpdateDeath(float frameScale)
 	//========================================
 	if (!m_isDeathDissolving && !m_isDeathEffectWaiting)
 	{
-		// Deathアニメーション
 		AdvanceModelAnimation(
 			m_animator,
 			m_model,
@@ -660,7 +486,7 @@ void BossBase::UpdateDeath(float frameScale)
 	// 爆発までの待機
 	//========================================
 	if (m_isDeathEffectWaiting)
-	{ 
+	{
 		// プレイヤーが退避するまで爆発を待つ
 		if (m_isDeathEffectPaused)
 		{
@@ -676,21 +502,14 @@ void BossBase::UpdateDeath(float frameScale)
 
 		m_isDeathEffectWaiting = false;
 
-		// 爆発エフェクトを一度だけ再生
-		if (!m_isDeathEffectPlayed)
-		{
-			EffectManager::Instance().Play(
-				EffectType::Explosion,
-				GetPos()
-			);
-
-			m_isDeathEffectPlayed = true;
-		}
+		// 爆発エフェクトを再生
+		EffectManager::Instance().Play(
+			EffectType::Explosion,
+			GetPos()
+		);
 
 		// 爆発に合わせてディゾルブ開始
 		m_isDeathDissolving = true;
-		m_deathTimer = 0.0f;
-		m_deathDissolve = 0.0f;
 
 		return;
 	}

@@ -52,7 +52,7 @@ void EnemyBase::Update()
 	if (m_isResolving)
 	{
 		UpdateResolve(frameScale);
-		UpdateAnimation(frameScale);
+		AdvanceModelAnimation(m_animator, m_model, frameScale);
 		return;
 	}
 
@@ -116,19 +116,12 @@ void EnemyBase::Update()
 	//========================================
 	// アニメーション
 	//========================================
-	UpdateAnimation(scaledFrameScale);
+	AdvanceModelAnimation(m_animator, m_model, scaledFrameScale);
 
 	//========================================
 	// HPゲージ
 	//========================================
-	UpdateWorldHPGauge(
-			m_hpGauge,
-			m_wpCamera,
-			m_wpPlayer,
-			m_nowPos,
-			m_hp,
-			m_hpMax
-		);
+	UpdateHPGauge();
 	
 	//========================================
 	// デバッグ
@@ -267,103 +260,7 @@ void EnemyBase::GenerateDepthMapFromLight()
 void EnemyBase::DrawSprite()
 {
 	if (m_isResolving || m_isDying)return;
-
-	if (m_hpGauge) m_hpGauge->DrawSprite();
-
-	auto cam = m_wpCamera.lock();
-	if (!cam) return;
-
-	//==========================================================
-	// 攻撃予知
-	//==========================================================	
-		
-	if (m_preAttackActive &&
-		m_preAttackPoly &&
-		(!m_pGameScene || !m_pGameScene->IsSettingOpen())) 
-	{
-		// 背面判定（HPと同じ）
-		Math::Vector3 camForward = cam->GetCameraDir();
-		Math::Vector3 toEnemy = m_preAttackPos - cam->GetCameraPos();
-		toEnemy.Normalize();
-
-		float dot = camForward.Dot(toEnemy);
-		if (dot < 0.0f) return;
-
-		// ワールド → スクリーン座標
-		Math::Vector2 screen = cam->WorldToScreen(m_preAttackPos);
-
-		float scale = m_preAttackScale;
-		float w = 128.0f * scale;
-		float h = 128.0f * scale;
-
-		float x = screen.x - w * 0.5f;
-		float y = screen.y - h * 0.5f;
-
-		auto& sprite = KdShaderManager::Instance().m_spriteShader;
-
-		Math::Color color = { 1, 1, 1, m_preAttackAlpha };
-
-		sprite.DrawTex(
-			m_preAttackPoly->GetMaterial()->m_baseColorTex.get(),
-			x,
-			y,
-			w,
-			h,
-			nullptr,
-			&color,
-			{ 0, 0 }
-		);
-	}
-
-	//ロックオン
-	if (m_lockOnActive && m_lockOnIcon &&
-		(!m_pGameScene || !m_pGameScene->IsSettingOpen()))
-	{
-		//===========================
-		// ① 背面判定（HPGauge と同じ）
-		//===========================
-		Math::Vector3 camForward = cam->GetCameraDir();
-		Math::Vector3 toEnemy = m_lockOnPos - cam->GetCameraPos();
-		toEnemy.Normalize();
-
-		float dot = camForward.Dot(toEnemy);
-
-		if (dot < 0.0f)
-		{
-			return; // 背面なら描画しない
-		}
-
-		//===========================
-		// ② ワールド → スクリーン座標変換
-		//===========================
-		Math::Vector2 screen = cam->WorldToScreen(m_lockOnPos);
-
-		float scale = m_lockOnScale;
-
-		float iconWidth = 64.0f * scale;
-		float iconHeight = 64.0f * scale;
-
-		float x = screen.x - iconWidth * 0.5f;
-		float y = screen.y - iconHeight * 0.5f;
-
-		auto& sprite = KdShaderManager::Instance().m_spriteShader;
-
-		Math::Color color = { 1, 1, 1, 1 };
-
-		//===========================
-		// ③ HPGauge と同じ DrawTex 形式
-		//===========================
-		sprite.DrawTex(
-			m_lockOnIcon->GetMaterial()->m_baseColorTex.get(),
-			x,
-			y,
-			iconWidth,
-			iconHeight,
-			nullptr,
-			&color,
-			{ 0, 0 }
-		);
-	}
+	DrawWorldUI();
 }
 
 //==============================================================
@@ -372,57 +269,9 @@ void EnemyBase::DrawSprite()
 void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBackRate)
 {
 	//==========================================================
-	// ダメージ表示
+	// ダメージ関係（HP更新、フライテキスト、Hitエフェクト描画）
 	//==========================================================
-	auto fly = std::make_shared<FontText>();
-
-	fly->Init(
-		m_nowPos + Math::Vector3(0, 2.0f, 0),
-		(int)dmg
-	);
-
-	fly->SetCamera(m_wpCamera.lock());
-
-	SceneManager::Instance().AddObject(fly);
-
-	//==========================================================
-	// 被弾エフェクト
-	//==========================================================
-
-	auto cam = m_wpCamera.lock();
-
-	Math::Vector3 hitEffectPos = m_nowPos + Math::Vector3(0, 1.0f, 0);
-
-	if (cam)
-	{
-		Math::Vector3 camForward = cam->GetCameraDir();
-		camForward.y = 0.0f;
-		
-		if (camForward.LengthSquared() > 0.0001f)
-		{
-			camForward.Normalize();
-			hitEffectPos -= camForward * 0.5f;
-		}
-	}
-
-	EffectManager::Instance().Play(
-		EffectType::Hit,
-		hitEffectPos
-	);
-
-	//==========================================================
-	// HP
-	//==========================================================
-	float before = m_hp;
-	float after = std::max(0.0f, before - dmg);
-
-	if (m_hpGauge)
-	{
-		m_hpGauge->OnDamage(before, after);
-		m_hpGauge->SetGauge(after, m_hpMax);
-	}
-
-	m_hp = after;
+	CommonDamage(dmg);
 
 	//==========================================================
 	// 死亡処理
@@ -636,15 +485,6 @@ void EnemyBase::InitStateMachine()
 	);
 }
 
-void EnemyBase::UpdateAnimation(float dt)
-{
-	AdvanceModelAnimation(
-		m_animator,
-		m_model,
-		dt
-	);
-}
-
 void EnemyBase::UpdateDebug()
 {
 	//KdDebugGUI::Instance().ClearLog();
@@ -699,7 +539,7 @@ void EnemyBase::UpdateDeath(float frameScale)
 	//==========================================================
 	if (!m_isDeathAnimationEnd)
 	{
-		UpdateAnimation(frameScale);
+		AdvanceModelAnimation(m_animator, m_model, frameScale);
 
 		if (m_animator.IsAnimationEnd())
 		{

@@ -9,7 +9,7 @@ public:
 	virtual void Damage(
 		float dmg,
 		bool isUltimate = false,
-		bool finalHit = false, 
+		bool finalHit = false,
 		float knockBackRate = 1.0f
 	) {}
 
@@ -107,51 +107,4 @@ protected:
 		polygon.Set2DObject(false);
 		polygon.SetScale(scale);
 	}
-
-	//==============================================================
-	// HPゲージ更新処理
-	//==============================================================
-	template <class TGauge, class TCameraWeak, class TPlayerWeak>
-	static void UpdateWorldHPGauge(
-		TGauge& hpGauge,
-		const TCameraWeak& wpCamera,
-		const TPlayerWeak& wpPlayer,
-		const Math::Vector3& ownerPos,
-		float hp,
-		float hpMax
-	)
-	{
-		if (!hpGauge) return;
-
-		// カメラ
-		if (auto cam = wpCamera.lock())
-		{
-			hpGauge->SetCamera(cam);
-		}
-
-		// 距離によるスケール
-		float scale = 1.0f;
-
-		if (auto player = wpPlayer.lock())
-		{
-			float dist =
-				(player->GetPos() - ownerPos).Length();
-
-			const float minDist = 3.0f;
-			const float maxDist = 15.0f;
-
-			float t =
-				(dist - minDist) /
-				(maxDist - minDist);
-
-			t = std::clamp(t, 0.0f, 1.0f);
-
-			scale = 1.0f - t * 0.6f;
-		}
-
-		hpGauge->SetScale(scale);
-		hpGauge->SetGauge(hp, hpMax);
-	}
-
-
 };

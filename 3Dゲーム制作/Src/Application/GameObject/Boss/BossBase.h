@@ -1,19 +1,13 @@
 ﻿#pragma once
 #include <Application/GameObject/EnemyCharactorBase/EnemyCharacterBase.h>
 
-class Player;
-class CameraBase;
-class HPGauge;
-class GameScene;
-
 template <class T>
 class StateMachine;
 
 class BossBase : public EnemyCharacterBase
 {
 public:
-public:
-	BossBase() 
+	BossBase()
 	{
 		// HP
 		m_hp = 1000.0f;
@@ -29,12 +23,9 @@ public:
 		// 索敵
 		detectRange = 10.0f;
 
-		// Playerとの接触判定
+		// Playerとの接触判定(通常の敵より大きい)
 		m_collisionRadius = 0.7f;
-		m_collisionHeight = 1.0f;
 	}
-
-	virtual ~BossBase() {}
 
 	void Init() override;
 	void Update() override;
@@ -123,7 +114,6 @@ public:
 
 public:
 
-
 	//==============================================================
 	// 攻撃
 	//==============================================================
@@ -168,22 +158,17 @@ public:
 	int animSkillIndex = -1;
 	int animHitIndex = -1;
 
-
-	//==============================================================
-	// ノックバック
-	//==============================================================
-
-	float m_knockBackPower = 0.75f;
-
-
-	//==============================================================
-	// Playerとの接触判定
-	//==============================================================
-
-	float m_collisionRadius = 0.7f;
-	float m_collisionHeight = 1.0f;
-
 private:
+
+	//==============================================================
+	// 被弾
+	//==============================================================
+
+	// 攻撃予知の解除
+	void ClearPreAttack();
+
+	// プレイヤーのジャスト回避受付を終了する
+	void ReleaseDodge();
 
 	//==============================================================
 	// Resolve
@@ -233,14 +218,7 @@ private:
 	bool m_isDeathPending = false;
 
 	// ディゾルブの縁の発光色
-	Math::Vector3 m_deathEmissive =
-	{
-		0.1f,
-		0.8f,
-		1.0f
-	};
-
-	bool m_isDeathEffectPlayed = false;
+	Math::Vector3 m_deathEmissive = { 0.1f,0.8f,1.0f };
 
 	// 爆発エフェクト再生までの待機フレーム数
 	static constexpr float m_deathEffectDelay = 18.0f;

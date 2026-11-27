@@ -3,8 +3,13 @@
 #include <Application/GameObject/Camera/CameraBase.h>
 #include <Application/GameObject/Player/Player/Player.h>
 #include <Application/GameObject/UI/HPGauge/HPGauge.h>
+#include <Application/GameObject/UI/FontText/FontText.h>
+#include <Application/GameObject/Effect/EffectManager.h>
+#include <Application/GameObject/Effect/EffectType/EffectType.h>
 #include <Application/Scene/SceneManager.h>
 #include <Application/main.h>
+#include <Application/Scene/GameScene/GameScene.h>
+
 //==============================================================
 // アニメーション
 //==============================================================
@@ -21,6 +26,16 @@ void EnemyCharacterBase::PlayAnimationAuto(
 	{
 		m_animator.SetAnimation(anim, loop);
 	}
+}
+
+void EnemyCharacterBase::DrawSprite()
+{
+	if (m_isResolving || m_isDying)
+	{
+		return;
+	}
+
+	DrawWorldUI();
 }
 
 //==============================================================
@@ -432,6 +447,205 @@ void EnemyCharacterBase::UpdateSlowAndGravity(float dt)
 		dt
 	);
 }
+
+//==============================================================
+// ダメージ共通部分(HP更新、フライテキスト、Hitエフェクト描画)
+//==============================================================
+void EnemyCharacterBase::CommonDamage(float dmg)
+{
+	//======================================
+	// ダメージ表示
+	//======================================
+	auto fly = std::make_shared<FontText>();
+
+	fly->Init(
+		m_nowPos + Math::Vector3(0, 2.0f, 0),
+		(int)dmg
+	);
+
+	fly->SetCamera(m_wpCamera.lock());
+
+	SceneManager::Instance().AddObject(fly);
+
+	//====================================================
+	// 被弾エフェクト
+	//====================================================
+	Math::Vector3 hitEffectPos =
+		m_nowPos + Math::Vector3(0, 1.0f, 0);
+
+	if (auto cam = m_wpCamera.lock())
+	{
+		Math::Vector3 camForward = cam->GetCameraDir();
+		camForward.y = 0.0f;
+
+		if (camForward.LengthSquared() > 0.0001f)
+		{
+			camForward.Normalize();
+			hitEffectPos -= camForward * 0.5f;
+		}
+	}
+
+	EffectManager::Instance().Play(EffectType::Hit, hitEffectPos);
+
+	//==========================================
+	// HP更新
+	//==========================================
+	float before = m_hp;
+
+	float after = std::max(
+		0.0f,
+		before - dmg
+	);
+
+	if (m_hpGauge)
+	{
+		m_hpGauge->OnDamage(before, after);
+		m_hpGauge->SetGauge(after, m_hpMax);
+	}
+
+	m_hp = after;
+}
+
+//==============================================================
+// 予知・ロックオンUIの描画
+//==============================================================
+void EnemyCharacterBase::DrawWorldUI()
+{
+	// 設定画面中は敵UIをすべて非表示
+	if (m_pGameScene && m_pGameScene->IsSettingOpen())
+	{
+		return;
+	}
+
+	// HPゲージ
+	if (m_hpGauge)
+	{
+		m_hpGauge->DrawSprite();
+	}
+
+	// カメラ取得
+	auto cam = m_wpCamera.lock();
+	if (!cam) return;
+
+	//==========================================================
+	// 攻撃予知アイコン
+	//==========================================================
+	if (m_preAttackActive && m_preAttackPoly)
+	{
+		Math::Vector3 camForward = cam->GetCameraDir();
+		Math::Vector3 toBoss = m_preAttackPos - cam->GetCameraPos();
+		toBoss.Normalize();
+
+		float dot = camForward.Dot(toBoss);
+
+		if (dot < 0.0f) { return; }
+
+		Math::Vector2 screen = cam->WorldToScreen(m_preAttackPos);
+
+		float scale = m_preAttackScale;
+
+		float w = 128.0f * scale;
+		float h = 128.0f * scale;
+
+		float x = screen.x - w * 0.5f;
+
+		float y = screen.y - h * 0.5f;
+
+		auto& sprite = KdShaderManager::Instance().m_spriteShader;
+
+		Math::Color color =
+		{
+			1, 1, 1,
+			m_preAttackAlpha
+		};
+
+		sprite.DrawTex(
+			m_preAttackPoly
+			->GetMaterial()
+			->m_baseColorTex.get(),
+			x,
+			y,
+			w,
+			h,
+			nullptr,
+			&color,
+			{ 0, 0 }
+		);
+	}
+
+	//==========================================================
+	// ロックオンアイコン
+	//==========================================================
+	if (m_lockOnActive && m_lockOnIcon)
+	{
+		Math::Vector3 camForward = cam->GetCameraDir();
+		Math::Vector3 toBoss = m_lockOnPos - cam->GetCameraPos();
+		toBoss.Normalize();
+
+		float dot = camForward.Dot(toBoss);
+
+		if (dot < 0.0f) { return; }
+
+		Math::Vector2 screen = cam->WorldToScreen(m_lockOnPos);
+
+		float scale = m_lockOnScale;
+		float iconWidth = 64.0f * scale;
+		float iconHeight = 64.0f * scale;
+		float x = screen.x - iconWidth * 0.5f;
+		float y = screen.y - iconHeight * 0.5f;
+		auto& sprite = KdShaderManager::Instance().m_spriteShader;
+
+		Math::Color color = { 1, 1, 1, 1 };
+
+		sprite.DrawTex(
+			m_lockOnIcon
+			->GetMaterial()
+			->m_baseColorTex.get(),
+			x,
+			y,
+			iconWidth,
+			iconHeight,
+			nullptr,
+			&color,
+			{ 0, 0 }
+		);
+	}
+}
+
+void EnemyCharacterBase::UpdateHPGauge()
+{
+	if (!m_hpGauge) return;
+
+	// カメラ
+	if (auto cam = m_wpCamera.lock())
+	{
+		m_hpGauge->SetCamera(cam);
+	}
+
+	// 距離によるスケール
+	float scale = 1.0f;
+
+	if (auto player = m_wpPlayer.lock())
+	{
+		float dist =
+			(player->GetPos() - m_nowPos).Length();
+
+		const float minDist = 3.0f;
+		const float maxDist = 15.0f;
+
+		float t =
+			(dist - minDist) /
+			(maxDist - minDist);
+
+		t = std::clamp(t, 0.0f, 1.0f);
+
+		scale = 1.0f - t * 0.6f;
+	}
+
+	m_hpGauge->SetScale(scale);
+	m_hpGauge->SetGauge(m_hp, m_hpMax);
+}
+
 
 //==============================================================
 // 攻撃判定
