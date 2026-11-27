@@ -10,7 +10,6 @@
 
 void BossBase::Init()
 {
-	// モデルはBossが設定する
 	m_animator = KdAnimator();
 
 	// HPゲージ
@@ -27,6 +26,8 @@ void BossBase::Init()
 		std::make_unique<BossStateIdle>(),
 		*this
 	);
+
+	StartResolveCommon();
 }
 
 //==============================================================
@@ -61,7 +62,7 @@ void BossBase::Update()
 	//========================================
 	if (m_isResolving)
 	{
-		UpdateResolve(frameScale);
+		UpdateResolveCommon(frameScale);
 
 		// リゾルブ中もIdleアニメーションを再生
 		AdvanceModelAnimation(
@@ -385,27 +386,6 @@ void BossBase::ReleaseDodge()
 }
 
 //==============================================================
-// Resolve開始
-//==============================================================
-void BossBase::StartResolve()
-{
-	m_isResolving = true;
-
-	m_resolveTimer = 0.0f;
-
-	m_resolveDissolve = 1.0f;
-
-	// 出現中は演出を非表示
-	m_preAttackActive = false;
-	m_lockOnActive = false;
-
-	// HPゲージ非表示
-	SetHPGaugeVisible(false);
-
-	PlayAnimationAuto("Idel", true);
-}
-
-//==============================================================
 // Death開始
 //==============================================================
 void BossBase::StartDeath()
@@ -532,35 +512,5 @@ void BossBase::UpdateDeath(float frameScale)
 		m_deathTimer = m_deathDuration;
 		m_deathDissolve = 1.0f;
 		m_isExpired = true;
-	}
-}
-
-//==============================================================
-// Resolve更新
-//==============================================================
-void BossBase::UpdateResolve(float frameScale)
-{
-	m_resolveTimer += frameScale;
-
-	float t =
-		m_resolveTimer /
-		m_resolveDuration;
-
-	t = std::clamp(t, 0.0f, 1.0f);
-
-	// 1.0 → 0.0
-	m_resolveDissolve = 1.0f - t;
-
-	// 完了
-	if (m_resolveTimer >= m_resolveDuration)
-	{
-		m_resolveTimer = m_resolveDuration;
-
-		m_resolveDissolve = 0.0f;
-
-		m_isResolving = false;
-
-		// HPゲージ表示
-		SetHPGaugeVisible(true);
 	}
 }

@@ -66,8 +66,6 @@ public:
 		return m_isResolving;
 	}
 
-	void StartResolve();
-
 	//==============================================================
 	// Death（死亡演出）
 	//==============================================================
@@ -173,17 +171,6 @@ private:
 	//==============================================================
 	// Resolve
 	//==============================================================
-
-	void UpdateResolve(float frameScale);
-
-	bool m_isResolving = false;
-
-	float m_resolveTimer = 0.0f;
-
-	static constexpr float m_resolveDuration = 45.0f;
-
-	float m_resolveDissolve = 1.0f;
-
 	float m_resolveEdgeRange = 0.08f;
 
 	Math::Vector3 m_resolveEmissive =

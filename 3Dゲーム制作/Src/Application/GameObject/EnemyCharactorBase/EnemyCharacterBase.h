@@ -14,8 +14,6 @@ public:
 	EnemyCharacterBase() = default;
 	virtual ~EnemyCharacterBase() {}
 
-	void DrawSprite() override;
-
 	//==============================================================
 	// 共通UI初期化
 	//==============================================================
@@ -145,9 +143,13 @@ protected:
 	//==============================================================
 	// HP関係
 	//==============================================================
-	
-	//ゲージ更新
 	void UpdateHPGauge();
+
+	//==============================================================
+	// リゾルブ処理
+	//==============================================================
+	void StartResolveCommon();
+	void UpdateResolveCommon(float frameScale);
 
 
 public:
@@ -229,4 +231,12 @@ public:
 	// Playerとの接触判定
 	float m_collisionRadius = 0.5f;
 	float m_collisionHeight = 1.0f;
+
+	
+	// リゾルブ
+	bool m_isResolving = false;
+	float m_resolveTimer = 0.0f;
+	float m_resolveDissolve = 1.0f;
+	float m_resolveDuration = 45.0f;
+
 };

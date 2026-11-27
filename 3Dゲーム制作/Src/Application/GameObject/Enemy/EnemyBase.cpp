@@ -1,15 +1,9 @@
 ﻿#include "EnemyBase.h"
 #include <Application/GameObject/Player/Player/Player.h>
-#include <Application/GameObject/Camera/CameraBase.h>
-#include <Application/GameObject/UI/HPGauge/HPGauge.h>
-#include <Application/GameObject/UI/FontText/FontText.h>
 
 #include <Application/Scene/SceneManager.h>
-#include <Application/Scene/GameScene/GameScene.h>
 #include <Application/main.h>
 #include <Application/GameObject/Enemy/EnemyState/EnemyState.h>
-#include <Application/GameObject/Effect/EffectManager.h>
-#include <Application/GameObject/Effect/EffectType/EffectType.h>
 
 //==============================================================
 // Init
@@ -25,8 +19,14 @@ void EnemyBase::Init()
 	// 3D空間上に出すUI
 	InitWorldUI();
 
-	InitStateMachine();
-	StartResolve();
+	stateMachine = std::make_shared<StateMachine<EnemyBase>>();
+
+	stateMachine->ChangeStateImmediate(
+		std::make_unique<EnemyBaseStateIdel>(),
+		*this
+	);
+
+	StartResolveCommon();
 }
 
 //各フェイズごとに出現させる敵の初期化
@@ -51,7 +51,7 @@ void EnemyBase::Update()
 
 	if (m_isResolving)
 	{
-		UpdateResolve(frameScale);
+		UpdateResolveCommon(frameScale);
 		AdvanceModelAnimation(m_animator, m_model, frameScale);
 		return;
 	}
@@ -393,23 +393,6 @@ void EnemyBase::LookAtPlayer()
 	m_angleY = std::atan2f(dir.x, dir.z) + DirectX::XM_PI;
 }
 
-//==============================================================
-// Resolve開始
-//==============================================================
-void EnemyBase::StartResolve()
-{
-	m_isResolving = true;
-
-	m_resolveTimer = 0.0f;
-	m_resolveDissolve = 1.0f;
-
-	m_preAttackActive = false;
-	m_lockOnActive = false;
-
-	// リゾルブ中もIdleアニメーション
-	PlayAnimationAuto("Idel", true);
-}
-
 void EnemyBase::InitModelAndCollider(
 	const std::string& modelPath,
 	const std::string& colliderName)
@@ -475,16 +458,6 @@ void EnemyBase::StartDeath()
 	PlayAnimationAuto("Death", false);
 }
 
-void EnemyBase::InitStateMachine()
-{
-	stateMachine = std::make_shared<StateMachine<EnemyBase>>();
-
-	stateMachine->ChangeStateImmediate(
-		std::make_unique<EnemyBaseStateIdel>(),
-		*this
-	);
-}
-
 void EnemyBase::UpdateDebug()
 {
 	//KdDebugGUI::Instance().ClearLog();
@@ -492,40 +465,6 @@ void EnemyBase::UpdateDebug()
 	if (GetAsyncKeyState('3') & 0x8000)
 	{
 		Damage(m_hpMax, false, false, 1.0f);
-	}
-}
-
-//==============================================================
-// Resolve更新
-//==============================================================
-void EnemyBase::UpdateResolve(float frameScale)
-{
-	m_resolveTimer += frameScale;
-
-	float t = m_resolveTimer / m_resolveDuration;
-	t = std::clamp(t, 0.0f, 1.0f);
-
-	// 少し荒くする
-	t = std::floor(t * 12.0f) / 12.0f;
-
-	// 1.0 → 0.0 にディゾルブ
-	m_resolveDissolve = 1.0f - t;
-
-	// 完了
-	if (m_resolveTimer >= m_resolveDuration)
-	{
-		m_resolveTimer = m_resolveDuration;
-		m_resolveDissolve = 0.0f;
-		m_isResolving = false;
-
-		// 念のため通常のIdle状態へ
-		if (stateMachine)
-		{
-			stateMachine->ChangeStateImmediate(
-				std::make_unique<EnemyBaseStateIdel>(),
-				*this
-			);
-		}
 	}
 }
 

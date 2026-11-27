@@ -28,16 +28,6 @@ void EnemyCharacterBase::PlayAnimationAuto(
 	}
 }
 
-void EnemyCharacterBase::DrawSprite()
-{
-	if (m_isResolving || m_isDying)
-	{
-		return;
-	}
-
-	DrawWorldUI();
-}
-
 //==============================================================
 // UI初期化・表示
 //==============================================================
@@ -646,6 +636,41 @@ void EnemyCharacterBase::UpdateHPGauge()
 	m_hpGauge->SetGauge(m_hp, m_hpMax);
 }
 
+void EnemyCharacterBase::StartResolveCommon()
+{
+	m_isResolving = true;
+	m_resolveTimer = 0.0f;
+	m_resolveDissolve = 1.0f;
+
+	m_preAttackActive = false;
+	m_lockOnActive = false;
+
+	PlayAnimationAuto("Idel", true);
+}
+
+void EnemyCharacterBase::UpdateResolveCommon(float frameScale)
+{
+	m_resolveTimer += frameScale;
+
+	float t =
+		m_resolveTimer /
+		m_resolveDuration;
+
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	// 滑らかなディゾルブ
+	m_resolveDissolve = 1.0f - t;
+
+	// 完了
+	if (m_resolveTimer >= m_resolveDuration)
+	{
+		m_resolveTimer = m_resolveDuration;
+		m_resolveDissolve = 0.0f;
+
+		m_isResolving = false;
+	}
+}
+
 
 //==============================================================
 // 攻撃判定
@@ -705,4 +730,3 @@ void EnemyCharacterBase::DoAttackHitCheck(float range, bool checkHitStop)
 
 	m_attackHitOnce = true;
 }
-

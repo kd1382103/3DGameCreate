@@ -845,8 +845,6 @@ void GameScene::UpdateBoss()
 
 	m_boss->SetPos({ -35, 0, 20 });
 
-	m_boss->StartResolve();
-
 	m_boss->SetTarget(m_player);
 	m_boss->SetCamera(m_tpsCamera);
 	m_boss->SetGameScene(this);

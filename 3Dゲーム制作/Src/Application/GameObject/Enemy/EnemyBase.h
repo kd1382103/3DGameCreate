@@ -110,7 +110,6 @@ public:
 		return m_isResolving;
 	}
 
-	void StartResolve();
 
 protected:
 	void InitModelAndCollider(
@@ -119,17 +118,10 @@ protected:
 );
 
 private:
-
-	//==============================================================
-	// 初期化
-	//==============================================================
-	void InitStateMachine();
-
 	//==============================================================
 	// 更新
 	//==============================================================
 	void UpdateDebug();
-	void UpdateResolve(float frameScale);
 
 	void StartDeath();
 	void UpdateDeath(float frameScale);
@@ -202,16 +194,6 @@ private:
 	//==============================================================
 	// Resolve（敵出現演出）
 	//==============================================================
-
-	bool m_isResolving = false;
-	float m_resolveTimer = 0.0f;
-
-	// 60FPS基準で45フレーム = 0.75秒
-	static constexpr float m_resolveDuration = 45.0f;
-
-	// ディゾルブ値
-	float m_resolveDissolve = 1.0f;
-
 	// ディゾルブ境界の幅
 	float m_resolveEdgeRange = 0.08f;
 

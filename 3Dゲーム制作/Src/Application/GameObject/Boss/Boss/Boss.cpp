@@ -1,10 +1,10 @@
 ﻿#include "Boss.h"
 void Boss::Init()
 {
-	BossBase::Init();
-
 	m_model = std::make_shared<KdModelWork>();
 	m_model->SetModelData("Asset/Models/boss/Boss.gltf");
+
+	BossBase::Init();
 
 	animIdleIndex = 9;
 	animWalkIndex = 41;
