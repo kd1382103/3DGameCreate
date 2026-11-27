@@ -339,11 +339,6 @@ void BossBase::DamageBoss(
 	}
 
 	//==========================================================
-	// 攻撃を中断するので、ジャスト回避の受付を終了
-	//==========================================================
-	ReleaseDodge();
-
-	//==========================================================
 	// 被弾ステートへ移行
 	//==========================================================
 	if (stateMachine)
@@ -357,32 +352,6 @@ void BossBase::DamageBoss(
 	// ヒットストップ
 	//==========================================================
 	m_hitStopTimer = finalHit ? 0.5f : 0.35f;
-
-	//==========================================================
-	// 攻撃予知解除
-	//==========================================================
-	ClearPreAttack();
-}
-
-//==============================================================
-// 攻撃予知の解除
-//==============================================================
-void BossBase::ClearPreAttack()
-{
-	m_preAttackActive = false;
-	m_preAttackAlpha = 0.0f;
-	m_preAttackTimer = 0.0f;
-}
-
-//==============================================================
-// プレイヤーのジャスト回避受付を終了する
-//==============================================================
-void BossBase::ReleaseDodge()
-{
-	if (auto player = m_wpPlayer.lock())
-	{
-		player->m_canDodge = false;
-	}
 }
 
 //==============================================================
@@ -411,20 +380,10 @@ void BossBase::StartDeath()
 	m_isDeathEffectWaiting = false;
 	m_deathEffectDelayTimer = 0.0f;
 
-	// 攻撃関連を停止
-	ClearPreAttack();
-
-	// プレイヤーのジャスト回避受付を終了
-	ReleaseDodge();
-
 	m_attackHitOnce = true;
 	m_attackSEPlayed = false;
 
-	// ロックオンを解除
-	m_lockOnActive = false;
-
-	// HPゲージを非表示
-	SetHPGaugeVisible(false);
+	ResetDeathCommon();
 
 	// 死亡アニメーションを再生
 	PlayAnimationAuto("Death", false);

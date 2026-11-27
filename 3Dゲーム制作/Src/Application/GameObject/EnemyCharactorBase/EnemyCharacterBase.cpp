@@ -494,6 +494,11 @@ void EnemyCharacterBase::CommonDamage(float dmg)
 	}
 
 	m_hp = after;
+
+	// 攻撃予知解除
+	m_preAttackActive = false;
+	m_preAttackAlpha = 0.0f;
+	m_preAttackTimer = 0.0f;
 }
 
 //==============================================================
@@ -669,6 +674,39 @@ void EnemyCharacterBase::UpdateResolveCommon(float frameScale)
 
 		m_isResolving = false;
 	}
+}
+
+void EnemyCharacterBase::ResetDeathCommon()
+{
+	//---------------------------------------
+	// 攻撃関連
+	//---------------------------------------
+	m_isAttacking = false;
+	m_attackHitOnce = false;
+	m_attackSEPlayed = false;
+
+	//---------------------------------------
+	// スロー
+	//---------------------------------------
+	m_isSlow = false;
+	m_slowTimer = 0.0f;
+
+	// 攻撃予知解除
+	m_preAttackActive = false;
+	m_preAttackAlpha = 0.0f;
+	m_preAttackTimer = 0.0f;
+
+	// プレイヤーのジャスト回避受付を終了
+	if (auto player = m_wpPlayer.lock())
+	{
+		player->m_canDodge = false;
+	}
+
+	// ロックオン解除
+	m_lockOnActive = false;
+
+	// HPゲージ非表示
+	SetHPGaugeVisible(false);
 }
 
 

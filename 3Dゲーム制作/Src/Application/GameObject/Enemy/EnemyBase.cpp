@@ -298,13 +298,6 @@ void EnemyBase::Damage(float dmg, bool isUltimate, bool finalHit, float knockBac
 	}
 
 	//==========================================================
-	// 攻撃予知解除
-	//==========================================================
-	m_preAttackActive = false;
-	m_preAttackAlpha = 0.0f;
-	m_preAttackTimer = 0.0f;
-
-	//==========================================================
 	// プレイヤーのジャスト回避受付も終了
 	//==========================================================
 	if (auto player = m_wpPlayer.lock())
@@ -369,15 +362,6 @@ void EnemyBase::StopTutorialAttack()
 	}
 }
 
-void EnemyBase::StopAttackSound()
-{
-	if (m_attackSound)
-	{
-		m_attackSound->Stop();
-		m_attackSound.reset();
-	}
-}
-
 void EnemyBase::LookAtPlayer()
 {
 	auto player = m_wpPlayer.lock();
@@ -430,27 +414,17 @@ void EnemyBase::StartDeath()
 	m_resolveTimer = 0.0f;
 	m_resolveDissolve = 0.0f;
 
-	//==========================================================
-	// 戦闘状態をリセット
-	//==========================================================
-	ResetBattleState();
+	//---------------------------------------
+	// チュートリアル専用
+	//---------------------------------------
+	m_isTutorialAttack = false;
+	m_tutorialAttackFinished = false;
+	m_canAttack = false;
 
 	//==========================================================
-	// ロックオン解除
+	// 死亡処理
 	//==========================================================
-	m_lockOnActive = false;
-
-	//==========================================================
-	// 攻撃予知解除
-	//==========================================================
-	m_preAttackActive = false;
-	m_preAttackAlpha = 0.0f;
-	m_preAttackTimer = 0.0f;
-
-	//==========================================================
-	// HPゲージ非表示
-	//==========================================================
-	SetHPGaugeVisible(false);
+	ResetDeathCommon();
 
 	//==========================================================
 	// 死亡アニメーション
@@ -514,53 +488,5 @@ void EnemyBase::UpdateDeath(float frameScale)
 
 		// 完全に消えたら削除
 		m_isExpired = true;
-	}
-}
-
-void EnemyBase::ResetBattleState()
-{
-	//---------------------------------------
-	// 攻撃関連
-	//---------------------------------------
-	m_isAttacking = false;
-	m_attackHitOnce = false;
-	m_attackSEPlayed = false;
-
-	//---------------------------------------
-	// 攻撃予知
-	//---------------------------------------
-	m_preAttackActive = false;
-	m_preAttackAlpha = 0.0f;
-	m_preAttackTimer = 0.0f;
-
-	//---------------------------------------
-	// チュートリアル攻撃
-	//---------------------------------------
-	m_isTutorialAttack = false;
-	m_tutorialAttackFinished = false;
-	m_canAttack = false;
-
-	//---------------------------------------
-	// ロックオン
-	//---------------------------------------
-	m_lockOnActive = false;
-
-	//---------------------------------------
-	// スロー
-	//---------------------------------------
-	m_isSlow = false;
-	m_slowTimer = 0.0f;
-
-	//---------------------------------------
-	// 攻撃音
-	//---------------------------------------
-	StopAttackSound();
-
-	//---------------------------------------
-	// プレイヤー側のジャスト回避受付を解除
-	//---------------------------------------
-	if (auto player = m_wpPlayer.lock())
-	{
-		player->m_canDodge = false;
 	}
 }

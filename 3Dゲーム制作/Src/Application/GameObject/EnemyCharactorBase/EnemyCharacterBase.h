@@ -94,15 +94,8 @@ public:
 	//==============================================================
 	// 当たり判定
 	//==============================================================
-	float GetCollisionRadius() const
-	{
-		return m_collisionRadius;
-	}
-
-	float GetCollisionHeight() const
-	{
-		return m_collisionHeight;
-	}
+	float GetCollisionRadius() const { return m_collisionRadius; }
+	float GetCollisionHeight() const { return m_collisionHeight; }
 
 	//==============================================================
 	// 位置取得
@@ -113,6 +106,12 @@ public:
 	// 攻撃判定
 	//==============================================================
 	void DoAttackHitCheck(float range, bool checkHitStop);
+
+
+	bool IsAttacking() const { return m_isAttacking; }
+	bool IsResolving() const { return m_isResolving; }
+
+	virtual Math::Vector3 GetHitCenter() const { return m_nowPos + Math::Vector3(0, 1.0f, 0); }
 
 protected:
 	//==============================================================
@@ -151,7 +150,10 @@ protected:
 	void StartResolveCommon();
 	void UpdateResolveCommon(float frameScale);
 
-
+	//==============================================================
+	// 死亡時の初期化
+	//==============================================================
+	void ResetDeathCommon();
 public:
 
 	// モデル・アニメーション
@@ -173,6 +175,9 @@ public:
 
 	// HPゲージ
 	std::shared_ptr<HPGauge> m_hpGauge = nullptr;
+
+	// 攻撃サウンド
+	std::shared_ptr<KdSoundInstance> m_attackSound;
 
 	// 回転
 	float m_angleY = 0.0f;
@@ -205,6 +210,11 @@ public:
 	// 攻撃ヒット済み
 	bool m_attackHitOnce = false;
 	bool m_attackSEPlayed = false;
+	bool m_isAttacking = false;
+
+	// 攻撃
+	float m_attackDist;
+	float m_attackDamage;
 
 	// ゲーム終了
 	bool m_isGameEnd = false;
@@ -221,17 +231,12 @@ public:
 	// 移動
 	float m_moveSpeed;
 
-	// 攻撃
-	float m_attackDist;
-	float m_attackDamage;
-
 	// 索敵
 	float detectRange;
 
 	// Playerとの接触判定
 	float m_collisionRadius = 0.5f;
 	float m_collisionHeight = 1.0f;
-
 	
 	// リゾルブ
 	bool m_isResolving = false;
@@ -239,4 +244,9 @@ public:
 	float m_resolveDissolve = 1.0f;
 	float m_resolveDuration = 45.0f;
 
+	// リゾルブ境界の幅
+	float m_resolveEdgeRange = 0.08f;
+
+	//リゾルブ境界の発光色
+	Math::Vector3 m_resolveEmissive = { 0.1f, 0.8f, 1.0f };
 };
